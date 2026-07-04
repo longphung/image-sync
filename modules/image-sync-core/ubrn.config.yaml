@@ -1,0 +1,11 @@
+rust:
+  directory: ../../rust
+  manifestPath: image-sync-ffi/Cargo.toml
+
+android:
+  # Skip legacy 32-bit x86 emulator target; arm64-v8a covers real devices,
+  # x86_64 covers modern emulators, armeabi-v7a covers older real devices.
+  targets:
+    - arm64-v8a
+    - armeabi-v7a
+    - x86_64

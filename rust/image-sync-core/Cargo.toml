@@ -1,0 +1,9 @@
+[package]
+name = "image-sync-core"
+version.workspace = true
+edition.workspace = true
+
+[lib]
+name = "image_sync_core"
+
+[dependencies]
