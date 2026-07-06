@@ -8,7 +8,10 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.longphung.imagesync"
+      "bundleIdentifier": "com.longphung.imagesync",
+      "infoPlist": {
+        "NSLocalNetworkUsageDescription": "image-sync uses the local network to connect to your Sony camera over Wi-Fi."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -22,6 +25,9 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      ["expo-build-properties", { "android": { "usesCleartextTraffic": true } }]
+    ]
   }
 }

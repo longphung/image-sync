@@ -30,6 +30,9 @@ yarn-error.*
 .DS_Store
 *.pem
 
+# JetBrains IDEs
+.idea/
+
 # local env files
 .env*.local
 
@@ -48,7 +51,14 @@ yarn-error.*
 /modules/*/src/generated
 /modules/*/ios/generated
 /modules/*/android/generated
+/modules/*/cpp/generated
 
 # Rust build artifacts vendored into the native module
-/modules/*/ios/*.xcframework
+/modules/*/*.xcframework
 /modules/*/android/src/main/jniLibs
+
+# Native build caches/output (the module's scaffolding itself, e.g.
+# CMakeLists.txt/build.gradle/cpp-adapter.cpp, is hand-maintained and committed;
+# only the build system's own output is generated here)
+/modules/*/android/build
+/modules/*/android/.cxx

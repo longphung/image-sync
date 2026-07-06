@@ -5,15 +5,19 @@ project(ImageSyncCore)
 set (CMAKE_VERBOSE_MAKEFILE ON)
 set (CMAKE_CXX_STANDARD 17)
 
-# Resolve the path to the uniffi-bindgen-react-native package
+# Resolve the path to the uniffi-bindgen-react-native package.
+#
+# HAND-PATCHED, see noOverwrite in ../ubrn.config.yaml: the upstream-generated version
+# of this file did `node -p "require.resolve('uniffi-bindgen-react-native/package.json')"`,
+# which throws ERR_PACKAGE_PATH_NOT_EXPORTED because that package's own package.json
+# "exports" map only declares ".", never "./package.json". Walk node's normal
+# node_modules resolution chain to find the package directory directly instead, which
+# never requires a subpath and so never hits that restriction.
 execute_process(
-    COMMAND node -p "require.resolve('uniffi-bindgen-react-native/package.json')"
+    COMMAND node -e "const path=require('path');const fs=require('fs');const d=require.resolve.paths('uniffi-bindgen-react-native').map(p=>path.join(p,'uniffi-bindgen-react-native')).find(p=>fs.existsSync(p));process.stdout.write(d);"
     OUTPUT_VARIABLE UNIFFI_BINDGEN_PATH
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
-# Get the directory; get_filename_component and cmake_path will normalize
-# paths with Windows path separators.
-get_filename_component(UNIFFI_BINDGEN_PATH "${UNIFFI_BINDGEN_PATH}" DIRECTORY)
 
 # Specifies a path to native header files.
 include_directories(

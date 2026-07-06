@@ -9,3 +9,11 @@ android:
     - arm64-v8a
     - armeabi-v7a
     - x86_64
+
+# android/CMakeLists.txt is hand-patched (see comment in that file) to work around
+# an upstream uniffi-bindgen-react-native bug where its own package.json "exports"
+# map doesn't include "./package.json", breaking the generated require.resolve()
+# call. Exclude it from regeneration so `ubrn build android --and-generate` doesn't
+# clobber the fix.
+noOverwrite:
+  - android/CMakeLists.txt
