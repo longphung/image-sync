@@ -10,7 +10,8 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.longphung.imagesync",
       "infoPlist": {
-        "NSLocalNetworkUsageDescription": "image-sync uses the local network to connect to your Sony camera over Wi-Fi."
+        "NSLocalNetworkUsageDescription": "image-sync uses the local network to connect to your Sony camera over Wi-Fi.",
+        "NSLocationWhenInUseUsageDescription": "image-sync needs location access to scan for and join your camera's Wi-Fi network."
       }
     },
     "android": {
@@ -27,7 +28,17 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      ["expo-build-properties", { "android": { "usesCleartextTraffic": true } }]
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ],
+      "expo-router",
+      "expo-status-bar",
+      "react-native-wifi-reborn"
     ]
   }
 }
