@@ -32,7 +32,8 @@ function describeScanError(err: unknown): string {
 
 export async function scanNetworks(force: boolean): Promise<WifiEntry[]> {
   try {
-    return await (force ? WifiManager.reScanAndLoadWifiList() : WifiManager.loadWifiList());
+    const list = await (force ? WifiManager.reScanAndLoadWifiList() : WifiManager.loadWifiList());
+    return list.filter((entry) => entry.SSID.startsWith('DIRECT-'));
   } catch (err) {
     throw new Error(describeScanError(err));
   }

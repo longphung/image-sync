@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
-import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { LegendList } from '@legendapp/list/react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { CameraApi, downloadImage, listImages, type ImageItem } from 'image-sync-core';
 import { useCameraConnection } from '../src/CameraConnectionContext';
@@ -66,7 +68,7 @@ export default function ImagesScreen() {
   const downloaded = listDownloadedFilenames();
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
       {connectedLabel && <Text style={styles.label}>{connectedLabel}</Text>}
       {syncErrorMessage && <Text style={styles.error}>{syncErrorMessage}</Text>}
 
@@ -83,10 +85,11 @@ export default function ImagesScreen() {
       )}
       {syncing && <Text style={styles.label}>{syncProgress.current}</Text>}
 
-      <FlatList
+      <LegendList
         style={styles.list}
         data={images}
         keyExtractor={(item) => item.filename}
+        recycleItems
         renderItem={({ item }) => (
           <View style={styles.row}>
             <Image source={{ uri: item.thumbnailUrl }} style={styles.thumb} />
@@ -103,7 +106,7 @@ export default function ImagesScreen() {
       <TouchableOpacity style={styles.disconnectButton} onPress={handleDisconnect}>
         <Text style={styles.buttonText}>Disconnect</Text>
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 }
 

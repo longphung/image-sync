@@ -1,13 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
-import {
-  FlatList,
-  Platform,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Platform, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
+import { LegendList } from '@legendapp/list/react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useCameraConnection } from '../src/CameraConnectionContext';
 import {
@@ -77,103 +72,115 @@ export default function ConnectScreen() {
   }, [ssid, password, networks]);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Connect to Camera</Text>
+    <SafeAreaView style={styles.safeArea} edges={['bottom', 'left', 'right']}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <Text style={styles.title}>Connect to Camera</Text>
 
-      {Platform.OS === 'android' ? (
-        <>
-          <Text style={styles.label}>1. Join the camera&apos;s Wi-Fi network</Text>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => handleScan(false)}
-            disabled={scanning}
-          >
-            <Text style={styles.buttonText}>{scanning ? 'Scanning…' : 'Scan Wi-Fi'}</Text>
-          </TouchableOpacity>
-          {networks.length > 0 && (
+        {Platform.OS === 'android' ? (
+          <>
+            <Text style={styles.label}>1. Join the camera&apos;s Wi-Fi network</Text>
             <TouchableOpacity
               style={styles.button}
-              onPress={() => handleScan(true)}
+              onPress={() => handleScan(false)}
               disabled={scanning}
             >
-              <Text style={styles.buttonText}>Rescan</Text>
+              <Text style={styles.buttonText}>{scanning ? 'Scanning…' : 'Scan Wi-Fi'}</Text>
             </TouchableOpacity>
-          )}
-          {scanError && <Text style={styles.error}>{scanError}</Text>}
-
-          <FlatList
-            style={styles.networkList}
-            data={networks}
-            keyExtractor={(entry) => entry.BSSID}
-            renderItem={({ item }) => (
+            {networks.length > 0 && (
               <TouchableOpacity
-                style={[styles.networkRow, ssid === item.SSID && styles.networkRowSelected]}
-                onPress={() => handleSelectNetwork(item)}
+                style={styles.button}
+                onPress={() => handleScan(true)}
+                disabled={scanning}
               >
-                <Text>{item.SSID}</Text>
-                <Text style={styles.networkMeta}>
-                  {isSecuredNetwork(item) ? 'Secured' : 'Open'} · {item.level} dBm
-                </Text>
+                <Text style={styles.buttonText}>Rescan</Text>
               </TouchableOpacity>
             )}
-          />
-        </>
-      ) : (
-        <>
-          <Text style={styles.label}>
-            1. Type the camera&apos;s Wi-Fi network name and connect
-          </Text>
-          <TextInput
-            value={ssid}
-            onChangeText={setSsid}
-            placeholder="Camera SSID"
-            autoCapitalize="none"
-            autoCorrect={false}
-            style={styles.input}
-          />
-        </>
-      )}
+            {scanError && <Text style={styles.error}>{scanError}</Text>}
 
-      {ssid.length > 0 && (
-        <>
-          <TextInput
-            value={password}
-            onChangeText={setPassword}
-            placeholder="Password (leave blank for open networks)"
-            autoCapitalize="none"
-            autoCorrect={false}
-            secureTextEntry
-            style={styles.input}
-          />
-          <TouchableOpacity style={styles.button} onPress={handleJoin} disabled={joining}>
-            <Text style={styles.buttonText}>{joining ? 'Joining…' : `Join ${ssid}`}</Text>
-          </TouchableOpacity>
-          {joinError && <Text style={styles.error}>{joinError}</Text>}
-        </>
-      )}
+            <LegendList
+              style={styles.networkList}
+              data={networks}
+              keyExtractor={(entry) => entry.BSSID}
+              recycleItems
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[styles.networkRow, ssid === item.SSID && styles.networkRowSelected]}
+                  onPress={() => handleSelectNetwork(item)}
+                >
+                  <Text>{item.SSID}</Text>
+                  <Text style={styles.networkMeta}>
+                    {isSecuredNetwork(item) ? 'Secured' : 'Open'} · {item.level} dBm
+                  </Text>
+                </TouchableOpacity>
+              )}
+            />
+          </>
+        ) : (
+          <>
+            <Text style={styles.label}>
+              1. Type the camera&apos;s Wi-Fi network name and connect
+            </Text>
+            <TextInput
+              value={ssid}
+              onChangeText={setSsid}
+              placeholder="Camera SSID"
+              placeholderTextColor="#888"
+              autoCapitalize="none"
+              autoCorrect={false}
+              style={styles.input}
+            />
+          </>
+        )}
 
-      <Text style={styles.label}>2. Connect to the camera (fallback: manual IP)</Text>
-      <Text style={styles.label}>Status: {status}</Text>
-      {errorMessage && <Text style={styles.error}>{errorMessage}</Text>}
-      <TextInput
-        value={host}
-        onChangeText={setHost}
-        placeholder="192.168.122.1"
-        autoCapitalize="none"
-        autoCorrect={false}
-        style={styles.input}
-      />
-      <TouchableOpacity style={styles.button} onPress={connect}>
-        <Text style={styles.buttonText}>Connect</Text>
-      </TouchableOpacity>
-    </View>
+        {ssid.length > 0 && (
+          <>
+            <TextInput
+              value={password}
+              onChangeText={setPassword}
+              placeholder="Password (leave blank for open networks)"
+              placeholderTextColor="#888"
+              autoCapitalize="none"
+              autoCorrect={false}
+              secureTextEntry
+              style={styles.input}
+            />
+            <TouchableOpacity style={styles.button} onPress={handleJoin} disabled={joining}>
+              <Text style={styles.buttonText}>{joining ? 'Joining…' : `Join ${ssid}`}</Text>
+            </TouchableOpacity>
+            {joinError && <Text style={styles.error}>{joinError}</Text>}
+          </>
+        )}
+
+        <Text style={styles.label}>2. Connect to the camera (fallback: manual IP)</Text>
+        <Text style={styles.label}>Status: {status}</Text>
+        {errorMessage && <Text style={styles.error}>{errorMessage}</Text>}
+        <TextInput
+          value={host}
+          onChangeText={setHost}
+          placeholder="192.168.122.1"
+          placeholderTextColor="#888"
+          autoCapitalize="none"
+          autoCorrect={false}
+          style={styles.input}
+        />
+        <TouchableOpacity style={styles.button} onPress={connect}>
+          <Text style={styles.buttonText}>Connect</Text>
+        </TouchableOpacity>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  container: {
+    flex: 1,
     paddingTop: 24,
     paddingHorizontal: 16,
   },
@@ -197,6 +204,8 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     padding: 8,
     marginBottom: 8,
+    color: '#111',
+    backgroundColor: '#fff',
   },
   button: {
     backgroundColor: '#2a6df4',
