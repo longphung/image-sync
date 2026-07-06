@@ -3,11 +3,13 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { LegendList } from '@legendapp/list/react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import { Trans, useLingui } from '@lingui/react/macro';
 import { CameraApi, downloadImage, listImages, type ImageItem } from 'image-sync-core';
 import { useCameraConnection } from '../src/CameraConnectionContext';
 import { destPathFor, listDownloadedFilenames } from '../src/fileSystem';
 
 export default function ImagesScreen() {
+  const { t } = useLingui();
   const { api, disconnect } = useCameraConnection();
 
   const [images, setImages] = useState<ImageItem[]>([]);
@@ -60,12 +62,13 @@ export default function ImagesScreen() {
   }
 
   const connectedLabel = CameraApi.Dlna.instanceOf(api)
-    ? `DLNA: ${api.inner.controlUrl}`
+    ? t`DLNA: ${api.inner.controlUrl}`
     : CameraApi.Scalar.instanceOf(api)
-      ? `Scalar: ${api.inner.baseUrl}`
+      ? t`Scalar: ${api.inner.baseUrl}`
       : null;
 
   const downloaded = listDownloadedFilenames();
+  const totalToSync = syncProgress.total || images.length;
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
@@ -73,13 +76,17 @@ export default function ImagesScreen() {
       {syncErrorMessage && <Text style={styles.error}>{syncErrorMessage}</Text>}
 
       <TouchableOpacity style={styles.button} onPress={handleListImages}>
-        <Text style={styles.buttonText}>List Images</Text>
+        <Text style={styles.buttonText}>
+          <Trans>List Images</Trans>
+        </Text>
       </TouchableOpacity>
 
       {images.length > 0 && (
         <TouchableOpacity style={styles.button} onPress={handleSyncAll} disabled={syncing}>
           <Text style={styles.buttonText}>
-            Sync All ({syncProgress.done}/{syncProgress.total || images.length})
+            <Trans>
+              Sync All ({syncProgress.done}/{totalToSync})
+            </Trans>
           </Text>
         </TouchableOpacity>
       )}
@@ -96,7 +103,8 @@ export default function ImagesScreen() {
             <View style={styles.rowText}>
               <Text numberOfLines={1}>{item.title}</Text>
               <Text style={styles.filename} numberOfLines={1}>
-                {item.filename} {downloaded.has(item.filename) ? '(on device)' : ''}
+                {item.filename}
+                {downloaded.has(item.filename) && <Trans> (on device)</Trans>}
               </Text>
             </View>
           </View>
@@ -104,7 +112,9 @@ export default function ImagesScreen() {
       />
 
       <TouchableOpacity style={styles.disconnectButton} onPress={handleDisconnect}>
-        <Text style={styles.buttonText}>Disconnect</Text>
+        <Text style={styles.buttonText}>
+          <Trans>Disconnect</Trans>
+        </Text>
       </TouchableOpacity>
     </SafeAreaView>
   );

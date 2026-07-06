@@ -38,7 +38,8 @@
       ],
       "expo-router",
       "expo-status-bar",
-      "react-native-wifi-reborn"
+      "react-native-wifi-reborn",
+      "expo-localization"
     ]
   }
 }

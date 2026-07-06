@@ -1,0 +1,109 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-07-06 13:20+1000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: en\n"
+
+#: app/images.tsx:107
+msgid " (on device)"
+msgstr " (on device)"
+
+#. placeholder {0}: item.level
+#: app/index.tsx:126
+msgid "{0} dBm"
+msgstr "{0} dBm"
+
+#: app/index.tsx:89
+msgid "1. Join the camera's Wi-Fi network"
+msgstr "1. Join the camera's Wi-Fi network"
+
+#: app/index.tsx:135
+msgid "1. Type the camera's Wi-Fi network name and connect"
+msgstr "1. Type the camera's Wi-Fi network name and connect"
+
+#: app/index.tsx:171
+msgid "2. Connect to the camera (fallback: manual IP)"
+msgstr "2. Connect to the camera (fallback: manual IP)"
+
+#: app/index.tsx:140
+msgid "Camera SSID"
+msgstr "Camera SSID"
+
+#: app/_layout.tsx:15
+#: app/index.tsx:188
+msgid "Connect"
+msgstr "Connect"
+
+#: app/index.tsx:83
+msgid "Connect to Camera"
+msgstr "Connect to Camera"
+
+#: app/images.tsx:116
+msgid "Disconnect"
+msgstr "Disconnect"
+
+#. placeholder {0}: api.inner.controlUrl
+#: app/images.tsx:65
+msgid "DLNA: {0}"
+msgstr "DLNA: {0}"
+
+#: app/_layout.tsx:16
+msgid "Images"
+msgstr "Images"
+
+#: app/index.tsx:163
+msgid "Join {ssid}"
+msgstr "Join {ssid}"
+
+#: app/index.tsx:163
+msgid "Joining…"
+msgstr "Joining…"
+
+#: app/images.tsx:80
+msgid "List Images"
+msgstr "List Images"
+
+#: app/index.tsx:43
+msgid "Location permission was denied."
+msgstr "Location permission was denied."
+
+#: app/index.tsx:125
+msgid "Open"
+msgstr "Open"
+
+#: app/index.tsx:154
+msgid "Password (leave blank for open networks)"
+msgstr "Password (leave blank for open networks)"
+
+#: app/index.tsx:107
+msgid "Rescan"
+msgstr "Rescan"
+
+#. placeholder {0}: api.inner.baseUrl
+#: app/images.tsx:67
+msgid "Scalar: {0}"
+msgstr "Scalar: {0}"
+
+#: app/index.tsx:97
+msgid "Scan Wi-Fi"
+msgstr "Scan Wi-Fi"
+
+#: app/index.tsx:97
+msgid "Scanning…"
+msgstr "Scanning…"
+
+#: app/index.tsx:125
+msgid "Secured"
+msgstr "Secured"
+
+#: app/index.tsx:174
+msgid "Status: {status}"
+msgstr "Status: {status}"
+
+#. placeholder {0}: syncProgress.done
+#: app/images.tsx:87
+msgid "Sync All ({0}/{totalToSync})"
+msgstr "Sync All ({0}/{totalToSync})"

@@ -4,6 +4,7 @@ import { LegendList } from '@legendapp/list/react-native';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import { Trans, useLingui } from '@lingui/react/macro';
 import { useCameraConnection } from '../src/CameraConnectionContext';
 import {
   isSecuredNetwork,
@@ -15,6 +16,7 @@ import {
 } from '../src/wifi';
 
 export default function ConnectScreen() {
+  const { t } = useLingui();
   const { host, setHost, status, errorMessage, connect } = useCameraConnection();
 
   const [networks, setNetworks] = useState<WifiEntry[]>([]);
@@ -38,7 +40,7 @@ export default function ConnectScreen() {
     try {
       const granted = await requestLocationPermission();
       if (!granted) {
-        setScanError('Location permission was denied.');
+        setScanError(t`Location permission was denied.`);
         return;
       }
       setNetworks(await scanNetworks(force));
@@ -47,7 +49,7 @@ export default function ConnectScreen() {
     } finally {
       setScanning(false);
     }
-  }, []);
+  }, [t]);
 
   const handleSelectNetwork = useCallback((entry: WifiEntry) => {
     setSsid(entry.SSID);
@@ -77,17 +79,23 @@ export default function ConnectScreen() {
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <Text style={styles.title}>Connect to Camera</Text>
+        <Text style={styles.title}>
+          <Trans>Connect to Camera</Trans>
+        </Text>
 
         {Platform.OS === 'android' ? (
           <>
-            <Text style={styles.label}>1. Join the camera&apos;s Wi-Fi network</Text>
+            <Text style={styles.label}>
+              <Trans>1. Join the camera&apos;s Wi-Fi network</Trans>
+            </Text>
             <TouchableOpacity
               style={styles.button}
               onPress={() => handleScan(false)}
               disabled={scanning}
             >
-              <Text style={styles.buttonText}>{scanning ? 'Scanning…' : 'Scan Wi-Fi'}</Text>
+              <Text style={styles.buttonText}>
+                {scanning ? <Trans>Scanning…</Trans> : <Trans>Scan Wi-Fi</Trans>}
+              </Text>
             </TouchableOpacity>
             {networks.length > 0 && (
               <TouchableOpacity
@@ -95,7 +103,9 @@ export default function ConnectScreen() {
                 onPress={() => handleScan(true)}
                 disabled={scanning}
               >
-                <Text style={styles.buttonText}>Rescan</Text>
+                <Text style={styles.buttonText}>
+                  <Trans>Rescan</Trans>
+                </Text>
               </TouchableOpacity>
             )}
             {scanError && <Text style={styles.error}>{scanError}</Text>}
@@ -112,7 +122,8 @@ export default function ConnectScreen() {
                 >
                   <Text>{item.SSID}</Text>
                   <Text style={styles.networkMeta}>
-                    {isSecuredNetwork(item) ? 'Secured' : 'Open'} · {item.level} dBm
+                    {isSecuredNetwork(item) ? <Trans>Secured</Trans> : <Trans>Open</Trans>} ·{' '}
+                    <Trans>{item.level} dBm</Trans>
                   </Text>
                 </TouchableOpacity>
               )}
@@ -121,12 +132,12 @@ export default function ConnectScreen() {
         ) : (
           <>
             <Text style={styles.label}>
-              1. Type the camera&apos;s Wi-Fi network name and connect
+              <Trans>1. Type the camera&apos;s Wi-Fi network name and connect</Trans>
             </Text>
             <TextInput
               value={ssid}
               onChangeText={setSsid}
-              placeholder="Camera SSID"
+              placeholder={t`Camera SSID`}
               placeholderTextColor="#888"
               autoCapitalize="none"
               autoCorrect={false}
@@ -140,7 +151,7 @@ export default function ConnectScreen() {
             <TextInput
               value={password}
               onChangeText={setPassword}
-              placeholder="Password (leave blank for open networks)"
+              placeholder={t`Password (leave blank for open networks)`}
               placeholderTextColor="#888"
               autoCapitalize="none"
               autoCorrect={false}
@@ -148,14 +159,20 @@ export default function ConnectScreen() {
               style={styles.input}
             />
             <TouchableOpacity style={styles.button} onPress={handleJoin} disabled={joining}>
-              <Text style={styles.buttonText}>{joining ? 'Joining…' : `Join ${ssid}`}</Text>
+              <Text style={styles.buttonText}>
+                {joining ? <Trans>Joining…</Trans> : <Trans>Join {ssid}</Trans>}
+              </Text>
             </TouchableOpacity>
             {joinError && <Text style={styles.error}>{joinError}</Text>}
           </>
         )}
 
-        <Text style={styles.label}>2. Connect to the camera (fallback: manual IP)</Text>
-        <Text style={styles.label}>Status: {status}</Text>
+        <Text style={styles.label}>
+          <Trans>2. Connect to the camera (fallback: manual IP)</Trans>
+        </Text>
+        <Text style={styles.label}>
+          <Trans>Status: {status}</Trans>
+        </Text>
         {errorMessage && <Text style={styles.error}>{errorMessage}</Text>}
         <TextInput
           value={host}
@@ -167,7 +184,9 @@ export default function ConnectScreen() {
           style={styles.input}
         />
         <TouchableOpacity style={styles.button} onPress={connect}>
-          <Text style={styles.buttonText}>Connect</Text>
+          <Text style={styles.buttonText}>
+            <Trans>Connect</Trans>
+          </Text>
         </TouchableOpacity>
       </KeyboardAvoidingView>
     </SafeAreaView>
