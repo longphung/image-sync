@@ -108,7 +108,7 @@ export function ReviewSheet({ capture, onSelectLine, onChangeText, onRetake, onC
         if (open) onRetake();
       }}
     >
-      <BottomSheetView style={styles.sheetBody}>
+      <BottomSheetView style={styles.sheetBody} enableFooterMarginAdjustment>
         {capture.kind === 'recognizing' && (
           <View style={styles.centeredRow}>
             <ActivityIndicator />
@@ -145,6 +145,11 @@ export function ReviewSheet({ capture, onSelectLine, onChangeText, onRetake, onC
 const styles = StyleSheet.create({
   sheetBody: {
     flex: 1,
+    // BottomSheetView applies its own {position:'absolute', top/left/right:0} after this
+    // style, with no `bottom` — without one, an absolutely positioned view can't stretch to
+    // fill its parent, so a flex:1 child (the LegendList below) collapses to 0 height and
+    // renders nothing. Setting `bottom: 0` here completes all four anchors.
+    bottom: 0,
     paddingHorizontal: 16,
   },
   centeredRow: {

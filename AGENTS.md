@@ -136,11 +136,18 @@ machine alone):
 - Real `listImages` data, a real thumbnail loading over HTTP, `downloadImage` writing a real file.
 - Whether the synchronous-FFI-blocking tradeoff (see above) is actually noticeable in practice — decide
   whether to convert to async uniffi exports based on real usage, not preemptively.
-- The camera-based OCR Wi-Fi scanning feature (`src/ocr.ts`, `src/WifiOcrScanner.tsx`, "Scan SSID"/
-  "Scan Password" buttons in `app/index.tsx`): OCR accuracy and the full capture→confirm→join flow need
-  a physical device with a printed Wi-Fi label to verify — simulators have no real camera hardware.
-  Camera permission plumbing and the scanner's UI states (permission-denied, no-text-detected, etc.)
-  can be exercised on simulator/emulator without one.
+- The camera-based OCR Wi-Fi scanning feature (`src/ocr.ts`, `app/scan-wifi.tsx`, `src/wifiOcrScanner/`,
+  `src/WifiScanContext.tsx`, "Scan SSID"/"Scan Password" buttons in `app/index.tsx`): OCR accuracy and
+  the full capture→confirm→join flow need a physical device with a printed Wi-Fi label to verify —
+  simulators have no real camera hardware. Camera permission plumbing and the scanner's UI states
+  (permission-denied, no-text-detected, etc.) can be exercised on simulator/emulator without one.
+- Downloaded images (`app/image/[filename].tsx`'s Download button) are now saved into the phone's
+  shared Photos library via `expo-media-library`'s `Asset.create()`, not just app-private storage —
+  `downloadImage()` still writes to the app's private `camera-photos` directory first (the Rust FFI has
+  no other option), then that local file is copied into the Photos library. Requests add-only/write-only
+  permission (`requestPermissionsAsync(true)`) rather than full library read access. Unlike OCR accuracy,
+  this *is* verifiable on simulator/emulator (both have a Photos/Gallery app) — no physical device
+  needed to confirm the image actually lands in the library, not just that the button flips state.
 
 Explicitly out of scope so far, not started: auto-polling/background sync, multi-camera support,
 tap-to-view-full-res modal, Scalar Web API path is implemented but never exercised against real

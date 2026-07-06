@@ -2,9 +2,10 @@ import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useLocalSearchParams } from 'expo-router';
+import { Asset, requestPermissionsAsync } from 'expo-media-library';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { downloadImage } from 'image-sync-core';
-import { destPathFor, listDownloadedFilenames } from '../../src/fileSystem';
+import { destPathFor, fileUriFor, listDownloadedFilenames } from '../../src/fileSystem';
 
 type DownloadState = 'idle' | 'downloading' | 'done' | 'error';
 
@@ -28,20 +29,25 @@ export default function ImageDetailScreen() {
     console.log('[ImageDetail] params received', { filename, title, url, thumbnailUrl });
   }, [filename, title, url, thumbnailUrl]);
 
-  const handleDownload = useCallback(() => {
+  const handleDownload = useCallback(async () => {
     console.log('[ImageDetail] download start', { url, destPath: destPathFor(filename) });
     setDownloadState('downloading');
     setDownloadErrorMessage(null);
     try {
       const result = downloadImage(url, destPathFor(filename));
       console.log('[ImageDetail] download finished', { result });
+      const { status } = await requestPermissionsAsync(true); // add-only, no full-library read prompt
+      if (status !== 'granted') {
+        throw new Error(t`Photo library access is needed to save this image.`);
+      }
+      await Asset.create(fileUriFor(filename));
       setDownloadState('done');
     } catch (err) {
       console.log('[ImageDetail] download error', err);
       setDownloadState('error');
       setDownloadErrorMessage(err instanceof Error ? err.message : String(err));
     }
-  }, [url, filename]);
+  }, [url, filename, t]);
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>

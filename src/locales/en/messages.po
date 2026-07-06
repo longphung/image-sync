@@ -68,15 +68,15 @@ msgstr "Disconnect"
 msgid "DLNA: {0}"
 msgstr "DLNA: {0}"
 
-#: app/image/[filename].tsx:93
+#: app/image/[filename].tsx:99
 msgid "Download"
 msgstr "Download"
 
-#: app/image/[filename].tsx:91
+#: app/image/[filename].tsx:97
 msgid "Downloaded"
 msgstr "Downloaded"
 
-#: app/image/[filename].tsx:90
+#: app/image/[filename].tsx:96
 msgid "Downloading…"
 msgstr "Downloading…"
 
@@ -84,7 +84,7 @@ msgstr "Downloading…"
 msgid "Failed to capture photo."
 msgstr "Failed to capture photo."
 
-#: app/image/[filename].tsx:69
+#: app/image/[filename].tsx:75
 msgid "Failed to load image"
 msgstr "Failed to load image"
 
@@ -132,6 +132,10 @@ msgstr "Open Settings"
 msgid "Password (leave blank for open networks)"
 msgstr "Password (leave blank for open networks)"
 
+#: app/image/[filename].tsx:41
+msgid "Photo library access is needed to save this image."
+msgstr "Photo library access is needed to save this image."
+
 #: src/wifiOcrScanner/CameraCaptureView.tsx:29
 msgid "Point the camera at the password on the label, then tap capture."
 msgstr "Point the camera at the password on the label, then tap capture."
@@ -157,7 +161,7 @@ msgstr "Retake"
 #~ msgid "Retake Photo"
 #~ msgstr "Retake Photo"
 
-#: app/image/[filename].tsx:92
+#: app/image/[filename].tsx:98
 msgid "Retry Download"
 msgstr "Retry Download"
 

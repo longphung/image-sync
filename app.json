@@ -48,7 +48,15 @@
           "barcodeScannerEnabled": false
         }
       ],
-      "expo-localization"
+      "expo-localization",
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "image-sync needs access to your photo library to save downloaded camera images.",
+          "savePhotosPermission": "image-sync saves downloaded camera images to your photo library.",
+          "isAccessMediaLocationEnabled": false
+        }
+      ]
     ]
   }
 }

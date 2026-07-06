@@ -21,6 +21,12 @@ export function destPathFor(filename: string): string {
   return toFsPath(new File(getPhotosDirectory(), filename).uri);
 }
 
+// Unlike destPathFor(), keeps the file:// scheme intact — expo-media-library needs a real
+// URI, not the bare fs path used for the Rust FFI boundary.
+export function fileUriFor(filename: string): string {
+  return new File(getPhotosDirectory(), filename).uri;
+}
+
 export function listDownloadedFilenames(): Set<string> {
   return new Set(getPhotosDirectory().list().map((entry) => entry.name));
 }
