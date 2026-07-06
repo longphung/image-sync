@@ -6,6 +6,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { useCameraConnection } from '../src/CameraConnectionContext';
+import { isTextRecognitionSupported } from '../src/ocr';
+import { useWifiScan } from '../src/WifiScanContext';
 import {
   isSecuredNetwork,
   isWepNetwork,
@@ -18,6 +20,7 @@ import {
 export default function ConnectScreen() {
   const { t } = useLingui();
   const { host, setHost, status, errorMessage, connect } = useCameraConnection();
+  const { beginScan } = useWifiScan();
 
   const [networks, setNetworks] = useState<WifiEntry[]>([]);
   const [scanning, setScanning] = useState(false);
@@ -27,6 +30,8 @@ export default function ConnectScreen() {
   const [password, setPassword] = useState('');
   const [joining, setJoining] = useState(false);
   const [joinError, setJoinError] = useState<string | null>(null);
+
+  const ocrSupported = isTextRecognitionSupported();
 
   useEffect(() => {
     if (status === 'connected') {
@@ -72,6 +77,18 @@ export default function ConnectScreen() {
       setJoining(false);
     }
   }, [ssid, password, networks]);
+
+  const handleScanSsid = useCallback(() => {
+    beginScan('ssid', (text) => {
+      setSsid(text);
+      setPassword('');
+      setJoinError(null);
+    });
+  }, [beginScan]);
+
+  const handleScanPassword = useCallback(() => {
+    beginScan('password', (text) => setPassword(text));
+  }, [beginScan]);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['bottom', 'left', 'right']}>
@@ -146,6 +163,14 @@ export default function ConnectScreen() {
           </>
         )}
 
+        {ocrSupported && (
+          <TouchableOpacity style={styles.secondaryButton} onPress={handleScanSsid}>
+            <Text style={styles.secondaryButtonText}>
+              <Trans>Scan SSID</Trans>
+            </Text>
+          </TouchableOpacity>
+        )}
+
         {ssid.length > 0 && (
           <>
             <TextInput
@@ -158,6 +183,13 @@ export default function ConnectScreen() {
               secureTextEntry
               style={styles.input}
             />
+            {ocrSupported && (
+              <TouchableOpacity style={styles.secondaryButton} onPress={handleScanPassword}>
+                <Text style={styles.secondaryButtonText}>
+                  <Trans>Scan Password</Trans>
+                </Text>
+              </TouchableOpacity>
+            )}
             <TouchableOpacity style={styles.button} onPress={handleJoin} disabled={joining}>
               <Text style={styles.buttonText}>
                 {joining ? <Trans>Joining…</Trans> : <Trans>Join {ssid}</Trans>}
@@ -235,6 +267,18 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#fff',
+    fontWeight: '600',
+  },
+  secondaryButton: {
+    borderWidth: 1,
+    borderColor: '#2a6df4',
+    borderRadius: 6,
+    padding: 8,
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  secondaryButtonText: {
+    color: '#2a6df4',
     fontWeight: '600',
   },
   networkList: {

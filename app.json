@@ -39,6 +39,15 @@
       "expo-router",
       "expo-status-bar",
       "react-native-wifi-reborn",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "image-sync uses the camera to scan text from your camera's Wi-Fi label.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false,
+          "barcodeScannerEnabled": false
+        }
+      ],
       "expo-localization"
     ]
   }

@@ -6,104 +6,212 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: @lingui/cli\n"
 "Language: en\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
 
-#: app/images.tsx:107
+#: app/images.tsx:136
 msgid " (on device)"
 msgstr " (on device)"
 
 #. placeholder {0}: item.level
-#: app/index.tsx:126
+#: app/index.tsx:143
 msgid "{0} dBm"
 msgstr "{0} dBm"
 
-#: app/index.tsx:89
+#: app/index.tsx:106
 msgid "1. Join the camera's Wi-Fi network"
 msgstr "1. Join the camera's Wi-Fi network"
 
-#: app/index.tsx:135
+#: app/index.tsx:152
 msgid "1. Type the camera's Wi-Fi network name and connect"
 msgstr "1. Type the camera's Wi-Fi network name and connect"
 
-#: app/index.tsx:171
+#: app/index.tsx:203
 msgid "2. Connect to the camera (fallback: manual IP)"
 msgstr "2. Connect to the camera (fallback: manual IP)"
 
-#: app/index.tsx:140
+#: src/wifiOcrScanner/PermissionGate.tsx:57
+msgid "Camera access is needed to scan the Wi-Fi label."
+msgstr "Camera access is needed to scan the Wi-Fi label."
+
+#: app/index.tsx:157
 msgid "Camera SSID"
 msgstr "Camera SSID"
 
-#: app/_layout.tsx:15
-#: app/index.tsx:188
+#: app/scan-wifi.tsx:18
+msgid "Cancel"
+msgstr "Cancel"
+
+#: src/wifiOcrScanner/PermissionGate.tsx:39
+msgid "Close"
+msgstr "Close"
+
+#: app/_layout.tsx:18
+#: app/index.tsx:220
 msgid "Connect"
 msgstr "Connect"
 
-#: app/index.tsx:83
+#: app/index.tsx:100
 msgid "Connect to Camera"
 msgstr "Connect to Camera"
 
-#: app/images.tsx:116
+#: app/images.tsx:145
 msgid "Disconnect"
 msgstr "Disconnect"
 
 #. placeholder {0}: api.inner.controlUrl
-#: app/images.tsx:65
+#: app/images.tsx:94
 msgid "DLNA: {0}"
 msgstr "DLNA: {0}"
 
-#: app/_layout.tsx:16
+#: app/image/[filename].tsx:93
+msgid "Download"
+msgstr "Download"
+
+#: app/image/[filename].tsx:91
+msgid "Downloaded"
+msgstr "Downloaded"
+
+#: app/image/[filename].tsx:90
+msgid "Downloading…"
+msgstr "Downloading…"
+
+#: src/wifiOcrScanner/useWifiOcrCapture.ts:26
+msgid "Failed to capture photo."
+msgstr "Failed to capture photo."
+
+#: app/image/[filename].tsx:69
+msgid "Failed to load image"
+msgstr "Failed to load image"
+
+#: src/wifiOcrScanner/PermissionGate.tsx:62
+msgid "Grant Camera Access"
+msgstr "Grant Camera Access"
+
+#: app/_layout.tsx:20
+msgid "Image"
+msgstr "Image"
+
+#: app/_layout.tsx:19
 msgid "Images"
 msgstr "Images"
 
-#: app/index.tsx:163
+#: app/index.tsx:195
 msgid "Join {ssid}"
 msgstr "Join {ssid}"
 
-#: app/index.tsx:163
+#: app/index.tsx:195
 msgid "Joining…"
 msgstr "Joining…"
 
-#: app/images.tsx:80
+#: app/images.tsx:109
 msgid "List Images"
 msgstr "List Images"
 
-#: app/index.tsx:43
+#: app/index.tsx:48
 msgid "Location permission was denied."
 msgstr "Location permission was denied."
 
-#: app/index.tsx:125
+#: src/wifiOcrScanner/ReviewSheet.tsx:135
+msgid "No text detected — you can type it in manually below."
+msgstr "No text detected — you can type it in manually below."
+
+#: app/index.tsx:142
 msgid "Open"
 msgstr "Open"
 
-#: app/index.tsx:154
+#: src/wifiOcrScanner/PermissionGate.tsx:68
+msgid "Open Settings"
+msgstr "Open Settings"
+
+#: app/index.tsx:179
 msgid "Password (leave blank for open networks)"
 msgstr "Password (leave blank for open networks)"
 
-#: app/index.tsx:107
+#: src/wifiOcrScanner/CameraCaptureView.tsx:29
+msgid "Point the camera at the password on the label, then tap capture."
+msgstr "Point the camera at the password on the label, then tap capture."
+
+#: src/wifiOcrScanner/CameraCaptureView.tsx:27
+msgid "Point the camera at the Wi-Fi name on the label, then tap capture."
+msgstr "Point the camera at the Wi-Fi name on the label, then tap capture."
+
+#: src/wifiOcrScanner/ReviewSheet.tsx:116
+msgid "Reading text…"
+msgstr "Reading text…"
+
+#: app/index.tsx:124
 msgid "Rescan"
 msgstr "Rescan"
 
+#: src/wifiOcrScanner/ReviewSheet.tsx:80
+#: src/wifiOcrScanner/ReviewSheet.tsx:126
+msgid "Retake"
+msgstr "Retake"
+
+#: src/WifiOcrScanner.tsx:239
+#~ msgid "Retake Photo"
+#~ msgstr "Retake Photo"
+
+#: app/image/[filename].tsx:92
+msgid "Retry Download"
+msgstr "Retry Download"
+
 #. placeholder {0}: api.inner.baseUrl
-#: app/images.tsx:67
+#: app/images.tsx:96
 msgid "Scalar: {0}"
 msgstr "Scalar: {0}"
 
-#: app/index.tsx:97
+#: app/index.tsx:189
+msgid "Scan Password"
+msgstr "Scan Password"
+
+#: app/index.tsx:169
+msgid "Scan SSID"
+msgstr "Scan SSID"
+
+#: app/_layout.tsx:21
+#: app/index.tsx:114
 msgid "Scan Wi-Fi"
 msgstr "Scan Wi-Fi"
 
-#: app/index.tsx:97
+#: app/scan-wifi.tsx:63
+msgid "Scan Wi-Fi Name"
+msgstr "Scan Wi-Fi Name"
+
+#: app/scan-wifi.tsx:63
+msgid "Scan Wi-Fi Password"
+msgstr "Scan Wi-Fi Password"
+
+#: app/index.tsx:114
 msgid "Scanning…"
 msgstr "Scanning…"
 
-#: app/index.tsx:125
+#: app/index.tsx:142
 msgid "Secured"
 msgstr "Secured"
 
-#: app/index.tsx:174
+#: app/index.tsx:206
 msgid "Status: {status}"
 msgstr "Status: {status}"
 
 #. placeholder {0}: syncProgress.done
-#: app/images.tsx:87
+#: app/images.tsx:116
 msgid "Sync All ({0}/{totalToSync})"
 msgstr "Sync All ({0}/{totalToSync})"
+
+#: src/wifiOcrScanner/PermissionGate.tsx:31
+msgid "Text scanning isn't available on this device. You can still type the password in manually."
+msgstr "Text scanning isn't available on this device. You can still type the password in manually."
+
+#: src/wifiOcrScanner/PermissionGate.tsx:26
+msgid "Text scanning isn't available on this device. You can still type the Wi-Fi name in manually."
+msgstr "Text scanning isn't available on this device. You can still type the Wi-Fi name in manually."
+
+#: src/wifiOcrScanner/ReviewSheet.tsx:89
+msgid "Use This Text"
+msgstr "Use This Text"

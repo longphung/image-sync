@@ -25,12 +25,37 @@ export default function ImagesScreen() {
 
   const handleListImages = useCallback(() => {
     if (!api) return;
+    const endpoint = CameraApi.Dlna.instanceOf(api)
+      ? { type: 'Dlna', controlUrl: api.inner.controlUrl, photoRoot: api.inner.photoRoot }
+      : CameraApi.Scalar.instanceOf(api)
+        ? { type: 'Scalar', baseUrl: api.inner.baseUrl }
+        : null;
+    console.log('[Images] listing images from endpoint', endpoint);
     try {
-      setImages(listImages(api));
+      const items = listImages(api);
+      console.log(
+        '[Images] listImages result',
+        items.map((item) => ({ filename: item.filename, url: item.url, thumbnailUrl: item.thumbnailUrl })),
+      );
+      setImages(items);
     } catch (err) {
+      console.log('[Images] listImages error', { endpoint, error: err });
       setSyncErrorMessage(err instanceof Error ? err.message : String(err));
     }
   }, [api]);
+
+  const handleOpenImage = useCallback((item: ImageItem) => {
+    console.log('[Images] opening image detail', item);
+    router.push({
+      pathname: '/image/[filename]',
+      params: {
+        filename: item.filename,
+        title: item.title,
+        url: item.url,
+        thumbnailUrl: item.thumbnailUrl,
+      },
+    });
+  }, []);
 
   const handleSyncAll = useCallback(async () => {
     setSyncing(true);
@@ -42,9 +67,13 @@ export default function ImagesScreen() {
       // Yield to the JS event loop so React flushes the "current file" label
       // before the next *synchronous*, blocking downloadImage() call starts.
       await new Promise((resolve) => setTimeout(resolve, 0));
+      const destPath = destPathFor(item.filename);
+      console.log('[Images] downloading', { url: item.url, destPath });
       try {
-        downloadImage(item.url, destPathFor(item.filename));
+        const result = downloadImage(item.url, destPath);
+        console.log('[Images] download result', { url: item.url, result });
       } catch (err) {
+        console.log('[Images] download error', { url: item.url, destPath, error: err });
         setSyncErrorMessage(err instanceof Error ? err.message : String(err));
       }
     }
@@ -98,7 +127,7 @@ export default function ImagesScreen() {
         keyExtractor={(item) => item.filename}
         recycleItems
         renderItem={({ item }) => (
-          <View style={styles.row}>
+          <TouchableOpacity style={styles.row} activeOpacity={0.7} onPress={() => handleOpenImage(item)}>
             <Image source={{ uri: item.thumbnailUrl }} style={styles.thumb} />
             <View style={styles.rowText}>
               <Text numberOfLines={1}>{item.title}</Text>
@@ -107,7 +136,7 @@ export default function ImagesScreen() {
                 {downloaded.has(item.filename) && <Trans> (on device)</Trans>}
               </Text>
             </View>
-          </View>
+          </TouchableOpacity>
         )}
       />
 

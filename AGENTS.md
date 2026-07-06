@@ -136,6 +136,11 @@ machine alone):
 - Real `listImages` data, a real thumbnail loading over HTTP, `downloadImage` writing a real file.
 - Whether the synchronous-FFI-blocking tradeoff (see above) is actually noticeable in practice — decide
   whether to convert to async uniffi exports based on real usage, not preemptively.
+- The camera-based OCR Wi-Fi scanning feature (`src/ocr.ts`, `src/WifiOcrScanner.tsx`, "Scan SSID"/
+  "Scan Password" buttons in `app/index.tsx`): OCR accuracy and the full capture→confirm→join flow need
+  a physical device with a printed Wi-Fi label to verify — simulators have no real camera hardware.
+  Camera permission plumbing and the scanner's UI states (permission-denied, no-text-detected, etc.)
+  can be exercised on simulator/emulator without one.
 
 Explicitly out of scope so far, not started: auto-polling/background sync, multi-camera support,
 tap-to-view-full-res modal, Scalar Web API path is implemented but never exercised against real
