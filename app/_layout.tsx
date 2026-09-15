@@ -7,7 +7,6 @@ import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { CameraConnectionProvider } from '../src/CameraConnectionContext';
 import { WifiScanProvider } from '../src/WifiScanContext';
 
@@ -30,12 +29,10 @@ export default function RootLayout() {
         <KeyboardProvider>
           <CameraConnectionProvider>
             <WifiScanProvider>
-              <BottomSheetModalProvider>
-                <I18nProvider i18n={i18n}>
-                  <StatusBar style="auto" />
-                  <AppNavigator />
-                </I18nProvider>
-              </BottomSheetModalProvider>
+              <I18nProvider i18n={i18n}>
+                <StatusBar style="auto" />
+                <AppNavigator />
+              </I18nProvider>
             </WifiScanProvider>
           </CameraConnectionProvider>
         </KeyboardProvider>

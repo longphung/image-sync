@@ -1,8 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import {
+import BottomSheet, {
   BottomSheetFooter,
-  BottomSheetModal,
   BottomSheetView,
   useBottomSheetScrollableCreator,
   type BottomSheetFooterProps,
@@ -49,14 +48,14 @@ function CandidateLinesList({
 }
 
 export function ReviewSheet({ capture, onSelectLine, onChangeText, onRetake, onConfirm }: ReviewSheetProps) {
-  const sheetRef = useRef<BottomSheetModal>(null);
+  const sheetRef = useRef<BottomSheet>(null);
   const open = capture.kind !== 'camera-ready';
 
   useEffect(() => {
     if (open) {
-      sheetRef.current?.present();
+      sheetRef.current?.snapToIndex(0);
     } else {
-      sheetRef.current?.dismiss();
+      sheetRef.current?.close();
     }
   }, [open]);
 
@@ -96,15 +95,17 @@ export function ReviewSheet({ capture, onSelectLine, onChangeText, onRetake, onC
   };
 
   return (
-    <BottomSheetModal
+    <BottomSheet
       ref={sheetRef}
+      index={-1}
       snapPoints={['45%', '90%']}
       enableDynamicSizing={false}
+      enablePanDownToClose
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
       android_keyboardInputMode="adjustResize"
       footerComponent={renderFooter}
-      onDismiss={() => {
+      onClose={() => {
         if (open) onRetake();
       }}
     >
@@ -138,7 +139,7 @@ export function ReviewSheet({ capture, onSelectLine, onChangeText, onRetake, onC
             <CandidateLinesList lines={capture.lines} selected={capture.text} onSelect={onSelectLine} />
           ))}
       </BottomSheetView>
-    </BottomSheetModal>
+    </BottomSheet>
   );
 }
 
