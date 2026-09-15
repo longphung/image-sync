@@ -26,8 +26,16 @@ export default function ScanWifiScreen() {
   const { field, confirmScan, cancelScan, clearScan } = useWifiScan();
   const supported = isTextRecognitionSupported();
   const [permission, requestPermission] = useCameraPermissions();
-  const { capture, cameraRef, handleCapture, handleRetake, handleSelectLine, handleTextChange } =
-    useWifiOcrCapture();
+  const {
+    capture,
+    cameraRef,
+    cameraReady,
+    handleCapture,
+    handleCameraReady,
+    handleRetake,
+    handleSelectLine,
+    handleTextChange,
+  } = useWifiOcrCapture();
   const settledRef = useRef(false);
 
   useEffect(() => {
@@ -84,7 +92,9 @@ export default function ScanWifiScreen() {
             <CameraCaptureView
               field={field}
               cameraRef={cameraRef}
-              showOverlay={capture.kind === 'camera-ready'}
+              capture={capture}
+              cameraReady={cameraReady}
+              onCameraReady={handleCameraReady}
               onCapture={handleCapture}
             />
             <ReviewSheet

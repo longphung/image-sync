@@ -7,32 +7,68 @@ import type { CaptureState } from './types';
 type WifiOcrCapture = {
   capture: CaptureState;
   cameraRef: RefObject<CameraView | null>;
+  cameraReady: boolean;
   handleCapture: () => Promise<void>;
+  handleCameraReady: () => void;
   handleRetake: () => void;
   handleSelectLine: (line: string) => void;
   handleTextChange: (text: string) => void;
 };
 
+function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(message)), ms);
+    promise.then(
+      (v) => {
+        clearTimeout(timer);
+        resolve(v);
+      },
+      (e) => {
+        clearTimeout(timer);
+        reject(e);
+      },
+    );
+  });
+}
+
 export function useWifiOcrCapture(): WifiOcrCapture {
   const { t } = useLingui();
   const [capture, setCapture] = useState<CaptureState>({ kind: 'camera-ready' });
+  const [cameraReady, setCameraReady] = useState(false);
   const cameraRef = useRef<CameraView>(null);
+
+  const handleCameraReady = useCallback(() => setCameraReady(true), []);
 
   const handleCapture = useCallback(async () => {
     const cam = cameraRef.current;
-    if (!cam) return;
+    if (!cam || !cameraReady) {
+      if (__DEV__) {
+        console.warn(
+          '[useWifiOcrCapture] handleCapture fired while camera not ready — should be unreachable once the shutter is gated on cameraReady',
+        );
+      }
+      return;
+    }
     try {
-      const photo = await cam.takePictureAsync({ quality: 0.8, skipProcessing: true });
+      const photo = await withTimeout(
+        cam.takePictureAsync({ quality: 0.8, skipProcessing: true }),
+        10_000,
+        t`Camera took too long to respond. Please try again.`,
+      );
       if (!photo?.uri) throw new Error(t`Failed to capture photo.`);
+      setCameraReady(false);
       setCapture({ kind: 'recognizing', photoUri: photo.uri });
       const lines = await extractTextLines(photo.uri);
       setCapture({ kind: 'reviewing', photoUri: photo.uri, lines, text: lines[0] ?? '' });
     } catch (err) {
       setCapture({ kind: 'error', message: err instanceof Error ? err.message : String(err) });
     }
-  }, [t]);
+  }, [t, cameraReady]);
 
-  const handleRetake = useCallback(() => setCapture({ kind: 'camera-ready' }), []);
+  const handleRetake = useCallback(() => {
+    setCameraReady(false);
+    setCapture({ kind: 'camera-ready' });
+  }, []);
 
   const handleSelectLine = useCallback((line: string) => {
     setCapture((c) => (c.kind === 'reviewing' ? { ...c, text: line } : c));
@@ -42,5 +78,14 @@ export function useWifiOcrCapture(): WifiOcrCapture {
     setCapture((c) => (c.kind === 'reviewing' ? { ...c, text } : c));
   }, []);
 
-  return { capture, cameraRef, handleCapture, handleRetake, handleSelectLine, handleTextChange };
+  return {
+    capture,
+    cameraRef,
+    cameraReady,
+    handleCapture,
+    handleCameraReady,
+    handleRetake,
+    handleSelectLine,
+    handleTextChange,
+  };
 }

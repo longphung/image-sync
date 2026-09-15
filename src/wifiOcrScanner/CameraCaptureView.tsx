@@ -1,25 +1,43 @@
 import { type RefObject } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { CameraView } from 'expo-camera';
 import { Trans } from '@lingui/react/macro';
-import type { WifiOcrField } from './types';
+import type { CaptureState, WifiOcrField } from './types';
 
 type CameraCaptureViewProps = {
   field: WifiOcrField;
   cameraRef: RefObject<CameraView | null>;
-  showOverlay: boolean;
+  capture: CaptureState;
+  cameraReady: boolean;
+  onCameraReady: () => void;
   onCapture: () => void;
 };
 
 export function CameraCaptureView({
   field,
   cameraRef,
-  showOverlay,
+  capture,
+  cameraReady,
+  onCameraReady,
   onCapture,
 }: CameraCaptureViewProps) {
+  const showLiveCamera = capture.kind === 'camera-ready' || capture.kind === 'error';
+  const frozenPhotoUri =
+    capture.kind === 'recognizing' || capture.kind === 'reviewing' ? capture.photoUri : null;
+  const showOverlay = capture.kind === 'camera-ready';
+
   return (
     <View style={StyleSheet.absoluteFill}>
-      <CameraView ref={cameraRef} style={StyleSheet.absoluteFill} facing="back" />
+      {showLiveCamera ? (
+        <CameraView
+          ref={cameraRef}
+          style={StyleSheet.absoluteFill}
+          facing="back"
+          onCameraReady={onCameraReady}
+        />
+      ) : frozenPhotoUri ? (
+        <Image source={{ uri: frozenPhotoUri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+      ) : null}
       {showOverlay && (
         <View style={styles.captureOverlay}>
           <Text style={styles.instructions}>
@@ -29,7 +47,16 @@ export function CameraCaptureView({
               <Trans>Point the camera at the password on the label, then tap capture.</Trans>
             )}
           </Text>
-          <TouchableOpacity style={styles.shutterButton} onPress={onCapture} />
+          {cameraReady ? (
+            <TouchableOpacity style={styles.shutterButton} onPress={onCapture} />
+          ) : (
+            <View style={styles.preparingRow}>
+              <ActivityIndicator color="#fff" />
+              <Text style={styles.preparingText}>
+                <Trans>Preparing camera…</Trans>
+              </Text>
+            </View>
+          )}
         </View>
       )}
     </View>
@@ -62,5 +89,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderWidth: 4,
     borderColor: 'rgba(255,255,255,0.5)',
+  },
+  preparingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  preparingText: {
+    color: '#fff',
   },
 });
