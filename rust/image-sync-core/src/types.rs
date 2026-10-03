@@ -16,3 +16,11 @@ pub enum CameraApi {
         base_url: String,
     },
 }
+
+/// Result of discovery: which API the camera speaks plus its display name
+/// (UPnP `friendlyName`, falling back to `modelName`), when present.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CameraInfo {
+    pub api: CameraApi,
+    pub name: Option<String>,
+}

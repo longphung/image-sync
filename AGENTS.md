@@ -24,8 +24,16 @@ rust/
 modules/image-sync-core/  generated Expo native module (uniffi-bindgen-react-native scaffolding:
                           iOS/Android/C++/TS glue). Fully regenerable — see below.
 src/fileSystem.ts     expo-file-system helpers (photos directory, path conversion for the FFI boundary)
-App.tsx               single-screen UI: connect -> list images -> sync all
+src/theme/colors.ts   native semantic colors (UIKit system colors / Material 3 dynamic colors)
+src/components/       ActionButton + ProgressBar have .ios.tsx (SwiftUI, liquid glass on iOS 26+) and
+                      .android.tsx (Jetpack Compose, Material 3) variants via @expo/ui; the plain .tsx is
+                      the web fallback and the shared props type
+app/                  expo-router screens: index (2-step connect) -> join-wifi -> images (grid) -> sync
+                      (progress modal) / image/[filename] (detail + Save to Photos); scan-wifi (OCR modal)
 ```
+
+Package manager is **pnpm** with `node-linker=hoisted` (`.npmrc`) — React Native autolinking and the
+local `file:` module expect a flat `node_modules`. Add Expo packages with `npx expo install <pkg>`.
 
 **Why two Rust crates instead of one:** `image-sync-core` deliberately has no `uniffi` dependency and
 never calls `uniffi::setup_scaffolding!()`. Putting uniffi derives directly on core types would make it
@@ -60,22 +68,24 @@ blocks in each file, especially `dlna.rs`'s `parse_browse_response_handles_doubl
 
 ```rust
 fn ping() -> String;
-fn get_camera_api(host: Option<String>) -> Result<CameraApi, CameraError>;
+fn get_camera_info(host: Option<String>) -> Result<CameraInfo, CameraError>; // { api, name }
 fn list_images(api: CameraApi) -> Result<Vec<ImageItem>, CameraError>;
 fn download_image(url: String, dest_path: String) -> Result<bool, CameraError>;
 ```
 
 All **synchronous** (no uniffi async/Future machinery) — a deliberate v1 tradeoff to avoid a bigger
 scaffold change. This means calling these from JS blocks the JS thread for the duration of the network
-call. `App.tsx`'s sync loop works around this by `await`-ing a `setTimeout(0)` between iterations so
-React actually flushes progress-label updates before the next blocking call starts. If real-device
+call. `app/sync.tsx`'s loop works around this by `await`-ing a `setTimeout(0)` between iterations so
+React actually flushes progress-label updates before the next blocking call starts (same trick in
+`CameraConnectionContext`'s `connect()`/`refreshImages()` and `app/sync.tsx`). If real-device
 testing shows this is unacceptably janky, converting to uniffi async exports is the natural follow-up —
 not yet done.
 
 Generated JS shapes (confirmed against actual generated output in
 `modules/image-sync-core/src/generated/image_sync_ffi.ts`, re-exported from `image-sync-core`):
-- `getCameraApi(host: string | undefined): CameraApi` — **always pass an argument**, `undefined` if no
-  manual override; there's no default param.
+- `getCameraInfo(host: string | undefined): CameraInfo` — **always pass an argument**, `undefined` if no
+  manual override; there's no default param. `CameraInfo` is `{ api: CameraApi, name: string | undefined }`
+  where `name` is the device description's `friendlyName` (falling back to `modelName`).
 - `listImages(api: CameraApi): Array<ImageItem>`
 - `downloadImage(url: string, destPath: string): boolean` — `false` means "skipped, already exists",
   not an error.
@@ -123,12 +133,37 @@ via `read_element_text()` (undoes the outer SOAP envelope's escaping) then a sec
 - Android: `expo-build-properties` plugin sets `usesCleartextTraffic: true` in `app.json`'s `plugins` array (this is *not* a core Expo `android.*` key — the plugin is the actual mechanism).
 - Both require `npx expo prebuild --clean` to take effect (native projects are gitignored/regenerable).
 
+## iOS on a free (Personal Team) Apple ID
+
+The `react-native-wifi-reborn` config plugin adds the `com.apple.developer.networking.HotspotConfiguration`
+entitlement (and possibly `com.apple.developer.networking.wifi-info`, not confirmed). Personal Teams can't
+get the Hotspot entitlement, so signing fails without a paid Apple Developer Program membership. Sideloading
+tools (AltStore, Sideloadly, etc.) re-sign with the same free profile and don't get around this; TrollStore
+only works on iOS 14.0–17.0, and jailbreaking is the same story.
+
+Workaround for testing without a paid account (not implemented, documented only):
+1. Leave the `react-native-wifi-reborn` plugin out of iOS builds — e.g. convert `app.json` to
+   `app.config.js` and filter it out of `plugins` when an env var like `FREE_TEAM=1` is set, then
+   `FREE_TEAM=1 npx expo prebuild --clean`.
+2. Join the camera's `DIRECT-...` Wi-Fi manually in iOS Settings, then open the app and connect. Only
+   `joinNetwork()` (`NEHotspotConfiguration` via `connectToProtectedSSID`) needs the entitlement; discovery
+   always targets `192.168.122.1`, so everything else works unchanged. `getCurrentSsid()` already fails
+   quietly to `null`.
+3. Optionally, on iOS, swap `app/join-wifi.tsx`'s Join action for a "join in Settings, then come back"
+   step so the missing entitlement doesn't cause a runtime error.
+
 ## Current state / what's left
 
 Done: Rust protocol core (fully unit-tested), FFI wrapper, bindings regenerated for iOS+Android, native
-local-network config, `expo-file-system` integration, and a working single-screen `App.tsx` (manual-IP
-connect, list images with thumbnails, sync-all with progress, error display). `cargo test`/`clippy` and
-`npx tsc --noEmit` all pass.
+local-network config, `expo-file-system` integration, and the redesigned native UI (2-step connect home
+with auto-connect after Wi-Fi join, join-wifi screen, 3-column photo grid with on-device badges, sync
+progress modal with downloaded/skipped/failed counts + cancel, image detail with Save to Photos).
+`cargo test`/`clippy` and `npx tsc --noEmit` all pass.
+
+UI follow-ups not yet done: Diagnostics screen (design screen 10, deferred); `ReviewSheet` still uses
+`@gorhom/bottom-sheet` (only re-themed) rather than `@expo/ui`'s native `BottomSheet`; the iOS-only
+current-SSID readout needs location permission, so without it the home screen's Wi-Fi step only shows
+the SSID that was just joined from inside the app.
 
 Not yet done / needs a physical RX100M3 + its Wi-Fi AP to verify (no camera reachable from a dev
 machine alone):

@@ -1,7 +1,7 @@
 uniffi::setup_scaffolding!();
 
 mod types;
-pub use types::{CameraApi, CameraError, ImageItem};
+pub use types::{CameraApi, CameraError, CameraInfo, ImageItem};
 
 #[uniffi::export]
 pub fn ping() -> String {
@@ -9,8 +9,8 @@ pub fn ping() -> String {
 }
 
 #[uniffi::export]
-pub fn get_camera_api(host: Option<String>) -> Result<CameraApi, CameraError> {
-    image_sync_core::get_camera_api(host.as_deref())
+pub fn get_camera_info(host: Option<String>) -> Result<CameraInfo, CameraError> {
+    image_sync_core::get_camera_info(host.as_deref())
         .map(Into::into)
         .map_err(Into::into)
 }

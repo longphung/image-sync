@@ -2,7 +2,7 @@ use quick_xml::events::Event;
 use quick_xml::reader::Reader;
 
 use crate::error::CoreError;
-use crate::types::CameraApi;
+use crate::types::{CameraApi, CameraInfo};
 use crate::xml::{is_local, read_element_text};
 
 /// The camera is always the DHCP gateway at this fixed IP once joined to its
@@ -14,7 +14,7 @@ const DEVICE_DESCRIPTION_PORT: u16 = 64321;
 
 /// Fetch and classify the camera's device description (`DmsDesc.xml`) at
 /// `host` (falling back to [`DEFAULT_HOST`] when `None`).
-pub fn get_camera_api(host: Option<&str>) -> Result<CameraApi, CoreError> {
+pub fn get_camera_info(host: Option<&str>) -> Result<CameraInfo, CoreError> {
     let host = host.unwrap_or(DEFAULT_HOST);
     let dd_url = format!("http://{host}:{DEVICE_DESCRIPTION_PORT}/DmsDesc.xml");
     let xml_text = ureq::get(&dd_url)
@@ -32,12 +32,14 @@ pub fn get_camera_api(host: Option<&str>) -> Result<CameraApi, CoreError> {
 pub(crate) fn parse_device_description(
     xml_text: &str,
     dd_url: &str,
-) -> Result<CameraApi, CoreError> {
+) -> Result<CameraInfo, CoreError> {
     let mut reader = Reader::from_str(xml_text);
 
     let mut scalar_base_url: Option<String> = None;
     let mut dlna_control_url: Option<String> = None;
     let mut photo_root: Option<String> = None;
+    let mut friendly_name: Option<String> = None;
+    let mut model_name: Option<String> = None;
 
     let mut current_service_is_content_directory = false;
     let mut pending_control_url: Option<String> = None;
@@ -83,23 +85,39 @@ pub(crate) fn parse_device_description(
                 }
             }
 
+            // First occurrence wins, so an embedded sub-device can't override the root's name.
+            Event::Start(e) if is_local(e.name(), "friendlyName") && friendly_name.is_none() => {
+                friendly_name = non_empty(read_element_text(&mut reader)?);
+            }
+            Event::Start(e) if is_local(e.name(), "modelName") && model_name.is_none() => {
+                model_name = non_empty(read_element_text(&mut reader)?);
+            }
+
             Event::Eof => break,
             _ => {}
         }
     }
 
-    if let Some(base_url) = scalar_base_url {
-        return Ok(CameraApi::Scalar { base_url });
-    }
-
-    if let Some(control_url) = dlna_control_url {
-        return Ok(CameraApi::Dlna {
+    let api = if let Some(base_url) = scalar_base_url {
+        CameraApi::Scalar { base_url }
+    } else if let Some(control_url) = dlna_control_url {
+        CameraApi::Dlna {
             control_url,
             photo_root: photo_root.unwrap_or_else(|| "0".to_string()),
-        });
-    }
+        }
+    } else {
+        return Err(CoreError::UnrecognizedDevice(dd_url.to_string()));
+    };
 
-    Err(CoreError::UnrecognizedDevice(dd_url.to_string()))
+    Ok(CameraInfo {
+        api,
+        name: friendly_name.or(model_name),
+    })
+}
+
+fn non_empty(text: String) -> Option<String> {
+    let trimmed = text.trim();
+    (!trimmed.is_empty()).then(|| trimmed.to_string())
 }
 
 /// Extract the `scheme://host[:port]` origin from a URL, for joining against
@@ -134,7 +152,7 @@ mod tests {
     </serviceList>
   </device>
 </root>"#;
-        let api = parse_device_description(xml, DD_URL).unwrap();
+        let api = parse_device_description(xml, DD_URL).unwrap().api;
         assert_eq!(
             api,
             CameraApi::Dlna {
@@ -152,7 +170,7 @@ mod tests {
     <X_ScalarWebAPI_ActionList_URL>http://192.168.122.1:10000/sony/</X_ScalarWebAPI_ActionList_URL>
   </device>
 </root>"#;
-        let api = parse_device_description(xml, DD_URL).unwrap();
+        let api = parse_device_description(xml, DD_URL).unwrap().api;
         assert_eq!(
             api,
             CameraApi::Scalar {
@@ -175,7 +193,7 @@ mod tests {
     </serviceList>
   </device>
 </root>"#;
-        let api = parse_device_description(xml, DD_URL).unwrap();
+        let api = parse_device_description(xml, DD_URL).unwrap().api;
         assert!(matches!(api, CameraApi::Scalar { .. }));
     }
 
@@ -199,7 +217,7 @@ mod tests {
     </serviceList>
   </device>
 </root>"#;
-        let api = parse_device_description(xml, DD_URL).unwrap();
+        let api = parse_device_description(xml, DD_URL).unwrap().api;
         assert_eq!(
             api,
             CameraApi::Dlna {
@@ -207,5 +225,30 @@ mod tests {
                 photo_root: "0".to_string(),
             }
         );
+    }
+
+    #[test]
+    fn extracts_friendly_name_with_entities_and_falls_back_to_model_name() {
+        let xml = r#"<?xml version="1.0"?>
+<root>
+  <device>
+    <friendlyName>Sony &amp; Co RX100M3</friendlyName>
+    <modelName>DSC-RX100M3</modelName>
+    <X_ScalarWebAPI_ActionList_URL>http://192.168.122.1:10000/sony</X_ScalarWebAPI_ActionList_URL>
+  </device>
+</root>"#;
+        let info = parse_device_description(xml, DD_URL).unwrap();
+        assert_eq!(info.name.as_deref(), Some("Sony & Co RX100M3"));
+
+        let xml = r#"<?xml version="1.0"?>
+<root>
+  <device>
+    <friendlyName>  </friendlyName>
+    <modelName>DSC-RX100M3</modelName>
+    <X_ScalarWebAPI_ActionList_URL>http://192.168.122.1:10000/sony</X_ScalarWebAPI_ActionList_URL>
+  </device>
+</root>"#;
+        let info = parse_device_description(xml, DD_URL).unwrap();
+        assert_eq!(info.name.as_deref(), Some("DSC-RX100M3"));
     }
 }

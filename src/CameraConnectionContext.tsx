@@ -1,16 +1,28 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
-import { CameraApi, getCameraApi } from 'image-sync-core';
+import { CameraApi, getCameraInfo, listImages, type ImageItem } from 'image-sync-core';
+import { getCurrentSsid } from './wifi';
 
 export type ConnectionStatus = 'idle' | 'connecting' | 'connected' | 'error';
+export type ImagesStatus = 'idle' | 'loading' | 'loaded' | 'error';
 
 type CameraConnectionValue = {
   host: string;
   setHost: (host: string) => void;
   status: ConnectionStatus;
   api: CameraApi | null;
+  /** Camera's UPnP friendly/model name, or null if the device description had none. */
+  cameraName: string | null;
   errorMessage: string | null;
   connect: () => void;
   disconnect: () => void;
+  /** SSID the phone is currently joined to, or null if unknown / not on Wi-Fi. */
+  wifiSsid: string | null;
+  /** `joinedSsid` is used when the OS won't reveal the SSID (e.g. no location permission). */
+  refreshWifiSsid: (joinedSsid?: string) => Promise<void>;
+  images: ImageItem[];
+  imagesStatus: ImagesStatus;
+  imagesError: string | null;
+  refreshImages: () => void;
 };
 
 const CameraConnectionContext = createContext<CameraConnectionValue | null>(null);
@@ -22,31 +34,97 @@ export function CameraConnectionProvider({ children }: { children: ReactNode }) 
   const [host, setHost] = useState('192.168.122.1');
   const [status, setStatus] = useState<ConnectionStatus>('idle');
   const [api, setApi] = useState<CameraApi | null>(null);
+  const [cameraName, setCameraName] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [wifiSsid, setWifiSsid] = useState<string | null>(null);
+  const [images, setImages] = useState<ImageItem[]>([]);
+  const [imagesStatus, setImagesStatus] = useState<ImagesStatus>('idle');
+  const [imagesError, setImagesError] = useState<string | null>(null);
 
   const connect = useCallback(() => {
     setStatus('connecting');
     setErrorMessage(null);
-    try {
-      const trimmed = host.trim();
-      const resolved = getCameraApi(trimmed.length > 0 ? trimmed : undefined);
-      setApi(resolved);
-      setStatus('connected');
-    } catch (err) {
-      setStatus('error');
-      setErrorMessage(err instanceof Error ? err.message : String(err));
-    }
+    // getCameraInfo() is a synchronous, blocking FFI call — yield once so the
+    // "Checking camera…" state actually paints before the JS thread blocks.
+    setTimeout(() => {
+      try {
+        const trimmed = host.trim();
+        const info = getCameraInfo(trimmed.length > 0 ? trimmed : undefined);
+        setApi(info.api);
+        setCameraName(info.name ?? null);
+        setImages([]);
+        setImagesStatus('idle');
+        setStatus('connected');
+      } catch (err) {
+        setStatus('error');
+        setErrorMessage(err instanceof Error ? err.message : String(err));
+      }
+    }, 0);
   }, [host]);
 
   const disconnect = useCallback(() => {
     setApi(null);
+    setCameraName(null);
+    setImages([]);
+    setImagesStatus('idle');
+    setImagesError(null);
     setStatus('idle');
     setErrorMessage(null);
   }, []);
 
+  const refreshWifiSsid = useCallback(async (joinedSsid?: string) => {
+    setWifiSsid((await getCurrentSsid()) ?? joinedSsid ?? null);
+  }, []);
+
+  const refreshImages = useCallback(() => {
+    if (!api) return;
+    setImagesStatus('loading');
+    setImagesError(null);
+    // Same yield-before-blocking-FFI trick as connect().
+    setTimeout(() => {
+      try {
+        setImages(listImages(api));
+        setImagesStatus('loaded');
+      } catch (err) {
+        console.log('[Images] listImages error', err);
+        setImagesStatus('error');
+        setImagesError(err instanceof Error ? err.message : String(err));
+      }
+    }, 0);
+  }, [api]);
+
   const value = useMemo(
-    () => ({ host, setHost, status, api, errorMessage, connect, disconnect }),
-    [host, status, api, errorMessage, connect, disconnect],
+    () => ({
+      host,
+      setHost,
+      status,
+      api,
+      cameraName,
+      errorMessage,
+      connect,
+      disconnect,
+      wifiSsid,
+      refreshWifiSsid,
+      images,
+      imagesStatus,
+      imagesError,
+      refreshImages,
+    }),
+    [
+      host,
+      status,
+      api,
+      cameraName,
+      errorMessage,
+      connect,
+      disconnect,
+      wifiSsid,
+      refreshWifiSsid,
+      images,
+      imagesStatus,
+      imagesError,
+      refreshImages,
+    ],
   );
 
   return (

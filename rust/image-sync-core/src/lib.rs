@@ -7,10 +7,10 @@ mod xml;
 
 mod types;
 
-pub use discovery::get_camera_api;
+pub use discovery::get_camera_info;
 pub use download::download_image;
 pub use error::CoreError;
-pub use types::{CameraApi, ImageItem};
+pub use types::{CameraApi, CameraInfo, ImageItem};
 
 pub fn ping() -> String {
     "pong from image-sync-core".to_string()

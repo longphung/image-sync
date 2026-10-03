@@ -58,6 +58,21 @@ impl From<CameraApi> for image_sync_core::CameraApi {
     }
 }
 
+#[derive(uniffi::Record)]
+pub struct CameraInfo {
+    pub api: CameraApi,
+    pub name: Option<String>,
+}
+
+impl From<image_sync_core::CameraInfo> for CameraInfo {
+    fn from(i: image_sync_core::CameraInfo) -> Self {
+        Self {
+            api: i.api.into(),
+            name: i.name,
+        }
+    }
+}
+
 #[derive(Debug, thiserror::Error, uniffi::Error)]
 #[uniffi(flat_error)]
 pub enum CameraError {

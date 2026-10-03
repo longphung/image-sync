@@ -10,6 +10,7 @@ import { useWifiOcrCapture } from '../src/wifiOcrScanner/useWifiOcrCapture';
 import { PermissionGate } from '../src/wifiOcrScanner/PermissionGate';
 import { CameraCaptureView } from '../src/wifiOcrScanner/CameraCaptureView';
 import { ReviewSheet } from '../src/wifiOcrScanner/ReviewSheet';
+import { colors } from '../src/theme/colors';
 
 function CancelHeaderButton({ onPress }: { onPress: () => void }) {
   return (
@@ -120,7 +121,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   cancelText: {
-    color: '#2a6df4',
+    color: colors.tint,
     fontWeight: '600',
     fontSize: 16,
   },

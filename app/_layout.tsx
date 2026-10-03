@@ -9,14 +9,28 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { CameraConnectionProvider } from '../src/CameraConnectionContext';
 import { WifiScanProvider } from '../src/WifiScanContext';
+import { colors } from '../src/theme/colors';
 
 function AppNavigator() {
   const { t } = useLingui();
   return (
-    <Stack>
-      <Stack.Screen name="index" options={{ title: t`Connect` }} />
+    <Stack screenOptions={{ contentStyle: { backgroundColor: colors.background } }}>
+      <Stack.Screen name="index" options={{ title: 'image-sync', headerLargeTitle: true }} />
+      <Stack.Screen name="join-wifi" options={{ title: t`Join Camera Wi-Fi` }} />
       <Stack.Screen name="images" options={{ title: t`Images` }} />
-      <Stack.Screen name="image/[filename]" options={{ title: t`Image` }} />
+      <Stack.Screen
+        name="sync"
+        options={{ title: t`Sync All`, presentation: 'fullScreenModal', gestureEnabled: false }}
+      />
+      <Stack.Screen
+        name="image/[filename]"
+        options={{
+          title: t`Image`,
+          headerTransparent: true,
+          headerTintColor: '#fff',
+          contentStyle: { backgroundColor: '#000' },
+        }}
+      />
       <Stack.Screen name="scan-wifi" options={{ title: t`Scan Wi-Fi`, presentation: 'modal' }} />
     </Stack>
   );

@@ -61,3 +61,22 @@ export async function joinNetwork(
     await WifiManager.forceWifiUsageWithOptions(true, { noInternet: true });
   }
 }
+
+// Reading the SSID needs location permission (both platforms) — treat any failure as
+// "unknown" rather than an error; it's only used for status display.
+export async function getCurrentSsid(): Promise<string | null> {
+  try {
+    const ssid = await WifiManager.getCurrentWifiSSID();
+    return ssid && ssid !== '<unknown ssid>' ? ssid : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Material Symbol name for an RSSI reading (dBm). */
+export function signalSymbol(level: number) {
+  if (level >= -55) return 'network_wifi' as const;
+  if (level >= -67) return 'network_wifi_3_bar' as const;
+  if (level >= -78) return 'network_wifi_2_bar' as const;
+  return 'network_wifi_1_bar' as const;
+}

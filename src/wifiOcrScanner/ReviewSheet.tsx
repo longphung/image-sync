@@ -9,6 +9,7 @@ import BottomSheet, {
 import { LegendList } from '@legendapp/list/react-native';
 import { Trans } from '@lingui/react/macro';
 import type { CaptureState } from './types';
+import { colors } from '../theme/colors';
 
 type ReviewSheetProps = {
   capture: CaptureState;
@@ -71,7 +72,7 @@ export function ReviewSheet({ capture, onSelectLine, onChangeText, onRetake, onC
             autoCapitalize="none"
             autoCorrect={false}
             style={styles.reviewInput}
-            placeholderTextColor="#888"
+            placeholderTextColor={colors.secondaryLabel}
           />
           <View style={styles.reviewActions}>
             <TouchableOpacity style={styles.secondaryButton} onPress={onRetake}>
@@ -105,6 +106,8 @@ export function ReviewSheet({ capture, onSelectLine, onChangeText, onRetake, onC
       keyboardBlurBehavior="restore"
       android_keyboardInputMode="adjustResize"
       footerComponent={renderFooter}
+      backgroundStyle={{ backgroundColor: colors.card }}
+      handleIndicatorStyle={{ backgroundColor: colors.separator }}
       onClose={() => {
         if (open) onRetake();
       }}
@@ -161,10 +164,10 @@ const styles = StyleSheet.create({
   },
   recognizingText: {
     fontWeight: '600',
-    color: '#333',
+    color: colors.label,
   },
   reviewNote: {
-    color: '#666',
+    color: colors.secondaryLabel,
   },
   linesList: {
     flex: 1,
@@ -174,29 +177,29 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: colors.separator,
     marginBottom: 6,
   },
   lineRowSelected: {
-    borderColor: '#2a6df4',
-    backgroundColor: '#eef3ff',
+    borderColor: colors.tint,
+    backgroundColor: colors.fill,
   },
   lineText: {
-    color: '#111',
+    color: colors.label,
   },
   footerContent: {
     paddingHorizontal: 16,
     paddingTop: 8,
     paddingBottom: 16,
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
   },
   reviewInput: {
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: colors.separator,
     borderRadius: 6,
     padding: 8,
-    color: '#111',
-    backgroundColor: '#fff',
+    color: colors.label,
+    backgroundColor: colors.card,
     marginBottom: 12,
   },
   reviewActions: {
@@ -204,12 +207,12 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   error: {
-    color: 'red',
+    color: colors.error,
     textAlign: 'center',
   },
   button: {
     flex: 1,
-    backgroundColor: '#2a6df4',
+    backgroundColor: colors.tint,
     borderRadius: 6,
     padding: 10,
     alignItems: 'center',
@@ -218,19 +221,19 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   buttonText: {
-    color: '#fff',
+    color: colors.onTint,
     fontWeight: '600',
   },
   secondaryButton: {
     flex: 1,
     borderWidth: 1,
-    borderColor: '#2a6df4',
+    borderColor: colors.tint,
     borderRadius: 6,
     padding: 10,
     alignItems: 'center',
   },
   secondaryButtonText: {
-    color: '#2a6df4',
+    color: colors.tint,
     fontWeight: '600',
   },
 });

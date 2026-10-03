@@ -1,16 +1,23 @@
-import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useCallback, useState } from 'react';
+import { ActivityIndicator, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useLocalSearchParams } from 'expo-router';
+import { Image } from 'expo-image';
+import { StatusBar } from 'expo-status-bar';
+import { SymbolView } from 'expo-symbols';
 import { Asset, requestPermissionsAsync } from 'expo-media-library';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { downloadImage } from 'image-sync-core';
-import { destPathFor, fileUriFor, listDownloadedFilenames } from '../../src/fileSystem';
+import { useCameraConnection } from '../../src/CameraConnectionContext';
+import { ActionButton } from '../../src/components/ActionButton';
+import { destPathFor, fileUriFor } from '../../src/fileSystem';
 
-type DownloadState = 'idle' | 'downloading' | 'done' | 'error';
+type SaveState = 'idle' | 'saving' | 'done' | 'error';
 
 export default function ImageDetailScreen() {
   const { t } = useLingui();
+  const insets = useSafeAreaInsets();
+  const { cameraName } = useCameraConnection();
   const { filename, title, url, thumbnailUrl } = useLocalSearchParams<{
     filename: string;
     title: string;
@@ -20,19 +27,16 @@ export default function ImageDetailScreen() {
 
   const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState<string | null>(null);
-  const [downloadState, setDownloadState] = useState<DownloadState>(() =>
-    listDownloadedFilenames().has(filename) ? 'done' : 'idle',
-  );
-  const [downloadErrorMessage, setDownloadErrorMessage] = useState<string | null>(null);
+  // Starts idle even if Sync All already put the file in app storage — that copy isn't in
+  // the Photos library yet. downloadImage() skips the re-download in that case.
+  const [saveState, setSaveState] = useState<SaveState>('idle');
+  const [saveErrorMessage, setSaveErrorMessage] = useState<string | null>(null);
 
-  useEffect(() => {
-    console.log('[ImageDetail] params received', { filename, title, url, thumbnailUrl });
-  }, [filename, title, url, thumbnailUrl]);
-
-  const handleDownload = useCallback(async () => {
-    console.log('[ImageDetail] download start', { url, destPath: destPathFor(filename) });
-    setDownloadState('downloading');
-    setDownloadErrorMessage(null);
+  const handleSave = useCallback(async () => {
+    setSaveState('saving');
+    setSaveErrorMessage(null);
+    // downloadImage() blocks the JS thread — let the "Saving…" state paint first.
+    await new Promise((resolve) => setTimeout(resolve, 0));
     try {
       const result = downloadImage(url, destPathFor(filename));
       console.log('[ImageDetail] download finished', { result });
@@ -41,111 +45,87 @@ export default function ImageDetailScreen() {
         throw new Error(t`Photo library access is needed to save this image.`);
       }
       await Asset.create(fileUriFor(filename));
-      setDownloadState('done');
+      setSaveState('done');
     } catch (err) {
-      console.log('[ImageDetail] download error', err);
-      setDownloadState('error');
-      setDownloadErrorMessage(err instanceof Error ? err.message : String(err));
+      console.log('[ImageDetail] save error', err);
+      setSaveState('error');
+      setSaveErrorMessage(err instanceof Error ? err.message : String(err));
     }
   }, [url, filename, t]);
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
-      <Stack.Screen options={{ title }} />
+    <View style={{ flex: 1, backgroundColor: '#000' }}>
+      <StatusBar style="light" />
+      <Stack.Screen options={{ title: '' }} />
 
-      <View style={styles.imageContainer}>
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
         <Image
           source={{ uri: url }}
-          style={styles.fullImage}
-          resizeMode="contain"
-          onLoadStart={() => {
-            console.log('[ImageDetail] image load start', { url });
-            setImageLoading(true);
-          }}
-          onLoad={(e) => {
-            console.log('[ImageDetail] image load success', e.nativeEvent);
-          }}
-          onLoadEnd={() => {
-            console.log('[ImageDetail] image load end', { url });
-            setImageLoading(false);
-          }}
+          placeholder={{ uri: thumbnailUrl }}
+          style={{ width: '100%', height: '100%' }}
+          contentFit="contain"
+          onLoadStart={() => setImageLoading(true)}
+          onLoadEnd={() => setImageLoading(false)}
           onError={(e) => {
-            console.log('[ImageDetail] image load error', { url, error: e.nativeEvent.error });
+            console.log('[ImageDetail] image load error', { url, error: e.error });
             setImageLoading(false);
             setImageError(t`Failed to load image`);
           }}
         />
-        {imageLoading && <ActivityIndicator style={styles.loadingIndicator} size="large" color="#fff" />}
+        {imageLoading && (
+          <ActivityIndicator style={{ position: 'absolute' }} size="large" color="#fff" />
+        )}
       </View>
 
-      {imageError && <Text style={styles.error}>{imageError}</Text>}
+      <View style={{ padding: 16, paddingBottom: 16 + insets.bottom, gap: 12 }}>
+        {imageError && <Text style={{ color: '#ff453a' }}>{imageError}</Text>}
+        <View style={{ gap: 2 }}>
+          <Text style={{ color: '#fff', fontSize: 17, fontWeight: '600' }} numberOfLines={1}>
+            {filename}
+          </Text>
+          <Text style={{ color: '#ffffff99', fontSize: 13 }} numberOfLines={1}>
+            {cameraName ?? title}
+          </Text>
+        </View>
 
-      <Text style={styles.title} numberOfLines={1}>
-        {title}
-      </Text>
-      <Text style={styles.filename} numberOfLines={1}>
-        {filename}
-      </Text>
-
-      <TouchableOpacity
-        style={styles.button}
-        onPress={handleDownload}
-        disabled={downloadState === 'downloading'}
-      >
-        <Text style={styles.buttonText}>
-          {downloadState === 'downloading' && <Trans>Downloading…</Trans>}
-          {downloadState === 'done' && <Trans>Downloaded</Trans>}
-          {downloadState === 'error' && <Trans>Retry Download</Trans>}
-          {downloadState === 'idle' && <Trans>Download</Trans>}
-        </Text>
-      </TouchableOpacity>
-      {downloadErrorMessage && <Text style={styles.error}>{downloadErrorMessage}</Text>}
-    </SafeAreaView>
+        {saveState === 'done' ? (
+          <View
+            style={{
+              alignSelf: 'center',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 6,
+              paddingHorizontal: 14,
+              paddingVertical: 8,
+              borderRadius: 999,
+              backgroundColor: '#ffffff22',
+            }}
+          >
+            <SymbolView name={{ ios: 'checkmark', android: 'check_circle' }} size={14} tintColor="#fff" />
+            <Text style={{ color: '#fff', fontSize: 13 }}>
+              <Trans>Saved to Photos</Trans>
+            </Text>
+          </View>
+        ) : (
+          <ActionButton
+            label={
+              saveState === 'saving'
+                ? t`Saving…`
+                : saveState === 'error'
+                  ? t`Retry Save`
+                  : t`Save to Photos`
+            }
+            systemImage="square.and.arrow.down"
+            onPress={handleSave}
+            disabled={saveState === 'saving'}
+          />
+        )}
+        {saveErrorMessage && (
+          <Text style={{ color: '#ff453a' }} selectable>
+            {saveErrorMessage}
+          </Text>
+        )}
+      </View>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#000',
-    paddingTop: 12,
-    paddingHorizontal: 16,
-  },
-  imageContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  fullImage: {
-    width: '100%',
-    height: '100%',
-  },
-  loadingIndicator: {
-    position: 'absolute',
-  },
-  error: {
-    color: 'red',
-    marginBottom: 8,
-  },
-  title: {
-    color: '#fff',
-    fontWeight: '600',
-    marginTop: 8,
-  },
-  filename: {
-    color: '#999',
-    fontSize: 12,
-    marginBottom: 8,
-  },
-  button: {
-    backgroundColor: '#2a6df4',
-    borderRadius: 6,
-    padding: 10,
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  buttonText: {
-    color: '#fff',
-    fontWeight: '600',
-  },
-});

@@ -39,12 +39,22 @@ export function CameraCaptureView({
         <Image source={{ uri: frozenPhotoUri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
       ) : null}
       {showOverlay && (
+        <View style={styles.frameContainer} pointerEvents="none">
+          <View style={styles.frame}>
+            <View style={[styles.corner, styles.topLeft]} />
+            <View style={[styles.corner, styles.topRight]} />
+            <View style={[styles.corner, styles.bottomLeft]} />
+            <View style={[styles.corner, styles.bottomRight]} />
+          </View>
+        </View>
+      )}
+      {showOverlay && (
         <View style={styles.captureOverlay}>
           <Text style={styles.instructions}>
             {field === 'ssid' ? (
-              <Trans>Point the camera at the Wi-Fi name on the label, then tap capture.</Trans>
+              <Trans>Align the Wi-Fi name on the camera label inside the frame, then tap capture.</Trans>
             ) : (
-              <Trans>Point the camera at the password on the label, then tap capture.</Trans>
+              <Trans>Align the password on the camera label inside the frame, then tap capture.</Trans>
             )}
           </Text>
           {cameraReady ? (
@@ -63,7 +73,40 @@ export function CameraCaptureView({
   );
 }
 
+const CORNER = 28;
+
 const styles = StyleSheet.create({
+  frameContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    // Keep the frame clear of the instructions + shutter at the bottom.
+    paddingBottom: 160,
+  },
+  frame: {
+    width: '80%',
+    aspectRatio: 1.6,
+  },
+  corner: {
+    position: 'absolute',
+    width: CORNER,
+    height: CORNER,
+    borderColor: '#fff',
+  },
+  topLeft: { top: 0, left: 0, borderTopWidth: 3, borderLeftWidth: 3, borderTopLeftRadius: 8 },
+  topRight: { top: 0, right: 0, borderTopWidth: 3, borderRightWidth: 3, borderTopRightRadius: 8 },
+  bottomLeft: { bottom: 0, left: 0, borderBottomWidth: 3, borderLeftWidth: 3, borderBottomLeftRadius: 8 },
+  bottomRight: {
+    bottom: 0,
+    right: 0,
+    borderBottomWidth: 3,
+    borderRightWidth: 3,
+    borderBottomRightRadius: 8,
+  },
   captureOverlay: {
     position: 'absolute',
     bottom: 0,
@@ -77,10 +120,13 @@ const styles = StyleSheet.create({
   instructions: {
     color: '#fff',
     textAlign: 'center',
-    fontSize: 14,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    padding: 8,
-    borderRadius: 6,
+    fontSize: 15,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderCurve: 'continuous',
+    overflow: 'hidden',
   },
   shutterButton: {
     width: 72,

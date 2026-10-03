@@ -2,6 +2,7 @@ import { ActivityIndicator, Linking, StyleSheet, Text, TouchableOpacity, View } 
 import type { PermissionResponse } from 'expo-camera';
 import { Trans } from '@lingui/react/macro';
 import type { WifiOcrField } from './types';
+import { colors } from '../theme/colors';
 
 type PermissionGateProps = {
   field: WifiOcrField;
@@ -80,21 +81,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 24,
     gap: 12,
-    backgroundColor: '#fff',
+    backgroundColor: colors.background,
   },
   message: {
     fontSize: 15,
     textAlign: 'center',
-    color: '#333',
+    color: colors.label,
   },
   button: {
-    backgroundColor: '#2a6df4',
+    backgroundColor: colors.tint,
     borderRadius: 6,
     padding: 10,
     alignItems: 'center',
   },
   buttonText: {
-    color: '#fff',
+    color: colors.onTint,
     fontWeight: '600',
   },
 });

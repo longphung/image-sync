@@ -1,21 +1,27 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { LegendList } from '@legendapp/list/react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { router, Stack, useFocusEffect } from 'expo-router';
+import { Image } from 'expo-image';
+import { SymbolView } from 'expo-symbols';
 import { Trans, useLingui } from '@lingui/react/macro';
-import { CameraApi, downloadImage, listImages, type ImageItem } from 'image-sync-core';
+import type { ImageItem } from 'image-sync-core';
 import { useCameraConnection } from '../src/CameraConnectionContext';
-import { destPathFor, listDownloadedFilenames } from '../src/fileSystem';
+import { ActionButton } from '../src/components/ActionButton';
+import { listDownloadedFilenames } from '../src/fileSystem';
+import { colors } from '../src/theme/colors';
+
+const COLUMNS = 3;
+// Half the visual gap — each tile pads itself, so neighbours add up to a 2pt gutter.
+const TILE_INSET = 1;
 
 export default function ImagesScreen() {
   const { t } = useLingui();
-  const { api, disconnect } = useCameraConnection();
-
-  const [images, setImages] = useState<ImageItem[]>([]);
-  const [syncErrorMessage, setSyncErrorMessage] = useState<string | null>(null);
-  const [syncing, setSyncing] = useState(false);
-  const [syncProgress, setSyncProgress] = useState({ done: 0, total: 0, current: '' });
+  const { api, host, cameraName, disconnect, images, imagesStatus, imagesError, refreshImages } =
+    useCameraConnection();
+  const insets = useSafeAreaInsets();
+  const [downloaded, setDownloaded] = useState<Set<string>>(() => listDownloadedFilenames());
 
   useEffect(() => {
     if (!api) {
@@ -23,29 +29,19 @@ export default function ImagesScreen() {
     }
   }, [api]);
 
-  const handleListImages = useCallback(() => {
-    if (!api) return;
-    const endpoint = CameraApi.Dlna.instanceOf(api)
-      ? { type: 'Dlna', controlUrl: api.inner.controlUrl, photoRoot: api.inner.photoRoot }
-      : CameraApi.Scalar.instanceOf(api)
-        ? { type: 'Scalar', baseUrl: api.inner.baseUrl }
-        : null;
-    console.log('[Images] listing images from endpoint', endpoint);
-    try {
-      const items = listImages(api);
-      console.log(
-        '[Images] listImages result',
-        items.map((item) => ({ filename: item.filename, url: item.url, thumbnailUrl: item.thumbnailUrl })),
-      );
-      setImages(items);
-    } catch (err) {
-      console.log('[Images] listImages error', { endpoint, error: err });
-      setSyncErrorMessage(err instanceof Error ? err.message : String(err));
-    }
-  }, [api]);
+  // List automatically on first open; the "Retry" button covers failures.
+  useEffect(() => {
+    if (api && imagesStatus === 'idle') refreshImages();
+  }, [api, imagesStatus, refreshImages]);
+
+  // Re-read on focus so badges update after returning from Sync All or the detail screen.
+  useFocusEffect(
+    useCallback(() => {
+      setDownloaded(listDownloadedFilenames());
+    }, []),
+  );
 
   const handleOpenImage = useCallback((item: ImageItem) => {
-    console.log('[Images] opening image detail', item);
     router.push({
       pathname: '/image/[filename]',
       params: {
@@ -57,30 +53,6 @@ export default function ImagesScreen() {
     });
   }, []);
 
-  const handleSyncAll = useCallback(async () => {
-    setSyncing(true);
-    setSyncErrorMessage(null);
-    setSyncProgress({ done: 0, total: images.length, current: '' });
-    for (let i = 0; i < images.length; i++) {
-      const item = images[i];
-      setSyncProgress({ done: i, total: images.length, current: item.filename });
-      // Yield to the JS event loop so React flushes the "current file" label
-      // before the next *synchronous*, blocking downloadImage() call starts.
-      await new Promise((resolve) => setTimeout(resolve, 0));
-      const destPath = destPathFor(item.filename);
-      console.log('[Images] downloading', { url: item.url, destPath });
-      try {
-        const result = downloadImage(item.url, destPath);
-        console.log('[Images] download result', { url: item.url, result });
-      } catch (err) {
-        console.log('[Images] download error', { url: item.url, destPath, error: err });
-        setSyncErrorMessage(err instanceof Error ? err.message : String(err));
-      }
-    }
-    setSyncProgress({ done: images.length, total: images.length, current: '' });
-    setSyncing(false);
-  }, [images]);
-
   const handleDisconnect = useCallback(() => {
     disconnect();
     router.replace('/');
@@ -90,120 +62,82 @@ export default function ImagesScreen() {
     return null;
   }
 
-  const connectedLabel = CameraApi.Dlna.instanceOf(api)
-    ? t`DLNA: ${api.inner.controlUrl}`
-    : CameraApi.Scalar.instanceOf(api)
-      ? t`Scalar: ${api.inner.baseUrl}`
-      : null;
-
-  const downloaded = listDownloadedFilenames();
-  const totalToSync = syncProgress.total || images.length;
+  const subtitle =
+    imagesStatus === 'loaded' ? t`${images.length} photos` : imagesStatus === 'loading' ? t`Loading…` : '';
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
-      {connectedLabel && <Text style={styles.label}>{connectedLabel}</Text>}
-      {syncErrorMessage && <Text style={styles.error}>{syncErrorMessage}</Text>}
-
-      <TouchableOpacity style={styles.button} onPress={handleListImages}>
-        <Text style={styles.buttonText}>
-          <Trans>List Images</Trans>
-        </Text>
-      </TouchableOpacity>
-
-      {images.length > 0 && (
-        <TouchableOpacity style={styles.button} onPress={handleSyncAll} disabled={syncing}>
-          <Text style={styles.buttonText}>
-            <Trans>
-              Sync All ({syncProgress.done}/{totalToSync})
-            </Trans>
-          </Text>
-        </TouchableOpacity>
-      )}
-      {syncing && <Text style={styles.label}>{syncProgress.current}</Text>}
-
+    <View style={{ flex: 1 }}>
+      <Stack.Screen options={{ title: cameraName ?? host, headerBackTitle: t`Connect` }} />
       <LegendList
-        style={styles.list}
         data={images}
+        numColumns={COLUMNS}
         keyExtractor={(item) => item.filename}
         recycleItems
-        renderItem={({ item }) => (
-          <TouchableOpacity style={styles.row} activeOpacity={0.7} onPress={() => handleOpenImage(item)}>
-            <Image source={{ uri: item.thumbnailUrl }} style={styles.thumb} />
-            <View style={styles.rowText}>
-              <Text numberOfLines={1}>{item.title}</Text>
-              <Text style={styles.filename} numberOfLines={1}>
-                {item.filename}
-                {downloaded.has(item.filename) && <Trans> (on device)</Trans>}
+        contentInsetAdjustmentBehavior="automatic"
+        ListHeaderComponent={
+          <View style={{ padding: 16, gap: 12 }}>
+            {subtitle.length > 0 && (
+              <Text style={{ color: colors.secondaryLabel, fontSize: 13 }}>{subtitle}</Text>
+            )}
+            {images.length > 0 && (
+              <ActionButton
+                label={t`Sync All (${images.length})`}
+                systemImage="arrow.down.circle"
+                onPress={() => router.push('/sync')}
+              />
+            )}
+          </View>
+        }
+        ListEmptyComponent={
+          <View style={{ padding: 32, alignItems: 'center', gap: 12 }}>
+            {imagesStatus === 'error' ? (
+              <>
+                <Text style={{ color: colors.error, textAlign: 'center' }} selectable>
+                  {imagesError}
+                </Text>
+                <ActionButton label={t`Retry`} variant="secondary" onPress={refreshImages} />
+              </>
+            ) : imagesStatus === 'loaded' ? (
+              <Text style={{ color: colors.secondaryLabel }}>
+                <Trans>No photos on the camera.</Trans>
               </Text>
-            </View>
-          </TouchableOpacity>
+            ) : (
+              <ActivityIndicator size="large" />
+            )}
+          </View>
+        }
+        renderItem={({ item }) => (
+          <Pressable
+            onPress={() => handleOpenImage(item)}
+            style={{ aspectRatio: 1, padding: TILE_INSET }}
+            accessibilityRole="imagebutton"
+            accessibilityLabel={item.filename}
+          >
+            <Image
+              source={{ uri: item.thumbnailUrl }}
+              style={{ flex: 1, backgroundColor: colors.fill }}
+              contentFit="cover"
+              recyclingKey={item.filename}
+              transition={150}
+            />
+            {downloaded.has(item.filename) && (
+              <View style={{ position: 'absolute', right: 6, bottom: 6 }} pointerEvents="none">
+                <SymbolView
+                  name={{ ios: 'checkmark.circle.fill', android: 'check_circle' }}
+                  size={20}
+                  tintColor="#fff"
+                  style={{ shadowColor: '#000', shadowOpacity: 0.5, shadowRadius: 2, shadowOffset: { width: 0, height: 0 } }}
+                />
+              </View>
+            )}
+          </Pressable>
         )}
+        ListFooterComponent={
+          <View style={{ padding: 16, paddingBottom: 16 + insets.bottom }}>
+            <ActionButton label={t`Disconnect`} variant="secondary" onPress={handleDisconnect} />
+          </View>
+        }
       />
-
-      <TouchableOpacity style={styles.disconnectButton} onPress={handleDisconnect}>
-        <Text style={styles.buttonText}>
-          <Trans>Disconnect</Trans>
-        </Text>
-      </TouchableOpacity>
-    </SafeAreaView>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    paddingTop: 12,
-    paddingHorizontal: 16,
-  },
-  label: {
-    marginBottom: 4,
-  },
-  error: {
-    color: 'red',
-    marginBottom: 8,
-  },
-  button: {
-    backgroundColor: '#2a6df4',
-    borderRadius: 6,
-    padding: 10,
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  disconnectButton: {
-    backgroundColor: '#999',
-    borderRadius: 6,
-    padding: 10,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  buttonText: {
-    color: '#fff',
-    fontWeight: '600',
-  },
-  list: {
-    marginTop: 8,
-    flex: 1,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 8,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#ddd',
-  },
-  thumb: {
-    width: 60,
-    height: 60,
-    borderRadius: 4,
-    marginRight: 12,
-    backgroundColor: '#eee',
-  },
-  rowText: {
-    flex: 1,
-  },
-  filename: {
-    color: '#666',
-    fontSize: 12,
-  },
-});
