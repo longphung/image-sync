@@ -13,422 +13,338 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#: app/images.tsx:136
-#~ msgid " (on device)"
-#~ msgstr " (on device)"
-
 #. placeholder {0}: entry.level
-#: app/join-wifi.tsx:286
+#: app/join-wifi.tsx:288
 msgid "{0} dBm"
 msgstr "{0} dBm"
 
-#. placeholder {0}: images.length
-#: app/images.tsx:66
-msgid "{0} photos"
-msgstr "{0} photos"
-
-#: app/sync.tsx:82
+#: app/sync.tsx:87
 msgid "{index} of {total}"
 msgstr "{index} of {total}"
 
-#: app/index.tsx:49
+#: app/images.tsx:70
+msgid "{photoCount} photos · {videoCount} videos"
+msgstr "{photoCount} photos · {videoCount} videos"
+
+#: app/index.tsx:51
 msgid "1. Camera Wi-Fi"
 msgstr "1. Camera Wi-Fi"
 
-#: app/index.tsx:106
-#~ msgid "1. Join the camera's Wi-Fi network"
-#~ msgstr "1. Join the camera's Wi-Fi network"
-
-#: app/index.tsx:152
-#~ msgid "1. Type the camera's Wi-Fi network name and connect"
-#~ msgstr "1. Type the camera's Wi-Fi network name and connect"
-
-#: app/index.tsx:85
+#: app/index.tsx:87
 msgid "2. Camera"
 msgstr "2. Camera"
 
-#: app/index.tsx:203
-#~ msgid "2. Connect to the camera (fallback: manual IP)"
-#~ msgstr "2. Connect to the camera (fallback: manual IP)"
-
-#: src/wifiOcrScanner/CameraCaptureView.tsx:57
+#: src/labelOcr/CameraCaptureView.tsx:57
 msgid "Align the password on the camera label inside the frame, then tap capture."
 msgstr "Align the password on the camera label inside the frame, then tap capture."
 
-#: src/wifiOcrScanner/CameraCaptureView.tsx:55
+#: src/labelOcr/CameraCaptureView.tsx:55
 msgid "Align the Wi-Fi name on the camera label inside the frame, then tap capture."
 msgstr "Align the Wi-Fi name on the camera label inside the frame, then tap capture."
 
-#: app/sync.tsx:110
+#: app/sync.tsx:122
 msgid "already on device"
 msgstr "already on device"
 
-#: app/join-wifi.tsx:261
+#: app/join-wifi.tsx:263
 msgid "Android will also route this app's traffic over this Wi-Fi network (it has no internet)."
 msgstr "Android will also route this app's traffic over this Wi-Fi network (it has no internet)."
 
-#: src/wifiOcrScanner/PermissionGate.tsx:58
-msgid "Camera access is needed to scan the Wi-Fi label."
-msgstr "Camera access is needed to scan the Wi-Fi label."
+#: src/labelOcr/PermissionGate.tsx:58
+msgid "Camera access is needed to read the Wi-Fi label."
+msgstr "Camera access is needed to read the Wi-Fi label."
 
-#: app/join-wifi.tsx:145
+#: app/join-wifi.tsx:147
 msgid "Camera networks"
 msgstr "Camera networks"
 
-#: app/index.tsx:157
-#~ msgid "Camera SSID"
-#~ msgstr "Camera SSID"
-
-#: app/join-wifi.tsx:181
+#: app/join-wifi.tsx:183
 msgid "Camera SSID (DIRECT-…)"
 msgstr "Camera SSID (DIRECT-…)"
 
-#: src/wifiOcrScanner/useWifiOcrCapture.ts:56
+#: src/labelOcr/useWifiOcrCapture.ts:56
 msgid "Camera took too long to respond. Please try again."
 msgstr "Camera took too long to respond. Please try again."
 
-#: app/scan-wifi.tsx:19
-#: app/sync.tsx:122
+#: app/image/[filename].tsx:147
+msgid "Can't play this video format"
+msgstr "Can't play this video format"
+
+#: app/read-label.tsx:19
+#: app/sync.tsx:134
 msgid "Cancel"
 msgstr "Cancel"
 
-#: app/index.tsx:90
+#: app/index.tsx:92
 msgid "Checking camera…"
 msgstr "Checking camera…"
 
-#: src/wifiOcrScanner/PermissionGate.tsx:40
+#: src/labelOcr/PermissionGate.tsx:40
 msgid "Close"
 msgstr "Close"
 
-#: app/images.tsx:70
-#: app/index.tsx:132
+#: app/images.tsx:77
+#: app/index.tsx:134
 msgid "Connect"
 msgstr "Connect"
 
-#: app/index.tsx:100
-#~ msgid "Connect to Camera"
-#~ msgstr "Connect to Camera"
-
-#: app/index.tsx:102
+#: app/index.tsx:104
 msgid "Connect to the camera at this address."
 msgstr "Connect to the camera at this address."
 
-#: app/index.tsx:88
+#: app/index.tsx:90
 msgid "Connected"
 msgstr "Connected"
 
-#: app/index.tsx:31
+#: app/index.tsx:33
 msgid "Connecting to your camera"
 msgstr "Connecting to your camera"
 
-#: app/images.tsx:137
+#: app/images.tsx:167
 msgid "Disconnect"
 msgstr "Disconnect"
 
-#. placeholder {0}: api.inner.controlUrl
-#: app/images.tsx:94
-#~ msgid "DLNA: {0}"
-#~ msgstr "DLNA: {0}"
-
-#: app/sync.tsx:122
+#: app/sync.tsx:134
 msgid "Done"
 msgstr "Done"
 
-#: app/image/[filename].tsx:99
-#~ msgid "Download"
-#~ msgstr "Download"
-
-#: app/sync.tsx:109
+#: app/sync.tsx:121
 msgid "downloaded"
 msgstr "downloaded"
 
-#: app/image/[filename].tsx:97
-#~ msgid "Downloaded"
-#~ msgstr "Downloaded"
-
-#: app/image/[filename].tsx:96
-#~ msgid "Downloading…"
-#~ msgstr "Downloading…"
-
-#: app/join-wifi.tsx:166
+#: app/join-wifi.tsx:168
 msgid "Enter Wi-Fi manually"
 msgstr "Enter Wi-Fi manually"
 
-#: app/index.tsx:67
+#: app/index.tsx:69
 msgid "Enter Wi-Fi Manually"
 msgstr "Enter Wi-Fi Manually"
 
-#: app/sync.tsx:111
+#: app/sync.tsx:123
 msgid "failed"
 msgstr "failed"
 
-#: src/wifiOcrScanner/useWifiOcrCapture.ts:58
+#: src/labelOcr/useWifiOcrCapture.ts:58
 msgid "Failed to capture photo."
 msgstr "Failed to capture photo."
 
-#: app/image/[filename].tsx:72
+#: app/image/[filename].tsx:76
 msgid "Failed to load image"
 msgstr "Failed to load image"
 
-#: src/wifiOcrScanner/PermissionGate.tsx:63
+#: src/labelOcr/PermissionGate.tsx:63
 msgid "Grant Camera Access"
 msgstr "Grant Camera Access"
 
-#: app/join-wifi.tsx:225
+#: app/join-wifi.tsx:227
 msgid "Hide password"
 msgstr "Hide password"
 
-#: app/index.tsx:107
+#: app/index.tsx:109
 msgid "Host IP"
 msgstr "Host IP"
 
-#: app/_layout.tsx:28
-msgid "Image"
-msgstr "Image"
-
-#: app/_layout.tsx:20
+#: app/_layout.tsx:21
 msgid "Images"
 msgstr "Images"
 
-#: app/join-wifi.tsx:248
+#: app/join-wifi.tsx:250
 msgid "Join {ssid}"
 msgstr "Join {ssid}"
 
-#: app/_layout.tsx:19
-#: app/index.tsx:74
+#: app/_layout.tsx:20
+#: app/index.tsx:76
 msgid "Join Camera Wi-Fi"
 msgstr "Join Camera Wi-Fi"
 
-#: app/index.tsx:57
+#: app/index.tsx:59
 msgid "Join your camera's Wi-Fi network (DIRECT-…)."
 msgstr "Join your camera's Wi-Fi network (DIRECT-…)."
 
-#: app/join-wifi.tsx:248
+#: app/join-wifi.tsx:250
 msgid "Joining…"
 msgstr "Joining…"
 
-#: app/join-wifi.tsx:214
+#: app/join-wifi.tsx:216
 msgid "Leave blank for open networks"
 msgstr "Leave blank for open networks"
 
-#: app/images.tsx:109
-#~ msgid "List Images"
-#~ msgstr "List Images"
-
-#: app/images.tsx:66
+#: app/images.tsx:72
 msgid "Loading…"
 msgstr "Loading…"
 
-#: app/join-wifi.tsx:66
+#: app/join-wifi.tsx:68
 msgid "Location permission was denied."
 msgstr "Location permission was denied."
 
-#: app/index.tsx:141
+#: app/_layout.tsx:29
+msgid "Media"
+msgstr "Media"
+
+#: app/index.tsx:143
 msgid "Need help?"
 msgstr "Need help?"
 
-#: app/join-wifi.tsx:151
-msgid "No camera networks found. Make sure the camera is in Send to Smartphone mode, then scan again."
-msgstr "No camera networks found. Make sure the camera is in Send to Smartphone mode, then scan again."
+#: app/join-wifi.tsx:153
+msgid "No camera networks found. Make sure the camera is in Send to Smartphone mode, then search again."
+msgstr "No camera networks found. Make sure the camera is in Send to Smartphone mode, then search again."
 
-#: app/images.tsx:102
-msgid "No photos on the camera."
-msgstr "No photos on the camera."
+#: app/images.tsx:109
+msgid "No photos or videos on the camera."
+msgstr "No photos or videos on the camera."
 
-#: src/wifiOcrScanner/ReviewSheet.tsx:139
+#: src/labelOcr/ReviewSheet.tsx:141
 msgid "No text detected — you can type it in manually below."
 msgstr "No text detected — you can type it in manually below."
 
-#: app/index.tsx:50
-#: app/index.tsx:91
+#: app/index.tsx:52
+#: app/index.tsx:93
 msgid "Not connected"
 msgstr "Not connected"
 
-#: app/index.tsx:32
+#: app/index.tsx:34
 msgid "On the camera, choose \"Send to Smartphone\" so it starts its own Wi-Fi network (named DIRECT-…). The network name and password are shown on the camera screen. Join that network here, then tap Connect."
 msgstr "On the camera, choose \"Send to Smartphone\" so it starts its own Wi-Fi network (named DIRECT-…). The network name and password are shown on the camera screen. Join that network here, then tap Connect."
 
-#: app/join-wifi.tsx:285
+#: app/join-wifi.tsx:287
 msgid "Open"
 msgstr "Open"
 
-#: app/index.tsx:129
+#: app/index.tsx:131
 msgid "Open Photos"
 msgstr "Open Photos"
 
-#: src/wifiOcrScanner/PermissionGate.tsx:69
+#: src/labelOcr/PermissionGate.tsx:69
 msgid "Open Settings"
 msgstr "Open Settings"
 
-#: app/index.tsx:179
-#~ msgid "Password (leave blank for open networks)"
-#~ msgstr "Password (leave blank for open networks)"
+#: app/image/[filename].tsx:46
+msgid "Photo library access is needed to save this file."
+msgstr "Photo library access is needed to save this file."
 
-#: app/image/[filename].tsx:45
-msgid "Photo library access is needed to save this image."
-msgstr "Photo library access is needed to save this image."
-
-#: src/wifiOcrScanner/CameraCaptureView.tsx:29
-#~ msgid "Point the camera at the password on the label, then tap capture."
-#~ msgstr "Point the camera at the password on the label, then tap capture."
-
-#: src/wifiOcrScanner/CameraCaptureView.tsx:27
-#~ msgid "Point the camera at the Wi-Fi name on the label, then tap capture."
-#~ msgstr "Point the camera at the Wi-Fi name on the label, then tap capture."
-
-#: src/wifiOcrScanner/CameraCaptureView.tsx:66
+#: src/labelOcr/CameraCaptureView.tsx:66
 msgid "Preparing camera…"
 msgstr "Preparing camera…"
 
-#: src/wifiOcrScanner/ReviewSheet.tsx:120
+#: app/join-wifi.tsx:170
+msgid "Read from Label"
+msgstr "Read from Label"
+
+#: app/join-wifi.tsx:192
+msgid "Read Name from Label"
+msgstr "Read Name from Label"
+
+#: app/join-wifi.tsx:243
+msgid "Read Password from Label"
+msgstr "Read Password from Label"
+
+#: app/_layout.tsx:36
+msgid "Read Wi-Fi Label"
+msgstr "Read Wi-Fi Label"
+
+#: app/read-label.tsx:72
+msgid "Read Wi-Fi Name"
+msgstr "Read Wi-Fi Name"
+
+#: app/read-label.tsx:72
+msgid "Read Wi-Fi Password"
+msgstr "Read Wi-Fi Password"
+
+#: src/labelOcr/ReviewSheet.tsx:122
 msgid "Reading text…"
 msgstr "Reading text…"
 
-#: app/index.tsx:124
-#~ msgid "Rescan"
-#~ msgstr "Rescan"
-
-#: src/wifiOcrScanner/ReviewSheet.tsx:80
-#: src/wifiOcrScanner/ReviewSheet.tsx:130
+#: src/labelOcr/ReviewSheet.tsx:82
+#: src/labelOcr/ReviewSheet.tsx:132
 msgid "Retake"
 msgstr "Retake"
 
-#: src/WifiOcrScanner.tsx:239
-#~ msgid "Retake Photo"
-#~ msgstr "Retake Photo"
-
-#: app/images.tsx:98
+#: app/images.tsx:105
 msgid "Retry"
 msgstr "Retry"
 
-#: app/image/[filename].tsx:98
-#~ msgid "Retry Download"
-#~ msgstr "Retry Download"
-
-#: app/image/[filename].tsx:115
+#: app/image/[filename].tsx:121
 msgid "Retry Save"
 msgstr "Retry Save"
 
-#: app/image/[filename].tsx:116
+#: app/image/[filename].tsx:122
 msgid "Save to Photos"
 msgstr "Save to Photos"
 
-#: app/image/[filename].tsx:106
+#: app/image/[filename].tsx:112
 msgid "Saved to Photos"
 msgstr "Saved to Photos"
 
-#: app/image/[filename].tsx:113
+#: app/image/[filename].tsx:119
 msgid "Saving…"
 msgstr "Saving…"
 
-#. placeholder {0}: api.inner.baseUrl
-#: app/images.tsx:96
-#~ msgid "Scalar: {0}"
-#~ msgstr "Scalar: {0}"
+#: app/image/[filename].tsx:119
+msgid "Saving… {savePercent}%"
+msgstr "Saving… {savePercent}%"
 
-#: app/index.tsx:63
-#: app/join-wifi.tsx:137
-msgid "Scan for Camera"
-msgstr "Scan for Camera"
+#: app/index.tsx:65
+#: app/join-wifi.tsx:139
+msgid "Search for Camera"
+msgstr "Search for Camera"
 
-#: app/join-wifi.tsx:241
-msgid "Scan password"
-msgstr "Scan password"
+#: app/join-wifi.tsx:139
+msgid "Searching…"
+msgstr "Searching…"
 
-#: app/index.tsx:189
-#~ msgid "Scan Password"
-#~ msgstr "Scan Password"
-
-#: app/index.tsx:169
-#~ msgid "Scan SSID"
-#~ msgstr "Scan SSID"
-
-#: app/_layout.tsx:34
-msgid "Scan Wi-Fi"
-msgstr "Scan Wi-Fi"
-
-#: app/join-wifi.tsx:168
-msgid "Scan Wi-Fi label"
-msgstr "Scan Wi-Fi label"
-
-#: app/join-wifi.tsx:190
-msgid "Scan Wi-Fi name"
-msgstr "Scan Wi-Fi name"
-
-#: app/scan-wifi.tsx:72
-msgid "Scan Wi-Fi Name"
-msgstr "Scan Wi-Fi Name"
-
-#: app/scan-wifi.tsx:72
-msgid "Scan Wi-Fi Password"
-msgstr "Scan Wi-Fi Password"
-
-#: app/join-wifi.tsx:137
-msgid "Scanning…"
-msgstr "Scanning…"
-
-#: app/join-wifi.tsx:285
+#: app/join-wifi.tsx:287
 msgid "Secured"
 msgstr "Secured"
 
-#: app/join-wifi.tsx:134
+#: app/join-wifi.tsx:136
 msgid "Select your camera's Wi-Fi network."
 msgstr "Select your camera's Wi-Fi network."
 
-#: app/join-wifi.tsx:225
+#: app/join-wifi.tsx:227
 msgid "Show password"
 msgstr "Show password"
 
-#: app/index.tsx:206
-#~ msgid "Status: {status}"
-#~ msgstr "Status: {status}"
-
-#: app/_layout.tsx:23
+#: app/_layout.tsx:24
 msgid "Sync All"
 msgstr "Sync All"
 
 #. placeholder {0}: images.length
-#: app/images.tsx:84
+#: app/images.tsx:91
 msgid "Sync All ({0})"
 msgstr "Sync All ({0})"
 
-#. placeholder {0}: syncProgress.done
-#: app/images.tsx:116
-#~ msgid "Sync All ({0}/{totalToSync})"
-#~ msgstr "Sync All ({0}/{totalToSync})"
-
-#: app/sync.tsx:79
+#: app/sync.tsx:84
 msgid "Sync complete"
 msgstr "Sync complete"
 
-#: app/sync.tsx:79
+#: app/sync.tsx:84
 msgid "Syncing photos…"
 msgstr "Syncing photos…"
 
-#: src/wifiOcrScanner/PermissionGate.tsx:32
-msgid "Text scanning isn't available on this device. You can still type the password in manually."
-msgstr "Text scanning isn't available on this device. You can still type the password in manually."
+#: src/labelOcr/PermissionGate.tsx:32
+msgid "Text recognition isn't available on this device. You can still type the password in manually."
+msgstr "Text recognition isn't available on this device. You can still type the password in manually."
 
-#: src/wifiOcrScanner/PermissionGate.tsx:27
-msgid "Text scanning isn't available on this device. You can still type the Wi-Fi name in manually."
-msgstr "Text scanning isn't available on this device. You can still type the Wi-Fi name in manually."
+#: src/labelOcr/PermissionGate.tsx:27
+msgid "Text recognition isn't available on this device. You can still type the Wi-Fi name in manually."
+msgstr "Text recognition isn't available on this device. You can still type the Wi-Fi name in manually."
 
-#: app/index.tsx:43
+#: app/index.tsx:45
 msgid "Transfer photos from your Sony camera to your phone."
 msgstr "Transfer photos from your Sony camera to your phone."
 
-#: src/wifiOcrScanner/ReviewSheet.tsx:89
+#: src/labelOcr/ReviewSheet.tsx:91
 msgid "Use This Text"
 msgstr "Use This Text"
 
-#: app/join-wifi.tsx:175
+#: app/join-wifi.tsx:177
 msgid "Wi-Fi name"
 msgstr "Wi-Fi name"
 
-#: app/join-wifi.tsx:208
+#: app/join-wifi.tsx:210
 msgid "Wi-Fi password"
 msgstr "Wi-Fi password"
 
-#: app/index.tsx:55
+#: app/index.tsx:57
 msgid "Your phone is on this Wi-Fi network."
 msgstr "Your phone is on this Wi-Fi network."

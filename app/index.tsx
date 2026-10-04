@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from 'react';
 import { ActivityIndicator, Alert, Platform, Text, TextInput, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { router, useFocusEffect } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
@@ -11,6 +12,7 @@ import { colors } from '../src/theme/colors';
 
 export default function ConnectScreen() {
   const { t } = useLingui();
+  const insets = useSafeAreaInsets();
   const { host, setHost, status, cameraName, errorMessage, connect, wifiSsid, refreshWifiSsid } =
     useCameraConnection();
 
@@ -37,7 +39,7 @@ export default function ConnectScreen() {
     <KeyboardAwareScrollView
       contentInsetAdjustmentBehavior="automatic"
       keyboardShouldPersistTaps="handled"
-      contentContainerStyle={{ padding: 16, gap: 16 }}
+      contentContainerStyle={{ padding: 16, paddingBottom: 16 + insets.bottom, gap: 16 }}
     >
       <Text style={{ color: colors.secondaryLabel, fontSize: 15 }}>
         <Trans>Transfer photos from your Sony camera to your phone.</Trans>
@@ -60,7 +62,7 @@ export default function ConnectScreen() {
         {Platform.OS === 'android' ? (
           <>
             <ActionButton
-              label={t`Scan for Camera`}
+              label={t`Search for Camera`}
               onPress={() => router.push('/join-wifi')}
             />
             <ActionButton

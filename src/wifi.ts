@@ -11,31 +11,31 @@ export async function requestLocationPermission(): Promise<boolean> {
     PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
     {
       title: 'Location permission',
-      message: 'Android requires location permission to scan for nearby Wi-Fi networks.',
+      message: 'Android requires location permission to search for nearby Wi-Fi networks.',
       buttonPositive: 'OK',
     },
   );
   return granted === PermissionsAndroid.RESULTS.GRANTED;
 }
 
-function describeScanError(err: unknown): string {
+function describeSearchError(err: unknown): string {
   const code = (err as { code?: string })?.code;
   switch (code) {
     case LOAD_WIFI_LIST_ERRORS.locationPermissionMissing:
-      return 'Location permission is required to scan for Wi-Fi networks.';
+      return 'Location permission is required to search for Wi-Fi networks.';
     case LOAD_WIFI_LIST_ERRORS.locationServicesOff:
-      return 'Turn on location services to scan for Wi-Fi networks.';
+      return 'Turn on location services to search for Wi-Fi networks.';
     default:
       return err instanceof Error ? err.message : String(err);
   }
 }
 
-export async function scanNetworks(force: boolean): Promise<WifiEntry[]> {
+export async function searchNetworks(force: boolean): Promise<WifiEntry[]> {
   try {
     const list = await (force ? WifiManager.reScanAndLoadWifiList() : WifiManager.loadWifiList());
     return list.filter((entry) => entry.SSID.startsWith('DIRECT-'));
   } catch (err) {
-    throw new Error(describeScanError(err));
+    throw new Error(describeSearchError(err));
   }
 }
 

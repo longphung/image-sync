@@ -4,12 +4,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, Stack } from 'expo-router';
 import { useCameraPermissions } from 'expo-camera';
 import { Trans, useLingui } from '@lingui/react/macro';
-import { useWifiScan } from '../src/WifiScanContext';
+import { useLabelOcr } from '../src/LabelOcrContext';
 import { isTextRecognitionSupported } from '../src/ocr';
-import { useWifiOcrCapture } from '../src/wifiOcrScanner/useWifiOcrCapture';
-import { PermissionGate } from '../src/wifiOcrScanner/PermissionGate';
-import { CameraCaptureView } from '../src/wifiOcrScanner/CameraCaptureView';
-import { ReviewSheet } from '../src/wifiOcrScanner/ReviewSheet';
+import { useWifiOcrCapture } from '../src/labelOcr/useWifiOcrCapture';
+import { PermissionGate } from '../src/labelOcr/PermissionGate';
+import { CameraCaptureView } from '../src/labelOcr/CameraCaptureView';
+import { ReviewSheet } from '../src/labelOcr/ReviewSheet';
 import { colors } from '../src/theme/colors';
 
 function CancelHeaderButton({ onPress }: { onPress: () => void }) {
@@ -22,9 +22,9 @@ function CancelHeaderButton({ onPress }: { onPress: () => void }) {
   );
 }
 
-export default function ScanWifiScreen() {
+export default function ReadLabelScreen() {
   const { t } = useLingui();
-  const { field, confirmScan, cancelScan, clearScan } = useWifiScan();
+  const { field, confirmRead, cancelRead, clearRead } = useLabelOcr();
   const supported = isTextRecognitionSupported();
   const [permission, requestPermission] = useCameraPermissions();
   const {
@@ -46,30 +46,30 @@ export default function ScanWifiScreen() {
   useEffect(() => {
     return () => {
       // If the modal was dismissed via swipe/back rather than Cancel/Confirm, the route is
-      // already popping — clearScan() only resets shared context state, it must not call
-      // router.back() again (cancelScan()/confirmScan() would double-pop).
-      if (!settledRef.current) clearScan();
+      // already popping — clearRead() only resets shared context state, it must not call
+      // router.back() again (cancelRead()/confirmRead() would double-pop).
+      if (!settledRef.current) clearRead();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleCancel = useCallback(() => {
     settledRef.current = true;
-    cancelScan();
-  }, [cancelScan]);
+    cancelRead();
+  }, [cancelRead]);
 
   const handleConfirm = useCallback(
     (text: string) => {
       settledRef.current = true;
-      confirmScan(text);
+      confirmRead(text);
     },
-    [confirmScan],
+    [confirmRead],
   );
 
   if (!field) return null;
 
   const gated = !supported || permission === null || !permission.granted;
-  const title = field === 'ssid' ? t`Scan Wi-Fi Name` : t`Scan Wi-Fi Password`;
+  const title = field === 'ssid' ? t`Read Wi-Fi Name` : t`Read Wi-Fi Password`;
 
   return (
     <>

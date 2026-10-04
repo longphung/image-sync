@@ -11,7 +11,8 @@
       "bundleIdentifier": "com.longphung.imagesync",
       "infoPlist": {
         "NSLocalNetworkUsageDescription": "image-sync uses the local network to connect to your Sony camera over Wi-Fi.",
-        "NSLocationWhenInUseUsageDescription": "image-sync needs location access to scan for and join your camera's Wi-Fi network."
+        "NSLocationWhenInUseUsageDescription": "image-sync needs location access to find and join your camera's Wi-Fi network.",
+        "UIViewControllerBasedStatusBarAppearance": true
       }
     },
     "android": {
@@ -40,12 +41,11 @@
         }
       ],
       "expo-router",
-      "expo-status-bar",
       "react-native-wifi-reborn",
       [
         "expo-camera",
         {
-          "cameraPermission": "image-sync uses the camera to scan text from your camera's Wi-Fi label.",
+          "cameraPermission": "image-sync uses the camera to read text from your camera's Wi-Fi label.",
           "microphonePermission": false,
           "recordAudioAndroid": false,
           "barcodeScannerEnabled": false
@@ -55,12 +55,13 @@
       [
         "expo-media-library",
         {
-          "photosPermission": "image-sync needs access to your photo library to save downloaded camera images.",
-          "savePhotosPermission": "image-sync saves downloaded camera images to your photo library.",
+          "photosPermission": "image-sync needs access to your photo library to save downloaded camera photos and videos.",
+          "savePhotosPermission": "image-sync saves downloaded camera photos and videos to your photo library.",
           "isAccessMediaLocationEnabled": false
         }
       ],
-      "expo-image"
+      "expo-image",
+      "expo-video"
     ]
   }
 }

@@ -3,14 +3,14 @@ import { ActivityIndicator, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { Image } from 'expo-image';
-import { StatusBar } from 'expo-status-bar';
+import { useEvent } from 'expo';
+import { useVideoPlayer, VideoView } from 'expo-video';
 import { SymbolView } from 'expo-symbols';
 import { Asset, requestPermissionsAsync } from 'expo-media-library';
 import { Trans, useLingui } from '@lingui/react/macro';
-import { downloadImage } from 'image-sync-core';
 import { useCameraConnection } from '../../src/CameraConnectionContext';
 import { ActionButton } from '../../src/components/ActionButton';
-import { destPathFor, fileUriFor } from '../../src/fileSystem';
+import { downloadToPhotosDir, fileUriFor, isVideoFile } from '../../src/fileSystem';
 
 type SaveState = 'idle' | 'saving' | 'done' | 'error';
 
@@ -28,21 +28,22 @@ export default function ImageDetailScreen() {
   const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState<string | null>(null);
   // Starts idle even if Sync All already put the file in app storage — that copy isn't in
-  // the Photos library yet. downloadImage() skips the re-download in that case.
+  // the Photos library yet. downloadToPhotosDir() skips the re-download in that case.
   const [saveState, setSaveState] = useState<SaveState>('idle');
   const [saveErrorMessage, setSaveErrorMessage] = useState<string | null>(null);
+  // Integer 0–100 while saving; null until the first progress event (or size unknown).
+  const [savePercent, setSavePercent] = useState<number | null>(null);
 
   const handleSave = useCallback(async () => {
     setSaveState('saving');
     setSaveErrorMessage(null);
-    // downloadImage() blocks the JS thread — let the "Saving…" state paint first.
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    setSavePercent(null);
     try {
-      const result = downloadImage(url, destPathFor(filename));
+      const result = await downloadToPhotosDir(url, filename, { onPercent: setSavePercent });
       console.log('[ImageDetail] download finished', { result });
       const { status } = await requestPermissionsAsync(true); // add-only, no full-library read prompt
       if (status !== 'granted') {
-        throw new Error(t`Photo library access is needed to save this image.`);
+        throw new Error(t`Photo library access is needed to save this file.`);
       }
       await Asset.create(fileUriFor(filename));
       setSaveState('done');
@@ -55,25 +56,30 @@ export default function ImageDetailScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: '#000' }}>
-      <StatusBar style="light" />
       <Stack.Screen options={{ title: '' }} />
 
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <Image
-          source={{ uri: url }}
-          placeholder={{ uri: thumbnailUrl }}
-          style={{ width: '100%', height: '100%' }}
-          contentFit="contain"
-          onLoadStart={() => setImageLoading(true)}
-          onLoadEnd={() => setImageLoading(false)}
-          onError={(e) => {
-            console.log('[ImageDetail] image load error', { url, error: e.error });
-            setImageLoading(false);
-            setImageError(t`Failed to load image`);
-          }}
-        />
-        {imageLoading && (
-          <ActivityIndicator style={{ position: 'absolute' }} size="large" color="#fff" />
+        {isVideoFile(filename) ? (
+          <VideoPreview url={url} />
+        ) : (
+          <>
+            <Image
+              source={{ uri: url }}
+              placeholder={{ uri: thumbnailUrl }}
+              style={{ width: '100%', height: '100%' }}
+              contentFit="contain"
+              onLoadStart={() => setImageLoading(true)}
+              onLoadEnd={() => setImageLoading(false)}
+              onError={(e) => {
+                console.log('[ImageDetail] image load error', { url, error: e.error });
+                setImageLoading(false);
+                setImageError(t`Failed to load image`);
+              }}
+            />
+            {imageLoading && (
+              <ActivityIndicator style={{ position: 'absolute' }} size="large" color="#fff" />
+            )}
+          </>
         )}
       </View>
 
@@ -110,7 +116,7 @@ export default function ImageDetailScreen() {
           <ActionButton
             label={
               saveState === 'saving'
-                ? t`Saving…`
+                ? savePercent !== null ? t`Saving… ${savePercent}%` : t`Saving…`
                 : saveState === 'error'
                   ? t`Retry Save`
                   : t`Save to Photos`
@@ -127,5 +133,25 @@ export default function ImageDetailScreen() {
         )}
       </View>
     </View>
+  );
+}
+
+function VideoPreview({ url }: { url: string }) {
+  const { t } = useLingui();
+  // Streams straight from the camera over HTTP; nothing is downloaded until Save.
+  const player = useVideoPlayer(url);
+  const { status } = useEvent(player, 'statusChange', { status: player.status });
+
+  if (status === 'error') {
+    // e.g. AVCHD .MTS, which AVPlayer can't decode.
+    return <Text style={{ color: '#ffffffcc', padding: 24, textAlign: 'center' }}>{t`Can't play this video format`}</Text>;
+  }
+  return (
+    <>
+      <VideoView player={player} nativeControls contentFit="contain" style={{ width: '100%', height: '100%' }} />
+      {status === 'loading' && (
+        <ActivityIndicator style={{ position: 'absolute' }} size="large" color="#fff" />
+      )}
+    </>
   );
 }

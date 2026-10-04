@@ -1,6 +1,5 @@
 pub mod discovery;
 pub mod dlna;
-pub mod download;
 pub mod error;
 pub mod scalar;
 mod xml;
@@ -8,7 +7,6 @@ mod xml;
 mod types;
 
 pub use discovery::get_camera_info;
-pub use download::download_image;
 pub use error::CoreError;
 pub use types::{CameraApi, CameraInfo, ImageItem};
 

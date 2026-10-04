@@ -11,6 +11,7 @@ crate-type = ["cdylib", "staticlib", "lib"]
 image-sync-core = { path = "../image-sync-core" }
 uniffi = "0.31.0"
 thiserror = "2"
+blocking = "1"
 
 [build-dependencies]
 uniffi = { version = "0.31.0", features = ["build"] }

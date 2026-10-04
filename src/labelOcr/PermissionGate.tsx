@@ -25,12 +25,12 @@ export function PermissionGate({
         <Text style={styles.message}>
           {field === 'ssid' ? (
             <Trans>
-              Text scanning isn&apos;t available on this device. You can still type the Wi-Fi name
+              Text recognition isn&apos;t available on this device. You can still type the Wi-Fi name
               in manually.
             </Trans>
           ) : (
             <Trans>
-              Text scanning isn&apos;t available on this device. You can still type the password
+              Text recognition isn&apos;t available on this device. You can still type the password
               in manually.
             </Trans>
           )}
@@ -55,7 +55,7 @@ export function PermissionGate({
   return (
     <View style={styles.centeredContent}>
       <Text style={styles.message}>
-        <Trans>Camera access is needed to scan the Wi-Fi label.</Trans>
+        <Trans>Camera access is needed to read the Wi-Fi label.</Trans>
       </Text>
       {permission.canAskAgain ? (
         <TouchableOpacity style={styles.button} onPress={onRequestPermission}>

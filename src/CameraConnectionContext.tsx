@@ -13,7 +13,7 @@ type CameraConnectionValue = {
   /** Camera's UPnP friendly/model name, or null if the device description had none. */
   cameraName: string | null;
   errorMessage: string | null;
-  connect: () => void;
+  connect: () => Promise<void>;
   disconnect: () => void;
   /** SSID the phone is currently joined to, or null if unknown / not on Wi-Fi. */
   wifiSsid: string | null;
@@ -22,7 +22,7 @@ type CameraConnectionValue = {
   images: ImageItem[];
   imagesStatus: ImagesStatus;
   imagesError: string | null;
-  refreshImages: () => void;
+  refreshImages: () => Promise<void>;
 };
 
 const CameraConnectionContext = createContext<CameraConnectionValue | null>(null);
@@ -41,25 +41,21 @@ export function CameraConnectionProvider({ children }: { children: ReactNode }) 
   const [imagesStatus, setImagesStatus] = useState<ImagesStatus>('idle');
   const [imagesError, setImagesError] = useState<string | null>(null);
 
-  const connect = useCallback(() => {
+  const connect = useCallback(async () => {
     setStatus('connecting');
     setErrorMessage(null);
-    // getCameraInfo() is a synchronous, blocking FFI call — yield once so the
-    // "Checking camera…" state actually paints before the JS thread blocks.
-    setTimeout(() => {
-      try {
-        const trimmed = host.trim();
-        const info = getCameraInfo(trimmed.length > 0 ? trimmed : undefined);
-        setApi(info.api);
-        setCameraName(info.name ?? null);
-        setImages([]);
-        setImagesStatus('idle');
-        setStatus('connected');
-      } catch (err) {
-        setStatus('error');
-        setErrorMessage(err instanceof Error ? err.message : String(err));
-      }
-    }, 0);
+    try {
+      const trimmed = host.trim();
+      const info = await getCameraInfo(trimmed.length > 0 ? trimmed : undefined);
+      setApi(info.api);
+      setCameraName(info.name ?? null);
+      setImages([]);
+      setImagesStatus('idle');
+      setStatus('connected');
+    } catch (err) {
+      setStatus('error');
+      setErrorMessage(err instanceof Error ? err.message : String(err));
+    }
   }, [host]);
 
   const disconnect = useCallback(() => {
@@ -76,21 +72,18 @@ export function CameraConnectionProvider({ children }: { children: ReactNode }) 
     setWifiSsid((await getCurrentSsid()) ?? joinedSsid ?? null);
   }, []);
 
-  const refreshImages = useCallback(() => {
+  const refreshImages = useCallback(async () => {
     if (!api) return;
     setImagesStatus('loading');
     setImagesError(null);
-    // Same yield-before-blocking-FFI trick as connect().
-    setTimeout(() => {
-      try {
-        setImages(listImages(api));
-        setImagesStatus('loaded');
-      } catch (err) {
-        console.log('[Images] listImages error', err);
-        setImagesStatus('error');
-        setImagesError(err instanceof Error ? err.message : String(err));
-      }
-    }, 0);
+    try {
+      setImages(await listImages(api));
+      setImagesStatus('loaded');
+    } catch (err) {
+      console.log('[Images] listImages error', err);
+      setImagesStatus('error');
+      setImagesError(err instanceof Error ? err.message : String(err));
+    }
   }, [api]);
 
   const value = useMemo(

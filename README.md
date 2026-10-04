@@ -7,7 +7,7 @@ Scalar Web API fallback) is implemented in Rust and exposed to React Native via
 
 ## Features
 
-- Join the camera's `DIRECT-...` Wi-Fi from inside the app (or scan the SSID/password off the camera
+- Join the camera's `DIRECT-...` Wi-Fi from inside the app (or read the SSID/password off the camera
   screen with OCR)
 - Auto-discover the camera at `192.168.122.1`, with a manual IP override
 - Browse photos in a grid, showing which ones are already on the device
@@ -63,7 +63,7 @@ in Settings before opening the app. See the "iOS on a free (Personal Team) Apple
 ## Project layout
 
 ```
-rust/image-sync-core/      pure Rust protocol client (discovery, DLNA, Scalar, downloads)
+rust/image-sync-core/      pure Rust protocol client (discovery, DLNA, Scalar listing)
 rust/image-sync-ffi/       uniffi wrapper exposing the core to JS
 modules/image-sync-core/   generated Expo native module (regenerable)
 app/                       expo-router screens
