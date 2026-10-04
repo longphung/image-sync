@@ -9,8 +9,8 @@ import { useCameraConnection } from '../src/CameraConnectionContext';
 import { ActionButton } from '../src/components/ActionButton';
 import { Card } from '../src/components/Card';
 import { ProgressBar } from '../src/components/ProgressBar';
-import { downloadToPhotosDir } from '../src/fileSystem';
-import { runSync, type SyncCounts, type SyncFailure } from '../src/sync';
+import { downloadToPhotosDir, saveToLibrary } from '../src/fileSystem';
+import { runSync, type Download, type SyncCounts, type SyncFailure } from '../src/sync';
 import { colors } from '../src/theme/colors';
 
 const NO_COUNTS: SyncCounts = { downloaded: 0, skipped: 0, failed: 0 };
@@ -42,7 +42,14 @@ export default function SyncScreen() {
     setFailures([]);
     setStoppedEarly(null);
     setRunning(true);
-    runSync(queue, (item, opts) => downloadToPhotosDir(item.url, item.filename, opts), run.signal, {
+    // A file already in app storage was saved to Photos by the run that downloaded it, so only
+    // new downloads go to the library; otherwise every re-sync would duplicate them there.
+    const download: Download = async (item, opts) => {
+      const wrote = await downloadToPhotosDir(item.url, item.filename, opts);
+      if (wrote) await saveToLibrary(item.filename, { onPercent: opts.onPercent });
+      return wrote;
+    };
+    runSync(queue, download, run.signal, {
       onStart: (i, item) => {
         setIndex(i);
         setCurrent(item);

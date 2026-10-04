@@ -23,6 +23,8 @@ export default function ImagesScreen() {
     useCameraConnection();
   const insets = useSafeAreaInsets();
   const [downloaded, setDownloaded] = useState<Set<string>>(() => listDownloadedFilenames());
+  // Only a pull shows the refresh spinner; the first load has its own in the empty state.
+  const [pulling, setPulling] = useState(false);
 
   // Only for a JS reload landing here with no connection; Disconnect navigates by itself.
   useEffect(() => {
@@ -81,11 +83,27 @@ export default function ImagesScreen() {
         numColumns={COLUMNS}
         keyExtractor={(item) => item.filename}
         recycleItems
+        // renderItem reads `downloaded`; without this the list keeps showing stale badges
+        // until it remounts.
+        extraData={downloaded}
+        refreshing={pulling}
+        onRefresh={async () => {
+          setPulling(true);
+          await refreshImages();
+          setDownloaded(listDownloadedFilenames());
+          setPulling(false);
+        }}
         contentInsetAdjustmentBehavior="automatic"
         ListHeaderComponent={
           <View style={{ padding: 16, gap: 12 }}>
             {subtitle.length > 0 && (
               <Text style={{ color: colors.secondaryLabel, fontSize: 13 }}>{subtitle}</Text>
+            )}
+            {/* A failed refresh keeps the old list; the empty state only covers an empty one. */}
+            {imagesStatus === 'error' && images.length > 0 && (
+              <Text style={{ color: colors.error, fontSize: 13 }} selectable>
+                {imagesError}
+              </Text>
             )}
             {images.length > 0 && (
               <ActionButton

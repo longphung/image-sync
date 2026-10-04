@@ -23,7 +23,7 @@ msgstr "{0} dBm"
 msgid "{0} items"
 msgstr "{0} items"
 
-#: app/sync.tsx:110
+#: app/sync.tsx:117
 msgid "{index} of {total}"
 msgstr "{index} of {total}"
 
@@ -51,7 +51,7 @@ msgstr "Align the Wi-Fi name on the camera label inside the frame, then tap capt
 msgid "Allow Camera"
 msgstr "Allow Camera"
 
-#: app/sync.tsx:145
+#: app/sync.tsx:152
 msgid "already on device"
 msgstr "already on device"
 
@@ -96,13 +96,13 @@ msgstr "Camera SSID (DIRECT-…)"
 msgid "Camera took too long to respond. Please try again."
 msgstr "Camera took too long to respond. Please try again."
 
-#: app/image/[filename].tsx:209
+#: app/image/[filename].tsx:204
 msgid "Can't play this video format"
 msgstr "Can't play this video format"
 
 #: app/(tabs)/(desktops)/index.tsx:71
 #: app/read-label.tsx:19
-#: app/sync.tsx:175
+#: app/sync.tsx:182
 msgid "Cancel"
 msgstr "Cancel"
 
@@ -131,20 +131,20 @@ msgstr "Connected"
 msgid "Connecting to your camera"
 msgstr "Connecting to your camera"
 
-#: app/image/[filename].tsx:133
-#: app/image/[filename].tsx:193
+#: app/image/[filename].tsx:128
+#: app/image/[filename].tsx:188
 msgid "Converting…"
 msgstr "Converting…"
 
-#: app/image/[filename].tsx:193
+#: app/image/[filename].tsx:188
 msgid "Converting… {percent}%"
 msgstr "Converting… {percent}%"
 
-#: app/image/[filename].tsx:133
+#: app/image/[filename].tsx:128
 msgid "Converting… {savePercent}%"
 msgstr "Converting… {savePercent}%"
 
-#: app/image/[filename].tsx:189
+#: app/image/[filename].tsx:184
 msgid "Couldn't load this video"
 msgstr "Couldn't load this video"
 
@@ -161,11 +161,11 @@ msgstr "Desktop"
 msgid "Disconnect"
 msgstr "Disconnect"
 
-#: app/sync.tsx:175
+#: app/sync.tsx:182
 msgid "Done"
 msgstr "Done"
 
-#: app/sync.tsx:144
+#: app/sync.tsx:151
 msgid "downloaded"
 msgstr "downloaded"
 
@@ -177,7 +177,7 @@ msgstr "Enter Wi-Fi manually"
 msgid "Enter Wi-Fi Manually"
 msgstr "Enter Wi-Fi Manually"
 
-#: app/sync.tsx:146
+#: app/sync.tsx:153
 msgid "failed"
 msgstr "failed"
 
@@ -185,7 +185,7 @@ msgstr "failed"
 msgid "Failed to capture photo."
 msgstr "Failed to capture photo."
 
-#: app/image/[filename].tsx:88
+#: app/image/[filename].tsx:83
 msgid "Failed to load image"
 msgstr "Failed to load image"
 
@@ -234,11 +234,11 @@ msgstr "Joining…"
 msgid "Leave blank for open networks"
 msgstr "Leave blank for open networks"
 
-#: app/image/[filename].tsx:194
+#: app/image/[filename].tsx:189
 msgid "Loading video…"
 msgstr "Loading video…"
 
-#: app/image/[filename].tsx:194
+#: app/image/[filename].tsx:189
 msgid "Loading video… {percent}%"
 msgstr "Loading video… {percent}%"
 
@@ -342,7 +342,7 @@ msgstr "Paired"
 msgid "Pairing…"
 msgstr "Pairing…"
 
-#: app/image/[filename].tsx:52
+#: src/fileSystem.ts:87
 msgid "Photo library access is needed to save this file."
 msgstr "Photo library access is needed to save this file."
 
@@ -406,27 +406,27 @@ msgid "Retry"
 msgstr "Retry"
 
 #. placeholder {0}: retryable.length
-#: app/sync.tsx:172
+#: app/sync.tsx:179
 msgid "Retry Failed ({0})"
 msgstr "Retry Failed ({0})"
 
-#: app/image/[filename].tsx:135
+#: app/image/[filename].tsx:130
 msgid "Retry Save"
 msgstr "Retry Save"
 
-#: app/image/[filename].tsx:136
+#: app/image/[filename].tsx:131
 msgid "Save to Photos"
 msgstr "Save to Photos"
 
-#: app/image/[filename].tsx:124
+#: app/image/[filename].tsx:119
 msgid "Saved to Photos"
 msgstr "Saved to Photos"
 
-#: app/image/[filename].tsx:131
+#: app/image/[filename].tsx:126
 msgid "Saving…"
 msgstr "Saving…"
 
-#: app/image/[filename].tsx:131
+#: app/image/[filename].tsx:126
 msgid "Saving… {savePercent}%"
 msgstr "Saving… {savePercent}%"
 
@@ -464,19 +464,19 @@ msgstr "Sync All"
 msgid "Sync All ({0})"
 msgstr "Sync All ({0})"
 
-#: app/sync.tsx:106
+#: app/sync.tsx:113
 msgid "Sync complete"
 msgstr "Sync complete"
 
-#: app/sync.tsx:104
+#: app/sync.tsx:111
 msgid "Sync finished with errors"
 msgstr "Sync finished with errors"
 
-#: app/sync.tsx:102
+#: app/sync.tsx:109
 msgid "Sync stopped"
 msgstr "Sync stopped"
 
-#: app/sync.tsx:100
+#: app/sync.tsx:107
 msgid "Syncing photos…"
 msgstr "Syncing photos…"
 

@@ -6,12 +6,11 @@ import { Image } from 'expo-image';
 import { useEvent } from 'expo';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { SymbolView } from 'expo-symbols';
-import { Asset, requestPermissionsAsync } from 'expo-media-library';
 import { File } from 'expo-file-system';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { useCameraConnection } from '../../src/CameraConnectionContext';
 import { ActionButton } from '../../src/components/ActionButton';
-import { downloadToPhotosDir, fileUriFor, isVideoFile } from '../../src/fileSystem';
+import { downloadToPhotosDir, fileUriFor, isVideoFile, saveToLibrary } from '../../src/fileSystem';
 import { convertToMp4, needsMp4Conversion } from '../../src/convertVideo';
 
 type SaveState = 'idle' | 'saving' | 'converting' | 'done' | 'error';
@@ -47,24 +46,20 @@ export default function ImageDetailScreen() {
     try {
       const result = await downloadToPhotosDir(url, filename, { onPercent: setSavePercent });
       console.log('[ImageDetail] download finished', { result });
-      const { status } = await requestPermissionsAsync(true); // add-only, no full-library read prompt
-      if (status !== 'granted') {
-        throw new Error(t`Photo library access is needed to save this file.`);
-      }
-      let saveUri = fileUriFor(filename);
-      if (needsMp4Conversion(filename)) {
-        setSaveState('converting');
-        setSavePercent(null);
-        saveUri = (await convertToMp4(new File(saveUri), setSavePercent)).uri;
-      }
-      await Asset.create(saveUri);
+      await saveToLibrary(filename, {
+        onConverting: () => {
+          setSaveState('converting');
+          setSavePercent(null);
+        },
+        onPercent: setSavePercent,
+      });
       setSaveState('done');
     } catch (err) {
       console.log('[ImageDetail] save error', err);
       setSaveState('error');
       setSaveErrorMessage(err instanceof Error ? err.message : String(err));
     }
-  }, [url, filename, t]);
+  }, [url, filename]);
 
   return (
     <View style={{ flex: 1, backgroundColor: '#000' }}>

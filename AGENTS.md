@@ -155,8 +155,8 @@ machine alone):
   (permission-denied, no-text-detected, etc.) can be exercised on simulator/emulator without one.
 - Downloaded images (`app/image/[filename].tsx`'s Download button) are now saved into the phone's
   shared Photos library via `expo-media-library`'s `Asset.create()`, not just app-private storage —
-  `downloadToPhotosDir()` writes to the app's private `camera-photos` directory first (Sync All only does
-  that step), then that local file is copied into the Photos library. Requests add-only/write-only
+  `downloadToPhotosDir()` writes to the app's private `camera-photos` directory first, then `saveToLibrary()` copies that local file into the Photos library.
+  Sync All does the same, but only for files it newly downloaded (a skipped file isn't re-added). Requests add-only/write-only
   permission (`requestPermissionsAsync(true)`) rather than full library read access. Unlike OCR accuracy,
   this *is* verifiable on simulator/emulator (both have a Photos/Gallery app) — no physical device
   needed to confirm the image actually lands in the library, not just that the button flips state.
@@ -182,7 +182,7 @@ machine alone):
     the hardware encoder (`h264_videotoolbox` / `h264_mediacodec`). The original stays in `camera-photos`
     and the `.mp4` is written next to it. `plugins/withFfmpegKitMin.js` selects the smaller `min` FFmpeg
     build (needs `prebuild --clean`). This is unverified on real AVCHD files, and `h264_mediacodec`
-    encoding is the least certain part. Sync All doesn't convert.
+    encoding is the least certain part. Sync All converts too, via the same `saveToLibrary()`.
   - All of the above needs a physical RX100M3 with videos on the card.
 - Status bar: driven per screen by react-native-screens (`statusBarStyle` in `app/_layout.tsx`) with
   `UIViewControllerBasedStatusBarAppearance: true`. `expo-status-bar` was removed after the bar went

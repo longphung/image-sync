@@ -17,7 +17,7 @@ msgstr "{0} dBm"
 msgid "{0} items"
 msgstr "{0} mục"
 
-#: app/sync.tsx:110
+#: app/sync.tsx:117
 msgid "{index} of {total}"
 msgstr "{index}/{total}"
 
@@ -45,7 +45,7 @@ msgstr "Căn tên Wi-Fi trên nhãn máy ảnh vào trong khung, rồi nhấn ch
 msgid "Allow Camera"
 msgstr "Cho phép camera"
 
-#: app/sync.tsx:145
+#: app/sync.tsx:152
 msgid "already on device"
 msgstr "đã có trên máy"
 
@@ -86,13 +86,13 @@ msgstr "SSID máy ảnh (DIRECT-…)"
 msgid "Camera took too long to respond. Please try again."
 msgstr "Máy ảnh phản hồi quá lâu. Vui lòng thử lại."
 
-#: app/image/[filename].tsx:209
+#: app/image/[filename].tsx:204
 msgid "Can't play this video format"
 msgstr "Không phát được định dạng video này"
 
 #: app/(tabs)/(desktops)/index.tsx:71
 #: app/read-label.tsx:19
-#: app/sync.tsx:175
+#: app/sync.tsx:182
 msgid "Cancel"
 msgstr "Huỷ"
 
@@ -121,20 +121,20 @@ msgstr "Đã kết nối"
 msgid "Connecting to your camera"
 msgstr "Kết nối với máy ảnh của bạn"
 
-#: app/image/[filename].tsx:133
-#: app/image/[filename].tsx:193
+#: app/image/[filename].tsx:128
+#: app/image/[filename].tsx:188
 msgid "Converting…"
 msgstr "Đang chuyển đổi…"
 
-#: app/image/[filename].tsx:193
+#: app/image/[filename].tsx:188
 msgid "Converting… {percent}%"
 msgstr "Đang chuyển đổi… {percent}%"
 
-#: app/image/[filename].tsx:133
+#: app/image/[filename].tsx:128
 msgid "Converting… {savePercent}%"
 msgstr "Đang chuyển đổi… {savePercent}%"
 
-#: app/image/[filename].tsx:189
+#: app/image/[filename].tsx:184
 msgid "Couldn't load this video"
 msgstr "Không tải được video này"
 
@@ -151,11 +151,11 @@ msgstr "Máy tính"
 msgid "Disconnect"
 msgstr "Ngắt kết nối"
 
-#: app/sync.tsx:175
+#: app/sync.tsx:182
 msgid "Done"
 msgstr "Xong"
 
-#: app/sync.tsx:144
+#: app/sync.tsx:151
 msgid "downloaded"
 msgstr "đã tải"
 
@@ -167,7 +167,7 @@ msgstr "Nhập Wi-Fi thủ công"
 msgid "Enter Wi-Fi Manually"
 msgstr "Nhập Wi-Fi thủ công"
 
-#: app/sync.tsx:146
+#: app/sync.tsx:153
 msgid "failed"
 msgstr "thất bại"
 
@@ -175,7 +175,7 @@ msgstr "thất bại"
 msgid "Failed to capture photo."
 msgstr "Không chụp được ảnh."
 
-#: app/image/[filename].tsx:88
+#: app/image/[filename].tsx:83
 msgid "Failed to load image"
 msgstr "Không tải được ảnh"
 
@@ -216,11 +216,11 @@ msgstr "Đang kết nối…"
 msgid "Leave blank for open networks"
 msgstr "Để trống nếu là mạng mở"
 
-#: app/image/[filename].tsx:194
+#: app/image/[filename].tsx:189
 msgid "Loading video…"
 msgstr "Đang tải video…"
 
-#: app/image/[filename].tsx:194
+#: app/image/[filename].tsx:189
 msgid "Loading video… {percent}%"
 msgstr "Đang tải video… {percent}%"
 
@@ -316,7 +316,7 @@ msgstr "Đã ghép nối"
 msgid "Pairing…"
 msgstr "Đang ghép nối…"
 
-#: app/image/[filename].tsx:52
+#: src/fileSystem.ts:87
 msgid "Photo library access is needed to save this file."
 msgstr "Cần quyền truy cập thư viện ảnh để lưu tệp này."
 
@@ -380,27 +380,27 @@ msgid "Retry"
 msgstr "Thử lại"
 
 #. placeholder {0}: retryable.length
-#: app/sync.tsx:172
+#: app/sync.tsx:179
 msgid "Retry Failed ({0})"
 msgstr "Thử lại mục lỗi ({0})"
 
-#: app/image/[filename].tsx:135
+#: app/image/[filename].tsx:130
 msgid "Retry Save"
 msgstr "Lưu lại"
 
-#: app/image/[filename].tsx:136
+#: app/image/[filename].tsx:131
 msgid "Save to Photos"
 msgstr "Lưu vào Ảnh"
 
-#: app/image/[filename].tsx:124
+#: app/image/[filename].tsx:119
 msgid "Saved to Photos"
 msgstr "Đã lưu vào Ảnh"
 
-#: app/image/[filename].tsx:131
+#: app/image/[filename].tsx:126
 msgid "Saving…"
 msgstr "Đang lưu…"
 
-#: app/image/[filename].tsx:131
+#: app/image/[filename].tsx:126
 msgid "Saving… {savePercent}%"
 msgstr "Đang lưu… {savePercent}%"
 
@@ -438,19 +438,19 @@ msgstr "Đồng bộ tất cả"
 msgid "Sync All ({0})"
 msgstr "Đồng bộ tất cả ({0})"
 
-#: app/sync.tsx:106
+#: app/sync.tsx:113
 msgid "Sync complete"
 msgstr "Đồng bộ hoàn tất"
 
-#: app/sync.tsx:104
+#: app/sync.tsx:111
 msgid "Sync finished with errors"
 msgstr "Đồng bộ xong nhưng có lỗi"
 
-#: app/sync.tsx:102
+#: app/sync.tsx:109
 msgid "Sync stopped"
 msgstr "Đã dừng đồng bộ"
 
-#: app/sync.tsx:100
+#: app/sync.tsx:107
 msgid "Syncing photos…"
 msgstr "Đang đồng bộ ảnh…"
 
