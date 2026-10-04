@@ -24,8 +24,14 @@ src/theme/colors.ts   native semantic colors (UIKit system colors / Material 3 d
 src/components/       ActionButton + ProgressBar have .ios.tsx (SwiftUI, liquid glass on iOS 26+) and
                       .android.tsx (Jetpack Compose, Material 3) variants via @expo/ui; the plain .tsx is
                       the web fallback and the shared props type
-app/                  expo-router screens: index (2-step connect) -> join-wifi -> images (grid) -> sync
-                      (progress modal) / image/[filename] (photo/video detail + Save to Photos); read-label (OCR modal)
+desktop/              Tauri v2 desktop hub (Rust + Svelte 5/Vite UI in desktop/ui, own package.json): USB card picker
+                      + import, HTTP API for phones, see docs/desktop-plan.md. Excluded from the root tsconfig
+src/desktops.ts       paired desktop hubs, persisted as JSON in the documents directory
+app/                  expo-router screens: (tabs) = native tabs, (desktops)/index (default: paired desktops,
+                      pull to refresh) and camera/index (2-step connect) -> join-wifi; both -> images (grid)
+                      -> sync (progress modal) / image/[filename] (photo/video detail + Save to Photos);
+                      read-label (OCR modal); scan-pairing (desktop pairing QR modal)
+src/sync.ts           pure Sync All loop (skip / fail / stop-after-3 / duplicate-name rules), tested in Node
 ```
 
 Package manager is **pnpm** with `node-linker=hoisted` (`.npmrc`) — React Native autolinking expects a
@@ -42,7 +48,8 @@ Public API (`src/camera/index.ts`):
 ```ts
 getCameraInfo(host?: string): Promise<CameraInfo>; // { api, name? }
 listImages(api: CameraApi): Promise<ImageItem[]>;
-type CameraApi = { kind: 'dlna'; controlUrl; photoRoot } | { kind: 'scalar'; baseUrl };
+type CameraApi = { kind: 'dlna'; controlUrl; photoRoot } | { kind: 'scalar'; baseUrl }
+  | { kind: 'desktop'; baseUrl; token }; // desktop hub, see docs/desktop-plan.md
 type ImageItem = { title; url; filename; thumbnailUrl };
 ```
 
@@ -81,7 +88,7 @@ That function replaces `&amp;` *last*, so `&amp;lt;` peels exactly one level to 
 `fast-xml-parser` decodes entities in one left-to-right scan over the whole text node, so text
 containing `&amp;` etc. is never split or truncated. (The old Rust parser had exactly that bug at first.)
 
-Tests: `pnpm test` runs `src/camera/camera.test.ts` with Node's built-in test runner. Node strips the TS
+Tests: `pnpm test` runs every `src/**/*.test.ts` with Node's built-in test runner (`desktop.test.ts` starts a local HTTP server). Node strips the TS
 types itself, which is why `src/camera/` imports use explicit `.ts` extensions
 (`allowImportingTsExtensions` in `tsconfig.json`; Metro resolves the exact path). They use inline
 XML/JSON fixtures and need no live camera. See especially "parseBrowseResponse handles the

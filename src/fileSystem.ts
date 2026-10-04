@@ -1,4 +1,5 @@
 import { Directory, File, Paths } from 'expo-file-system';
+import { checkFilename } from './sync';
 
 const PHOTOS_DIR_NAME = 'camera-photos';
 
@@ -20,6 +21,7 @@ export async function downloadToPhotosDir(
   filename: string,
   { signal, onPercent }: { signal?: AbortSignal; onPercent?: (percent: number) => void } = {},
 ): Promise<boolean> {
+  checkFilename(filename);
   const dir = getPhotosDirectory();
   const dest = new File(dir, filename);
   if (dest.exists) return false;
@@ -39,11 +41,18 @@ export async function downloadToPhotosDir(
         }
       },
     });
+    // Another download of the same file (the detail screen while Sync All runs) can finish
+    // first; its copy is complete, so this one is a skip rather than a failed move.
+    if (dest.exists) {
+      part.delete();
+      return false;
+    }
     await part.move(dest);
   } catch (err) {
     try {
       if (part.exists) part.delete();
     } catch {}
+    if (dest.exists && !signal?.aborted) return false;
     throw err;
   }
   return true;

@@ -16,7 +16,7 @@ function AppNavigator() {
     // Status bar is driven per screen by react-native-screens (statusBarStyle), not
     // expo-status-bar: it works with both the iOS scene lifecycle and Android edge-to-edge.
     <Stack screenOptions={{ contentStyle: { backgroundColor: colors.background }, statusBarStyle: 'auto' }}>
-      <Stack.Screen name="index" options={{ title: 'image-sync', headerLargeTitle: true }} />
+      <Stack.Screen name="(tabs)" options={{ headerShown: false, title: 'image-sync' }} />
       <Stack.Screen name="join-wifi" options={{ title: t`Join Camera Wi-Fi` }} />
       <Stack.Screen name="images" options={{ title: t`Images` }} />
       <Stack.Screen
@@ -34,6 +34,7 @@ function AppNavigator() {
         }}
       />
       <Stack.Screen name="read-label" options={{ title: t`Read Wi-Fi Label`, presentation: 'modal' }} />
+      <Stack.Screen name="scan-pairing" options={{ title: t`Pair with Desktop`, presentation: 'modal' }} />
     </Stack>
   );
 }

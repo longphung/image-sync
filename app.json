@@ -10,9 +10,10 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.longphung.imagesync",
       "infoPlist": {
-        "NSLocalNetworkUsageDescription": "image-sync uses the local network to connect to your Sony camera over Wi-Fi.",
+        "NSLocalNetworkUsageDescription": "image-sync uses the local network to connect to your Sony camera over Wi-Fi and to find the image-sync desktop app.",
         "NSLocationWhenInUseUsageDescription": "image-sync needs location access to find and join your camera's Wi-Fi network.",
-        "UIViewControllerBasedStatusBarAppearance": true
+        "UIViewControllerBasedStatusBarAppearance": true,
+        "NSBonjourServices": ["_image-sync._tcp"]
       }
     },
     "android": {
@@ -45,10 +46,10 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "image-sync uses the camera to read text from your camera's Wi-Fi label.",
+          "cameraPermission": "image-sync uses the camera to read your camera's Wi-Fi label and to scan desktop pairing codes.",
           "microphonePermission": false,
           "recordAudioAndroid": false,
-          "barcodeScannerEnabled": false
+          "barcodeScannerEnabled": true
         }
       ],
       "expo-localization",

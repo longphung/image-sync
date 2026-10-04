@@ -18,19 +18,24 @@ msgstr ""
 msgid "{0} dBm"
 msgstr "{0} dBm"
 
-#: app/sync.tsx:87
+#. placeholder {0}: h.count
+#: app/(tabs)/(desktops)/index.tsx:132
+msgid "{0} items"
+msgstr "{0} items"
+
+#: app/sync.tsx:110
 msgid "{index} of {total}"
 msgstr "{index} of {total}"
 
-#: app/images.tsx:70
+#: app/images.tsx:71
 msgid "{photoCount} photos · {videoCount} videos"
 msgstr "{photoCount} photos · {videoCount} videos"
 
-#: app/index.tsx:51
+#: app/(tabs)/camera/index.tsx:64
 msgid "1. Camera Wi-Fi"
 msgstr "1. Camera Wi-Fi"
 
-#: app/index.tsx:87
+#: app/(tabs)/camera/index.tsx:100
 msgid "2. Camera"
 msgstr "2. Camera"
 
@@ -42,7 +47,11 @@ msgstr "Align the password on the camera label inside the frame, then tap captur
 msgid "Align the Wi-Fi name on the camera label inside the frame, then tap capture."
 msgstr "Align the Wi-Fi name on the camera label inside the frame, then tap capture."
 
-#: app/sync.tsx:122
+#: app/scan-pairing.tsx:54
+msgid "Allow Camera"
+msgstr "Allow Camera"
+
+#: app/sync.tsx:145
 msgid "already on device"
 msgstr "already on device"
 
@@ -50,9 +59,26 @@ msgstr "already on device"
 msgid "Android will also route this app's traffic over this Wi-Fi network (it has no internet)."
 msgstr "Android will also route this app's traffic over this Wi-Fi network (it has no internet)."
 
+#: app/(tabs)/(desktops)/index.tsx:86
+msgid "Browse and download photos imported by the image-sync desktop app."
+msgstr "Browse and download photos imported by the image-sync desktop app."
+
+#: app/index.tsx:178
+#~ msgid "Browse photos already imported by the image-sync desktop app."
+#~ msgstr "Browse photos already imported by the image-sync desktop app."
+
+#: app/(tabs)/_layout.tsx:14
+#: app/(tabs)/camera/index.tsx:56
+msgid "Camera"
+msgstr "Camera"
+
 #: src/labelOcr/PermissionGate.tsx:58
 msgid "Camera access is needed to read the Wi-Fi label."
 msgstr "Camera access is needed to read the Wi-Fi label."
+
+#: app/scan-pairing.tsx:51
+msgid "Camera access is needed to scan the pairing code shown on your computer."
+msgstr "Camera access is needed to scan the pairing code shown on your computer."
 
 #: app/join-wifi.tsx:147
 msgid "Camera networks"
@@ -70,12 +96,13 @@ msgstr "Camera took too long to respond. Please try again."
 msgid "Can't play this video format"
 msgstr "Can't play this video format"
 
+#: app/(tabs)/(desktops)/index.tsx:71
 #: app/read-label.tsx:19
-#: app/sync.tsx:134
+#: app/sync.tsx:175
 msgid "Cancel"
 msgstr "Cancel"
 
-#: app/index.tsx:92
+#: app/(tabs)/camera/index.tsx:105
 msgid "Checking camera…"
 msgstr "Checking camera…"
 
@@ -83,20 +110,20 @@ msgstr "Checking camera…"
 msgid "Close"
 msgstr "Close"
 
-#: app/images.tsx:77
-#: app/index.tsx:134
+#: app/(tabs)/camera/index.tsx:147
+#: app/images.tsx:78
 msgid "Connect"
 msgstr "Connect"
 
-#: app/index.tsx:104
+#: app/(tabs)/camera/index.tsx:117
 msgid "Connect to the camera at this address."
 msgstr "Connect to the camera at this address."
 
-#: app/index.tsx:90
+#: app/(tabs)/camera/index.tsx:103
 msgid "Connected"
 msgstr "Connected"
 
-#: app/index.tsx:33
+#: app/(tabs)/camera/index.tsx:45
 msgid "Connecting to your camera"
 msgstr "Connecting to your camera"
 
@@ -117,15 +144,20 @@ msgstr "Converting… {savePercent}%"
 msgid "Couldn't load this video"
 msgstr "Couldn't load this video"
 
-#: app/images.tsx:167
+#: app/(tabs)/_layout.tsx:10
+#: app/(tabs)/(desktops)/index.tsx:84
+msgid "Desktop"
+msgstr "Desktop"
+
+#: app/images.tsx:172
 msgid "Disconnect"
 msgstr "Disconnect"
 
-#: app/sync.tsx:134
+#: app/sync.tsx:175
 msgid "Done"
 msgstr "Done"
 
-#: app/sync.tsx:121
+#: app/sync.tsx:144
 msgid "downloaded"
 msgstr "downloaded"
 
@@ -133,11 +165,11 @@ msgstr "downloaded"
 msgid "Enter Wi-Fi manually"
 msgstr "Enter Wi-Fi manually"
 
-#: app/index.tsx:69
+#: app/(tabs)/camera/index.tsx:82
 msgid "Enter Wi-Fi Manually"
 msgstr "Enter Wi-Fi Manually"
 
-#: app/sync.tsx:123
+#: app/sync.tsx:146
 msgid "failed"
 msgstr "failed"
 
@@ -149,6 +181,14 @@ msgstr "Failed to capture photo."
 msgid "Failed to load image"
 msgstr "Failed to load image"
 
+#: app/index.tsx:53
+#~ msgid "Forget"
+#~ msgstr "Forget"
+
+#: app/index.tsx:51
+#~ msgid "Forget {name}?"
+#~ msgstr "Forget {name}?"
+
 #: src/labelOcr/PermissionGate.tsx:63
 msgid "Grant Camera Access"
 msgstr "Grant Camera Access"
@@ -157,7 +197,7 @@ msgstr "Grant Camera Access"
 msgid "Hide password"
 msgstr "Hide password"
 
-#: app/index.tsx:109
+#: app/(tabs)/camera/index.tsx:122
 msgid "Host IP"
 msgstr "Host IP"
 
@@ -170,11 +210,11 @@ msgid "Join {ssid}"
 msgstr "Join {ssid}"
 
 #: app/_layout.tsx:20
-#: app/index.tsx:76
+#: app/(tabs)/camera/index.tsx:89
 msgid "Join Camera Wi-Fi"
 msgstr "Join Camera Wi-Fi"
 
-#: app/index.tsx:59
+#: app/(tabs)/camera/index.tsx:72
 msgid "Join your camera's Wi-Fi network (DIRECT-…)."
 msgstr "Join your camera's Wi-Fi network (DIRECT-…)."
 
@@ -194,7 +234,7 @@ msgstr "Loading video…"
 msgid "Loading video… {percent}%"
 msgstr "Loading video… {percent}%"
 
-#: app/images.tsx:72
+#: app/images.tsx:73
 msgid "Loading…"
 msgstr "Loading…"
 
@@ -202,11 +242,15 @@ msgstr "Loading…"
 msgid "Location permission was denied."
 msgstr "Location permission was denied."
 
+#: app/index.tsx:195
+#~ msgid "Long press to forget this desktop"
+#~ msgstr "Long press to forget this desktop"
+
 #: app/_layout.tsx:29
 msgid "Media"
 msgstr "Media"
 
-#: app/index.tsx:143
+#: app/(tabs)/camera/index.tsx:156
 msgid "Need help?"
 msgstr "Need help?"
 
@@ -214,38 +258,77 @@ msgstr "Need help?"
 msgid "No camera networks found. Make sure the camera is in Send to Smartphone mode, then search again."
 msgstr "No camera networks found. Make sure the camera is in Send to Smartphone mode, then search again."
 
-#: app/images.tsx:109
+#: app/(tabs)/(desktops)/index.tsx:183
+msgid "No desktops yet. Open the image-sync desktop app on your computer, then scan the pairing code in its Phone & settings tab."
+msgstr "No desktops yet. Open the image-sync desktop app on your computer, then scan the pairing code in its Phone & settings tab."
+
+#: app/images.tsx:113
 msgid "No photos or videos on the camera."
 msgstr "No photos or videos on the camera."
+
+#: app/images.tsx:111
+msgid "No photos or videos on this desktop yet."
+msgstr "No photos or videos on this desktop yet."
 
 #: src/labelOcr/ReviewSheet.tsx:141
 msgid "No text detected — you can type it in manually below."
 msgstr "No text detected — you can type it in manually below."
 
-#: app/index.tsx:52
-#: app/index.tsx:93
+#: app/(tabs)/camera/index.tsx:65
+#: app/(tabs)/camera/index.tsx:106
 msgid "Not connected"
 msgstr "Not connected"
 
-#: app/index.tsx:34
+#: app/(tabs)/(desktops)/index.tsx:174
+msgid "Not paired yet. Tap to scan its pairing code."
+msgstr "Not paired yet. Tap to scan its pairing code."
+
+#: app/(tabs)/camera/index.tsx:46
 msgid "On the camera, choose \"Send to Smartphone\" so it starts its own Wi-Fi network (named DIRECT-…). The network name and password are shown on the camera screen. Join that network here, then tap Connect."
 msgstr "On the camera, choose \"Send to Smartphone\" so it starts its own Wi-Fi network (named DIRECT-…). The network name and password are shown on the camera screen. Join that network here, then tap Connect."
+
+#: app/(tabs)/(desktops)/index.tsx:132
+#: app/(tabs)/(desktops)/index.tsx:134
+#: app/(tabs)/(desktops)/index.tsx:161
+msgid "On this network"
+msgstr "On this network"
 
 #: app/join-wifi.tsx:287
 msgid "Open"
 msgstr "Open"
 
-#: app/index.tsx:131
+#: app/(tabs)/camera/index.tsx:144
 msgid "Open Photos"
 msgstr "Open Photos"
 
+#: app/scan-pairing.tsx:56
 #: src/labelOcr/PermissionGate.tsx:69
 msgid "Open Settings"
 msgstr "Open Settings"
 
+#: app/index.tsx:173
+#~ msgid "Or"
+#~ msgstr "Or"
+
+#: app/_layout.tsx:37
+msgid "Pair with Desktop"
+msgstr "Pair with Desktop"
+
+#: app/(tabs)/(desktops)/index.tsx:92
+msgid "Paired"
+msgstr "Paired"
+
+#: app/scan-pairing.tsx:79
+msgid "Pairing…"
+msgstr "Pairing…"
+
 #: app/image/[filename].tsx:52
 msgid "Photo library access is needed to save this file."
 msgstr "Photo library access is needed to save this file."
+
+#: app/scan-pairing.tsx:91
+msgid "Point the camera at the pairing code in the image-sync desktop app (Phone & settings tab)."
+msgstr "Point the camera at the pairing code in the image-sync desktop app (Phone & settings tab)."
 
 #: src/labelOcr/CameraCaptureView.tsx:66
 msgid "Preparing camera…"
@@ -279,14 +362,33 @@ msgstr "Read Wi-Fi Password"
 msgid "Reading text…"
 msgstr "Reading text…"
 
+#: app/(tabs)/(desktops)/index.tsx:72
+msgid "Remove"
+msgstr "Remove"
+
+#. placeholder {0}: d.name
+#: app/(tabs)/(desktops)/index.tsx:147
+msgid "Remove {0}"
+msgstr "Remove {0}"
+
+#. placeholder {0}: d.name
+#: app/(tabs)/(desktops)/index.tsx:70
+msgid "Remove {0}?"
+msgstr "Remove {0}?"
+
 #: src/labelOcr/ReviewSheet.tsx:82
 #: src/labelOcr/ReviewSheet.tsx:132
 msgid "Retake"
 msgstr "Retake"
 
-#: app/images.tsx:105
+#: app/images.tsx:106
 msgid "Retry"
 msgstr "Retry"
+
+#. placeholder {0}: retryable.length
+#: app/sync.tsx:172
+msgid "Retry Failed ({0})"
+msgstr "Retry Failed ({0})"
 
 #: app/image/[filename].tsx:135
 msgid "Retry Save"
@@ -308,7 +410,11 @@ msgstr "Saving…"
 msgid "Saving… {savePercent}%"
 msgstr "Saving… {savePercent}%"
 
-#: app/index.tsx:65
+#: app/(tabs)/(desktops)/index.tsx:191
+msgid "Scan Pairing Code"
+msgstr "Scan Pairing Code"
+
+#: app/(tabs)/camera/index.tsx:78
 #: app/join-wifi.tsx:139
 msgid "Search for Camera"
 msgstr "Search for Camera"
@@ -334,15 +440,23 @@ msgid "Sync All"
 msgstr "Sync All"
 
 #. placeholder {0}: images.length
-#: app/images.tsx:91
+#: app/images.tsx:92
 msgid "Sync All ({0})"
 msgstr "Sync All ({0})"
 
-#: app/sync.tsx:84
+#: app/sync.tsx:106
 msgid "Sync complete"
 msgstr "Sync complete"
 
-#: app/sync.tsx:84
+#: app/sync.tsx:104
+msgid "Sync finished with errors"
+msgstr "Sync finished with errors"
+
+#: app/sync.tsx:102
+msgid "Sync stopped"
+msgstr "Sync stopped"
+
+#: app/sync.tsx:100
 msgid "Syncing photos…"
 msgstr "Syncing photos…"
 
@@ -354,9 +468,13 @@ msgstr "Text recognition isn't available on this device. You can still type the 
 msgid "Text recognition isn't available on this device. You can still type the Wi-Fi name in manually."
 msgstr "Text recognition isn't available on this device. You can still type the Wi-Fi name in manually."
 
-#: app/index.tsx:45
+#: app/(tabs)/camera/index.tsx:58
 msgid "Transfer photos from your Sony camera to your phone."
 msgstr "Transfer photos from your Sony camera to your phone."
+
+#: app/scan-pairing.tsx:87
+msgid "Try Again"
+msgstr "Try Again"
 
 #: src/labelOcr/ReviewSheet.tsx:91
 msgid "Use This Text"
@@ -370,6 +488,14 @@ msgstr "Wi-Fi name"
 msgid "Wi-Fi password"
 msgstr "Wi-Fi password"
 
-#: app/index.tsx:57
+#: app/(tabs)/(desktops)/index.tsx:70
+msgid "You'll need to pair with it again to see its photos."
+msgstr "You'll need to pair with it again to see its photos."
+
+#: app/index.tsx:51
+#~ msgid "You'll need to scan its pairing code again to reconnect."
+#~ msgstr "You'll need to scan its pairing code again to reconnect."
+
+#: app/(tabs)/camera/index.tsx:70
 msgid "Your phone is on this Wi-Fi network."
 msgstr "Your phone is on this Wi-Fi network."

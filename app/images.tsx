@@ -24,11 +24,11 @@ export default function ImagesScreen() {
   const insets = useSafeAreaInsets();
   const [downloaded, setDownloaded] = useState<Set<string>>(() => listDownloadedFilenames());
 
+  // Only for a JS reload landing here with no connection; Disconnect navigates by itself.
   useEffect(() => {
-    if (!api) {
-      router.replace('/');
-    }
-  }, [api]);
+    if (!api) router.replace('/');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // List automatically on first open; the "Retry" button covers failures.
   useEffect(() => {
@@ -54,10 +54,11 @@ export default function ImagesScreen() {
     });
   }, []);
 
+  // Back to the tab the connection came from.
   const handleDisconnect = useCallback(() => {
+    router.dismissTo(api?.kind === 'desktop' ? '/' : '/camera');
     disconnect();
-    router.replace('/');
-  }, [disconnect]);
+  }, [api, disconnect]);
 
   if (!api) {
     return null;
@@ -106,7 +107,11 @@ export default function ImagesScreen() {
               </>
             ) : imagesStatus === 'loaded' ? (
               <Text style={{ color: colors.secondaryLabel }}>
-                <Trans>No photos or videos on the camera.</Trans>
+                {api.kind === 'desktop' ? (
+                  <Trans>No photos or videos on this desktop yet.</Trans>
+                ) : (
+                  <Trans>No photos or videos on the camera.</Trans>
+                )}
               </Text>
             ) : (
               <ActivityIndicator size="large" />

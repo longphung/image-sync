@@ -7,7 +7,8 @@ export type ImageItem = {
 
 export type CameraApi =
   | { kind: 'dlna'; controlUrl: string; photoRoot: string }
-  | { kind: 'scalar'; baseUrl: string };
+  | { kind: 'scalar'; baseUrl: string }
+  | { kind: 'desktop'; baseUrl: string; token: string };
 
 /**
  * Result of discovery: which API the camera speaks plus its display name

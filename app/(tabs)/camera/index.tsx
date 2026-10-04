@@ -2,25 +2,37 @@ import { useCallback, useEffect } from 'react';
 import { ActivityIndicator, Alert, Platform, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
-import { router, useFocusEffect } from 'expo-router';
+import { router, Stack, useFocusEffect } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { Trans, useLingui } from '@lingui/react/macro';
-import { useCameraConnection } from '../src/CameraConnectionContext';
-import { ActionButton } from '../src/components/ActionButton';
-import { Card } from '../src/components/Card';
-import { colors } from '../src/theme/colors';
+import { useCameraConnection } from '../../../src/CameraConnectionContext';
+import { ActionButton } from '../../../src/components/ActionButton';
+import { Card } from '../../../src/components/Card';
+import { colors } from '../../../src/theme/colors';
 
 export default function ConnectScreen() {
   const { t } = useLingui();
   const insets = useSafeAreaInsets();
-  const { host, setHost, status, cameraName, errorMessage, connect, wifiSsid, refreshWifiSsid } =
-    useCameraConnection();
+  const {
+    host,
+    setHost,
+    status,
+    cameraName,
+    errorMessage,
+    connect,
+    wifiSsid,
+    refreshWifiSsid,
+    desktopId,
+  } = useCameraConnection();
+  // `status` / `errorMessage` describe the desktop with this id instead of the camera.
+  const cameraStatus = desktopId ? 'idle' : status;
+  const cameraError = desktopId ? null : errorMessage;
 
   useEffect(() => {
-    if (status === 'connected') {
+    if (status === 'connected' && !desktopId) {
       router.push('/images');
     }
-  }, [status]);
+  }, [status, desktopId]);
 
   useFocusEffect(
     useCallback(() => {
@@ -41,6 +53,7 @@ export default function ConnectScreen() {
       keyboardShouldPersistTaps="handled"
       contentContainerStyle={{ padding: 16, paddingBottom: 16 + insets.bottom, gap: 16 }}
     >
+      <Stack.Screen options={{ title: t`Camera` }} />
       <Text style={{ color: colors.secondaryLabel, fontSize: 15 }}>
         <Trans>Transfer photos from your Sony camera to your phone.</Trans>
       </Text>
@@ -86,18 +99,18 @@ export default function ConnectScreen() {
           icon={{ ios: 'camera', android: 'photo_camera' }}
           step={t`2. Camera`}
           title={
-            status === 'connected'
+            cameraStatus === 'connected'
               ? (cameraName ?? t`Connected`)
-              : status === 'connecting'
+              : cameraStatus === 'connecting'
                 ? t`Checking camera…`
                 : t`Not connected`
           }
-          connected={status === 'connected'}
-          loading={status === 'connecting'}
+          connected={cameraStatus === 'connected'}
+          loading={cameraStatus === 'connecting'}
         />
-        {errorMessage ? (
+        {cameraError ? (
           <Text style={{ color: colors.error }} selectable>
-            {errorMessage}
+            {cameraError}
           </Text>
         ) : (
           <Text style={{ color: colors.secondaryLabel }}>
@@ -127,7 +140,7 @@ export default function ConnectScreen() {
             }}
           />
         </View>
-        {status === 'connected' ? (
+        {cameraStatus === 'connected' ? (
           <ActionButton label={t`Open Photos`} onPress={() => router.push('/images')} />
         ) : (
           <ActionButton
