@@ -29,7 +29,7 @@ src/components/       ActionButton + ProgressBar have .ios.tsx (SwiftUI, liquid 
                       .android.tsx (Jetpack Compose, Material 3) variants via @expo/ui; the plain .tsx is
                       the web fallback and the shared props type
 app/                  expo-router screens: index (2-step connect) -> join-wifi -> images (grid) -> sync
-                      (progress modal) / image/[filename] (detail + Save to Photos); scan-wifi (OCR modal)
+                      (progress modal) / image/[filename] (photo/video detail + Save to Photos); read-label (OCR modal)
 ```
 
 Package manager is **pnpm** with `node-linker=hoisted` (`.npmrc`) — React Native autolinking and the
@@ -171,10 +171,10 @@ machine alone):
 - Real `listImages` data, a real thumbnail loading over HTTP, `downloadImage` writing a real file.
 - Whether the synchronous-FFI-blocking tradeoff (see above) is actually noticeable in practice — decide
   whether to convert to async uniffi exports based on real usage, not preemptively.
-- The camera-based OCR Wi-Fi scanning feature (`src/ocr.ts`, `app/scan-wifi.tsx`, `src/wifiOcrScanner/`,
-  `src/WifiScanContext.tsx`, "Scan SSID"/"Scan Password" buttons in `app/index.tsx`): OCR accuracy and
+- The camera-based OCR "read Wi-Fi label" feature (`src/ocr.ts`, `app/read-label.tsx`, `src/labelOcr/`,
+  `src/LabelOcrContext.tsx`, "Read … from Label" buttons in `app/join-wifi.tsx`): OCR accuracy and
   the full capture→confirm→join flow need a physical device with a printed Wi-Fi label to verify —
-  simulators have no real camera hardware. Camera permission plumbing and the scanner's UI states
+  simulators have no real camera hardware. Camera permission plumbing and the reader's UI states
   (permission-denied, no-text-detected, etc.) can be exercised on simulator/emulator without one.
 - Downloaded images (`app/image/[filename].tsx`'s Download button) are now saved into the phone's
   shared Photos library via `expo-media-library`'s `Asset.create()`, not just app-private storage —
@@ -183,6 +183,25 @@ machine alone):
   permission (`requestPermissionsAsync(true)`) rather than full library read access. Unlike OCR accuracy,
   this *is* verifiable on simulator/emulator (both have a Photos/Gallery app) — no physical device
   needed to confirm the image actually lands in the library, not just that the button flips state.
+
+- **Camera videos: partial, needs further implementation and verification.** The DLNA listing has no
+  media-type filter, so videos (the reference repo pulled `.MP4`/`.MTS`) should already appear in
+  `listImages`. The JS side classifies them by file extension only (`src/fileSystem.ts`'s `isVideoFile()`),
+  shows a play badge in the grid, streams them with `expo-video` on the detail screen, and saves them
+  with the same `downloadImage()` → `Asset.create()` path as photos. Still to do:
+  - Listing: classify in Rust from the DIDL `upnp:class`/`protocolInfo` mime instead of the extension.
+    `pick_original_res()` does pick the real video file. The Python reference, which uses the same logic,
+    downloaded full `.MP4` (ISO media) and `.MTS` (M2TS) files from the camera. The Scalar path still requests only `type: ["still"]`.
+  - Display: no real video has been listed, thumbnailed, or played from the camera yet. AVCHD `.MTS`
+    won't play on iOS, so the detail screen shows "Can't play this video format".
+  - Saving: `downloadImage()` is synchronous, so a large video blocks the JS thread for the whole
+    download (detail Save and Sync All). That is a strong reason to do the async-uniffi conversion.
+    `.MTS` can't be added to the iOS Photos library.
+  - All of the above needs a physical RX100M3 with videos on the card.
+- Status bar: driven per screen by react-native-screens (`statusBarStyle` in `app/_layout.tsx`) with
+  `UIViewControllerBasedStatusBarAppearance: true`. `expo-status-bar` was removed after the bar went
+  missing on both platforms. The fix hasn't been confirmed on a rebuilt app yet. If iOS still hides it,
+  try `ios.enableSceneSupport: false` in `app.json` next.
 
 Explicitly out of scope so far, not started: auto-polling/background sync, multi-camera support,
 tap-to-view-full-res modal, Scalar Web API path is implemented but never exercised against real

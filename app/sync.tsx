@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, Stack } from 'expo-router';
 import { Image } from 'expo-image';
 import { Trans, useLingui } from '@lingui/react/macro';
@@ -15,6 +16,7 @@ type Counts = { downloaded: number; skipped: number; failed: number };
 
 export default function SyncScreen() {
   const { t } = useLingui();
+  const insets = useSafeAreaInsets();
   const { images } = useCameraConnection();
   // Snapshot so a list refresh mid-sync can't change what's being iterated.
   const [queue] = useState<ImageItem[]>(() => images);
@@ -70,7 +72,7 @@ export default function SyncScreen() {
   return (
     <ScrollView
       contentInsetAdjustmentBehavior="automatic"
-      contentContainerStyle={{ padding: 16, gap: 20, flexGrow: 1 }}
+      contentContainerStyle={{ padding: 16, paddingBottom: 16 + insets.bottom, gap: 20, flexGrow: 1 }}
     >
       <Stack.Screen options={{ headerBackVisible: false }} />
 

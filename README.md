@@ -7,7 +7,7 @@ Scalar Web API fallback) is implemented in Rust and exposed to React Native via
 
 ## Features
 
-- Join the camera's `DIRECT-...` Wi-Fi from inside the app (or scan the SSID/password off the camera
+- Join the camera's `DIRECT-...` Wi-Fi from inside the app (or read the SSID/password off the camera
   screen with OCR)
 - Auto-discover the camera at `192.168.122.1`, with a manual IP override
 - Browse photos in a grid, showing which ones are already on the device

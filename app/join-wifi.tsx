@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Platform, Pressable, Text, TextInput, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { router, useLocalSearchParams } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
@@ -9,13 +10,13 @@ import { ActionButton } from '../src/components/ActionButton';
 import { Card } from '../src/components/Card';
 import { isTextRecognitionSupported } from '../src/ocr';
 import { colors } from '../src/theme/colors';
-import { useWifiScan } from '../src/WifiScanContext';
+import { useLabelOcr } from '../src/LabelOcrContext';
 import {
   isSecuredNetwork,
   isWepNetwork,
   joinNetwork,
   requestLocationPermission,
-  scanNetworks,
+  searchNetworks,
   signalSymbol,
   type WifiEntry,
 } from '../src/wifi';
@@ -39,16 +40,17 @@ const fieldStyle = {
 
 export default function JoinWifiScreen() {
   const { t } = useLingui();
+  const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ manual?: string }>();
   const { connect, refreshWifiSsid } = useCameraConnection();
-  const { beginScan } = useWifiScan();
+  const { beginRead } = useLabelOcr();
   const ocrSupported = isTextRecognitionSupported();
 
   // iOS can't list nearby networks, so it's always manual SSID entry there.
   const [manual, setManual] = useState(Platform.OS !== 'android' || params.manual === '1');
   const [networks, setNetworks] = useState<WifiEntry[]>([]);
-  const [scanning, setScanning] = useState(false);
-  const [scanError, setScanError] = useState<string | null>(null);
+  const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
 
   const [ssid, setSsid] = useState('');
   const [password, setPassword] = useState('');
@@ -56,29 +58,29 @@ export default function JoinWifiScreen() {
   const [joining, setJoining] = useState(false);
   const [joinError, setJoinError] = useState<string | null>(null);
 
-  const handleScan = useCallback(
+  const handleSearch = useCallback(
     async (force: boolean) => {
-      setScanning(true);
-      setScanError(null);
+      setSearching(true);
+      setSearchError(null);
       try {
         const granted = await requestLocationPermission();
         if (!granted) {
-          setScanError(t`Location permission was denied.`);
+          setSearchError(t`Location permission was denied.`);
           return;
         }
-        setNetworks(await scanNetworks(force));
+        setNetworks(await searchNetworks(force));
       } catch (err) {
-        setScanError(err instanceof Error ? err.message : String(err));
+        setSearchError(err instanceof Error ? err.message : String(err));
       } finally {
-        setScanning(false);
+        setSearching(false);
       }
     },
     [t],
   );
 
   useEffect(() => {
-    if (!manual) handleScan(false);
-    // Only auto-scan once on open; later scans are user-triggered.
+    if (!manual) handleSearch(false);
+    // Only auto-search once on open; later searches are user-triggered.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -109,16 +111,16 @@ export default function JoinWifiScreen() {
     }
   }, [ssid, password, networks, refreshWifiSsid, connect]);
 
-  const handleScanSsid = useCallback(() => {
-    beginScan('ssid', (text) => {
+  const handleReadSsid = useCallback(() => {
+    beginRead('ssid', (text) => {
       setManual(true);
       selectSsid(text);
     });
-  }, [beginScan, selectSsid]);
+  }, [beginRead, selectSsid]);
 
-  const handleScanPassword = useCallback(() => {
-    beginScan('password', (text) => setPassword(text));
-  }, [beginScan]);
+  const handleReadPassword = useCallback(() => {
+    beginRead('password', (text) => setPassword(text));
+  }, [beginRead]);
 
   const selectedNetwork = networks.find((entry) => entry.SSID === ssid);
 
@@ -126,7 +128,7 @@ export default function JoinWifiScreen() {
     <KeyboardAwareScrollView
       contentInsetAdjustmentBehavior="automatic"
       keyboardShouldPersistTaps="handled"
-      contentContainerStyle={{ padding: 16, gap: 16 }}
+      contentContainerStyle={{ padding: 16, paddingBottom: 16 + insets.bottom, gap: 16 }}
     >
       {!manual ? (
         <>
@@ -134,21 +136,21 @@ export default function JoinWifiScreen() {
             <Trans>Select your camera&apos;s Wi-Fi network.</Trans>
           </Text>
           <ActionButton
-            label={scanning ? t`Scanning…` : t`Scan for Camera`}
-            onPress={() => handleScan(true)}
-            disabled={scanning}
+            label={searching ? t`Searching…` : t`Search for Camera`}
+            onPress={() => handleSearch(true)}
+            disabled={searching}
           />
-          {scanError && <Text style={{ color: colors.error }}>{scanError}</Text>}
+          {searchError && <Text style={{ color: colors.error }}>{searchError}</Text>}
 
           <Card style={{ paddingVertical: 4, gap: 0 }}>
             <Text style={{ color: colors.secondaryLabel, fontSize: 13, paddingVertical: 8 }}>
               <Trans>Camera networks</Trans>
             </Text>
-            {scanning && networks.length === 0 ? (
+            {searching && networks.length === 0 ? (
               <ActivityIndicator style={{ paddingVertical: 16 }} />
             ) : networks.length === 0 ? (
               <Text style={{ color: colors.secondaryLabel, paddingVertical: 12 }}>
-                <Trans>No camera networks found. Make sure the camera is in Send to Smartphone mode, then scan again.</Trans>
+                <Trans>No camera networks found. Make sure the camera is in Send to Smartphone mode, then search again.</Trans>
               </Text>
             ) : (
               networks.map((item) => (
@@ -165,7 +167,7 @@ export default function JoinWifiScreen() {
           <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 8 }}>
             <ActionButton label={t`Enter Wi-Fi manually`} variant="text" onPress={() => setManual(true)} />
             {ocrSupported && (
-              <ActionButton label={t`Scan Wi-Fi label`} variant="text" onPress={handleScanSsid} />
+              <ActionButton label={t`Read from Label`} variant="text" onPress={handleReadSsid} />
             )}
           </View>
         </>
@@ -187,10 +189,10 @@ export default function JoinWifiScreen() {
           </View>
           {ocrSupported && (
             <ActionButton
-              label={t`Scan Wi-Fi name`}
+              label={t`Read Name from Label`}
               variant="secondary"
               systemImage="text.viewfinder"
-              onPress={handleScanSsid}
+              onPress={handleReadSsid}
             />
           )}
         </View>
@@ -238,10 +240,10 @@ export default function JoinWifiScreen() {
           </View>
           {ocrSupported && (
             <ActionButton
-              label={t`Scan password`}
+              label={t`Read Password from Label`}
               variant="secondary"
               systemImage="text.viewfinder"
-              onPress={handleScanPassword}
+              onPress={handleReadPassword}
             />
           )}
           <ActionButton

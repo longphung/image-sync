@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
-import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import BottomSheet, {
   BottomSheetFooter,
+  BottomSheetTextInput,
   BottomSheetView,
   useBottomSheetScrollableCreator,
   type BottomSheetFooterProps,
@@ -66,7 +67,8 @@ export function ReviewSheet({ capture, onSelectLine, onChangeText, onRetake, onC
     return (
       <BottomSheetFooter {...footerProps}>
         <View style={styles.footerContent}>
-          <TextInput
+          {/* Must be BottomSheetTextInput: the sheet only reacts to the keyboard for its own input. */}
+          <BottomSheetTextInput
             value={capture.text}
             onChangeText={onChangeText}
             autoCapitalize="none"
@@ -102,7 +104,7 @@ export function ReviewSheet({ capture, onSelectLine, onChangeText, onRetake, onC
       snapPoints={['45%', '90%']}
       enableDynamicSizing={false}
       enablePanDownToClose
-      keyboardBehavior="interactive"
+      keyboardBehavior="extend"
       keyboardBlurBehavior="restore"
       android_keyboardInputMode="adjustResize"
       footerComponent={renderFooter}

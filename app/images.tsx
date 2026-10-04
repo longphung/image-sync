@@ -9,12 +9,13 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import type { ImageItem } from 'image-sync-core';
 import { useCameraConnection } from '../src/CameraConnectionContext';
 import { ActionButton } from '../src/components/ActionButton';
-import { listDownloadedFilenames } from '../src/fileSystem';
+import { isVideoFile, listDownloadedFilenames } from '../src/fileSystem';
 import { colors } from '../src/theme/colors';
 
 const COLUMNS = 3;
 // Half the visual gap — each tile pads itself, so neighbours add up to a 2pt gutter.
 const TILE_INSET = 1;
+const badgeShadow = { shadowColor: '#000', shadowOpacity: 0.5, shadowRadius: 2, shadowOffset: { width: 0, height: 0 } };
 
 export default function ImagesScreen() {
   const { t } = useLingui();
@@ -62,8 +63,14 @@ export default function ImagesScreen() {
     return null;
   }
 
+  const videoCount = images.filter((item) => isVideoFile(item.filename)).length;
+  const photoCount = images.length - videoCount;
   const subtitle =
-    imagesStatus === 'loaded' ? t`${images.length} photos` : imagesStatus === 'loading' ? t`Loading…` : '';
+    imagesStatus === 'loaded'
+      ? t`${photoCount} photos · ${videoCount} videos`
+      : imagesStatus === 'loading'
+        ? t`Loading…`
+        : '';
 
   return (
     <View style={{ flex: 1 }}>
@@ -99,39 +106,62 @@ export default function ImagesScreen() {
               </>
             ) : imagesStatus === 'loaded' ? (
               <Text style={{ color: colors.secondaryLabel }}>
-                <Trans>No photos on the camera.</Trans>
+                <Trans>No photos or videos on the camera.</Trans>
               </Text>
             ) : (
               <ActivityIndicator size="large" />
             )}
           </View>
         }
-        renderItem={({ item }) => (
-          <Pressable
-            onPress={() => handleOpenImage(item)}
-            style={{ aspectRatio: 1, padding: TILE_INSET }}
-            accessibilityRole="imagebutton"
-            accessibilityLabel={item.filename}
-          >
-            <Image
-              source={{ uri: item.thumbnailUrl }}
-              style={{ flex: 1, backgroundColor: colors.fill }}
-              contentFit="cover"
-              recyclingKey={item.filename}
-              transition={150}
-            />
-            {downloaded.has(item.filename) && (
-              <View style={{ position: 'absolute', right: 6, bottom: 6 }} pointerEvents="none">
-                <SymbolView
-                  name={{ ios: 'checkmark.circle.fill', android: 'check_circle' }}
-                  size={20}
-                  tintColor="#fff"
-                  style={{ shadowColor: '#000', shadowOpacity: 0.5, shadowRadius: 2, shadowOffset: { width: 0, height: 0 } }}
+        renderItem={({ item }) => {
+          const isVideo = isVideoFile(item.filename);
+          return (
+            <Pressable
+              onPress={() => handleOpenImage(item)}
+              style={{ aspectRatio: 1, padding: TILE_INSET }}
+              accessibilityRole={isVideo ? 'button' : 'imagebutton'}
+              accessibilityLabel={item.filename}
+            >
+              {item.thumbnailUrl ? (
+                <Image
+                  source={{ uri: item.thumbnailUrl }}
+                  style={{ flex: 1, backgroundColor: colors.fill }}
+                  contentFit="cover"
+                  recyclingKey={item.filename}
+                  transition={150}
                 />
-              </View>
-            )}
-          </Pressable>
-        )}
+              ) : (
+                <View style={{ flex: 1, backgroundColor: colors.fill, alignItems: 'center', justifyContent: 'center' }}>
+                  <SymbolView
+                    name={isVideo ? { ios: 'film', android: 'movie' } : { ios: 'photo', android: 'image' }}
+                    size={28}
+                    tintColor={colors.secondaryLabel}
+                  />
+                </View>
+              )}
+              {isVideo && (
+                <View style={{ position: 'absolute', left: 6, bottom: 6 }} pointerEvents="none">
+                  <SymbolView
+                    name={{ ios: 'play.fill', android: 'play_arrow' }}
+                    size={18}
+                    tintColor="#fff"
+                    style={badgeShadow}
+                  />
+                </View>
+              )}
+              {downloaded.has(item.filename) && (
+                <View style={{ position: 'absolute', right: 6, bottom: 6 }} pointerEvents="none">
+                  <SymbolView
+                    name={{ ios: 'checkmark.circle.fill', android: 'check_circle' }}
+                    size={20}
+                    tintColor="#fff"
+                    style={badgeShadow}
+                  />
+                </View>
+              )}
+            </Pressable>
+          );
+        }}
         ListFooterComponent={
           <View style={{ padding: 16, paddingBottom: 16 + insets.bottom }}>
             <ActionButton label={t`Disconnect`} variant="secondary" onPress={handleDisconnect} />
