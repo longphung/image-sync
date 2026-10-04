@@ -23,7 +23,7 @@ rust/
   image-sync-ffi/      thin #[uniffi::export] wrapper crate; mirrors core types with From/Into
 modules/image-sync-core/  generated Expo native module (uniffi-bindgen-react-native scaffolding:
                           iOS/Android/C++/TS glue). Fully regenerable — see below.
-src/fileSystem.ts     expo-file-system helpers (photos directory, path conversion for the FFI boundary)
+src/fileSystem.ts     expo-file-system helpers (photos directory, native async downloads with % progress)
 src/theme/colors.ts   native semantic colors (UIKit system colors / Material 3 dynamic colors)
 src/components/       ActionButton + ProgressBar have .ios.tsx (SwiftUI, liquid glass on iOS 26+) and
                       .android.tsx (Jetpack Compose, Material 3) variants via @expo/ui; the plain .tsx is
@@ -56,8 +56,6 @@ types.
   fallback quirk is intentional, ported faithfully from the validated Python reference, not a bug).
 - `scalar.rs` — Scalar Web API JSON-RPC client (`getSchemeList` -> `getSourceList` -> `getContentList`,
   paginated batch=50).
-- `download.rs` — `download_image(url, dest_path)`: skip-if-exists semantics, creates parent dirs,
-  streams the HTTP GET response to disk.
 - `xml.rs` — namespace-agnostic parsing helpers (match on local name, ignoring `prefix:`) and the
   DIDL double-unescape (see Gotchas below).
 
@@ -68,36 +66,34 @@ blocks in each file, especially `dlna.rs`'s `parse_browse_response_handles_doubl
 
 ```rust
 fn ping() -> String;
-fn get_camera_info(host: Option<String>) -> Result<CameraInfo, CameraError>; // { api, name }
-fn list_images(api: CameraApi) -> Result<Vec<ImageItem>, CameraError>;
-fn download_image(url: String, dest_path: String) -> Result<bool, CameraError>;
+async fn get_camera_info(host: Option<String>) -> Result<CameraInfo, CameraError>; // { api, name }
+async fn list_images(api: CameraApi) -> Result<Vec<ImageItem>, CameraError>;
 ```
 
-All **synchronous** (no uniffi async/Future machinery) — a deliberate v1 tradeoff to avoid a bigger
-scaffold change. This means calling these from JS blocks the JS thread for the duration of the network
-call. `app/sync.tsx`'s loop works around this by `await`-ing a `setTimeout(0)` between iterations so
-React actually flushes progress-label updates before the next blocking call starts (same trick in
-`CameraConnectionContext`'s `connect()`/`refreshImages()` and `app/sync.tsx`). If real-device
-testing shows this is unacceptably janky, converting to uniffi async exports is the natural follow-up —
-not yet done.
+The two network calls are uniffi **async** exports and return Promises in JS. The core crate stays
+synchronous (blocking `ureq`). The ubrn-generated JS polls Rust futures on the JS thread, so a future
+that blocked inside `ureq` would still freeze the app. Each export therefore wraps the core call in
+`blocking::unblock(...)`, which runs it on a background thread pool. Keep that pattern for any new
+network-bound export.
+
+File downloads don't go through Rust at all. `src/fileSystem.ts`'s `downloadToPhotosDir(url, filename,
+{ signal, onPercent })` uses `expo-file-system`'s native `File.downloadFileAsync`, which runs off the JS
+thread, reports integer-percent progress, and is cancellable with an `AbortSignal`. It resolves `false`
+when the file already exists ("skipped"). It downloads to `<filename>.part` and moves the file into
+place only on success, because Android streams straight into the target and a partial file under the
+final name would later be skipped as "already downloaded".
 
 Generated JS shapes (confirmed against actual generated output in
 `modules/image-sync-core/src/generated/image_sync_ffi.ts`, re-exported from `image-sync-core`):
-- `getCameraInfo(host: string | undefined): CameraInfo` — **always pass an argument**, `undefined` if no
+- `getCameraInfo(host: string | undefined): Promise<CameraInfo>` — **always pass an argument**, `undefined` if no
   manual override; there's no default param. `CameraInfo` is `{ api: CameraApi, name: string | undefined }`
   where `name` is the device description's `friendlyName` (falling back to `modelName`).
-- `listImages(api: CameraApi): Array<ImageItem>`
-- `downloadImage(url: string, destPath: string): boolean` — `false` means "skipped, already exists",
-  not an error.
+- `listImages(api: CameraApi): Promise<Array<ImageItem>>`
 - `CameraApi` is a tagged-union: `CameraApi.Dlna.instanceOf(api)` / `CameraApi.Scalar.instanceOf(api)`
   as type guards, then `api.inner.controlUrl` / `.photoRoot` / `.baseUrl` (camelCased).
 - `ImageItem` is a plain object: `item.title`, `item.url`, `item.filename`, `item.thumbnailUrl`.
 - `CameraError` (`#[uniffi(flat_error)]`) is a class extending JS `Error`; `err.message` is prefixed
   like `"CameraError.Http: HTTP request failed: ..."`.
-- **Path handling gotcha**: `download_image` does `std::fs::File::create(dest_path)` on a plain
-  filesystem path — `expo-file-system` URIs are always `file://...`, so `src/fileSystem.ts`'s
-  `toFsPath()`/`destPathFor()` strip the scheme before crossing the FFI boundary. Don't pass a raw
-  `File.uri` straight into `downloadImage`.
 
 ## Rebuilding after Rust changes
 
@@ -168,9 +164,8 @@ the SSID that was just joined from inside the app.
 Not yet done / needs a physical RX100M3 + its Wi-Fi AP to verify (no camera reachable from a dev
 machine alone):
 - Actual `run:ios`/`run:android` simulator/emulator build — was in progress, not confirmed complete.
-- Real `listImages` data, a real thumbnail loading over HTTP, `downloadImage` writing a real file.
-- Whether the synchronous-FFI-blocking tradeoff (see above) is actually noticeable in practice — decide
-  whether to convert to async uniffi exports based on real usage, not preemptively.
+- Real `listImages` data, a real thumbnail loading over HTTP, `downloadToPhotosDir` writing a real file,
+  and its progress percentage (it stays hidden if the camera sends no `Content-Length`).
 - The camera-based OCR "read Wi-Fi label" feature (`src/ocr.ts`, `app/read-label.tsx`, `src/labelOcr/`,
   `src/LabelOcrContext.tsx`, "Read … from Label" buttons in `app/join-wifi.tsx`): OCR accuracy and
   the full capture→confirm→join flow need a physical device with a printed Wi-Fi label to verify —
@@ -178,8 +173,8 @@ machine alone):
   (permission-denied, no-text-detected, etc.) can be exercised on simulator/emulator without one.
 - Downloaded images (`app/image/[filename].tsx`'s Download button) are now saved into the phone's
   shared Photos library via `expo-media-library`'s `Asset.create()`, not just app-private storage —
-  `downloadImage()` still writes to the app's private `camera-photos` directory first (the Rust FFI has
-  no other option), then that local file is copied into the Photos library. Requests add-only/write-only
+  `downloadToPhotosDir()` writes to the app's private `camera-photos` directory first (Sync All only does
+  that step), then that local file is copied into the Photos library. Requests add-only/write-only
   permission (`requestPermissionsAsync(true)`) rather than full library read access. Unlike OCR accuracy,
   this *is* verifiable on simulator/emulator (both have a Photos/Gallery app) — no physical device
   needed to confirm the image actually lands in the library, not just that the button flips state.
@@ -188,14 +183,13 @@ machine alone):
   media-type filter, so videos (the reference repo pulled `.MP4`/`.MTS`) should already appear in
   `listImages`. The JS side classifies them by file extension only (`src/fileSystem.ts`'s `isVideoFile()`),
   shows a play badge in the grid, streams them with `expo-video` on the detail screen, and saves them
-  with the same `downloadImage()` → `Asset.create()` path as photos. Still to do:
+  with the same `downloadToPhotosDir()` → `Asset.create()` path as photos. Still to do:
   - Listing: classify in Rust from the DIDL `upnp:class`/`protocolInfo` mime instead of the extension.
     `pick_original_res()` does pick the real video file. The Python reference, which uses the same logic,
     downloaded full `.MP4` (ISO media) and `.MTS` (M2TS) files from the camera. The Scalar path still requests only `type: ["still"]`.
   - Display: no real video has been listed, thumbnailed, or played from the camera yet. AVCHD `.MTS`
     won't play on iOS, so the detail screen shows "Can't play this video format".
-  - Saving: `downloadImage()` is synchronous, so a large video blocks the JS thread for the whole
-    download (detail Save and Sync All). That is a strong reason to do the async-uniffi conversion.
+  - Saving: downloads are native and async (see "FFI surface"), so large videos no longer freeze the UI.
     `.MTS` can't be added to the iOS Photos library.
   - All of the above needs a physical RX100M3 with videos on the card.
 - Status bar: driven per screen by react-native-screens (`statusBarStyle` in `app/_layout.tsx`) with

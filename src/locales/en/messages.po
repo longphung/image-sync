@@ -18,7 +18,7 @@ msgstr ""
 msgid "{0} dBm"
 msgstr "{0} dBm"
 
-#: app/sync.tsx:84
+#: app/sync.tsx:87
 msgid "{index} of {total}"
 msgstr "{index} of {total}"
 
@@ -42,7 +42,7 @@ msgstr "Align the password on the camera label inside the frame, then tap captur
 msgid "Align the Wi-Fi name on the camera label inside the frame, then tap capture."
 msgstr "Align the Wi-Fi name on the camera label inside the frame, then tap capture."
 
-#: app/sync.tsx:112
+#: app/sync.tsx:122
 msgid "already on device"
 msgstr "already on device"
 
@@ -71,7 +71,7 @@ msgid "Can't play this video format"
 msgstr "Can't play this video format"
 
 #: app/read-label.tsx:19
-#: app/sync.tsx:124
+#: app/sync.tsx:134
 msgid "Cancel"
 msgstr "Cancel"
 
@@ -104,11 +104,11 @@ msgstr "Connecting to your camera"
 msgid "Disconnect"
 msgstr "Disconnect"
 
-#: app/sync.tsx:124
+#: app/sync.tsx:134
 msgid "Done"
 msgstr "Done"
 
-#: app/sync.tsx:111
+#: app/sync.tsx:121
 msgid "downloaded"
 msgstr "downloaded"
 
@@ -120,7 +120,7 @@ msgstr "Enter Wi-Fi manually"
 msgid "Enter Wi-Fi Manually"
 msgstr "Enter Wi-Fi Manually"
 
-#: app/sync.tsx:113
+#: app/sync.tsx:123
 msgid "failed"
 msgstr "failed"
 
@@ -279,6 +279,10 @@ msgstr "Saved to Photos"
 msgid "Saving…"
 msgstr "Saving…"
 
+#: app/image/[filename].tsx:119
+msgid "Saving… {savePercent}%"
+msgstr "Saving… {savePercent}%"
+
 #: app/index.tsx:65
 #: app/join-wifi.tsx:139
 msgid "Search for Camera"
@@ -309,11 +313,11 @@ msgstr "Sync All"
 msgid "Sync All ({0})"
 msgstr "Sync All ({0})"
 
-#: app/sync.tsx:81
+#: app/sync.tsx:84
 msgid "Sync complete"
 msgstr "Sync complete"
 
-#: app/sync.tsx:81
+#: app/sync.tsx:84
 msgid "Syncing photos…"
 msgstr "Syncing photos…"
 

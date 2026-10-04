@@ -8,10 +8,9 @@ import { useVideoPlayer, VideoView } from 'expo-video';
 import { SymbolView } from 'expo-symbols';
 import { Asset, requestPermissionsAsync } from 'expo-media-library';
 import { Trans, useLingui } from '@lingui/react/macro';
-import { downloadImage } from 'image-sync-core';
 import { useCameraConnection } from '../../src/CameraConnectionContext';
 import { ActionButton } from '../../src/components/ActionButton';
-import { destPathFor, fileUriFor, isVideoFile } from '../../src/fileSystem';
+import { downloadToPhotosDir, fileUriFor, isVideoFile } from '../../src/fileSystem';
 
 type SaveState = 'idle' | 'saving' | 'done' | 'error';
 
@@ -29,17 +28,18 @@ export default function ImageDetailScreen() {
   const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState<string | null>(null);
   // Starts idle even if Sync All already put the file in app storage — that copy isn't in
-  // the Photos library yet. downloadImage() skips the re-download in that case.
+  // the Photos library yet. downloadToPhotosDir() skips the re-download in that case.
   const [saveState, setSaveState] = useState<SaveState>('idle');
   const [saveErrorMessage, setSaveErrorMessage] = useState<string | null>(null);
+  // Integer 0–100 while saving; null until the first progress event (or size unknown).
+  const [savePercent, setSavePercent] = useState<number | null>(null);
 
   const handleSave = useCallback(async () => {
     setSaveState('saving');
     setSaveErrorMessage(null);
-    // downloadImage() blocks the JS thread — let the "Saving…" state paint first.
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    setSavePercent(null);
     try {
-      const result = downloadImage(url, destPathFor(filename));
+      const result = await downloadToPhotosDir(url, filename, { onPercent: setSavePercent });
       console.log('[ImageDetail] download finished', { result });
       const { status } = await requestPermissionsAsync(true); // add-only, no full-library read prompt
       if (status !== 'granted') {
@@ -116,7 +116,7 @@ export default function ImageDetailScreen() {
           <ActionButton
             label={
               saveState === 'saving'
-                ? t`Saving…`
+                ? savePercent !== null ? t`Saving… ${savePercent}%` : t`Saving…`
                 : saveState === 'error'
                   ? t`Retry Save`
                   : t`Save to Photos`

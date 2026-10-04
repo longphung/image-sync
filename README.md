@@ -63,7 +63,7 @@ in Settings before opening the app. See the "iOS on a free (Personal Team) Apple
 ## Project layout
 
 ```
-rust/image-sync-core/      pure Rust protocol client (discovery, DLNA, Scalar, downloads)
+rust/image-sync-core/      pure Rust protocol client (discovery, DLNA, Scalar listing)
 rust/image-sync-ffi/       uniffi wrapper exposing the core to JS
 modules/image-sync-core/   generated Expo native module (regenerable)
 app/                       expo-router screens
