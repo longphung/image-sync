@@ -1,0 +1,9 @@
+{
+  "ios": {
+    "NSLocalNetworkUsageDescription": "image-sync dùng mạng cục bộ để kết nối với máy ảnh Sony qua Wi-Fi và tìm ứng dụng image-sync trên máy tính.",
+    "NSLocationWhenInUseUsageDescription": "image-sync cần quyền vị trí để tìm và kết nối vào mạng Wi-Fi của máy ảnh.",
+    "NSCameraUsageDescription": "image-sync dùng camera để đọc nhãn Wi-Fi của máy ảnh và quét mã ghép nối với máy tính.",
+    "NSPhotoLibraryUsageDescription": "image-sync cần quyền truy cập thư viện ảnh để lưu ảnh và video đã tải từ máy ảnh.",
+    "NSPhotoLibraryAddUsageDescription": "image-sync lưu ảnh và video đã tải từ máy ảnh vào thư viện ảnh của bạn."
+  }
+}

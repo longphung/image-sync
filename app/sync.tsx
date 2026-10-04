@@ -9,21 +9,24 @@ import { useCameraConnection } from '../src/CameraConnectionContext';
 import { ActionButton } from '../src/components/ActionButton';
 import { Card } from '../src/components/Card';
 import { ProgressBar } from '../src/components/ProgressBar';
-import { downloadToPhotosDir } from '../src/fileSystem';
+import { downloadToPhotosDir, saveToLibrary } from '../src/fileSystem';
+import { runSync, type Download, type SyncCounts, type SyncFailure } from '../src/sync';
 import { colors } from '../src/theme/colors';
 
-type Counts = { downloaded: number; skipped: number; failed: number };
+const NO_COUNTS: SyncCounts = { downloaded: 0, skipped: 0, failed: 0 };
 
 export default function SyncScreen() {
   const { t } = useLingui();
   const insets = useSafeAreaInsets();
   const { images } = useCameraConnection();
-  // Snapshot so a list refresh mid-sync can't change what's being iterated.
-  const [queue] = useState<ImageItem[]>(() => images);
+  // Snapshot so a list refresh mid-sync can't change what's being iterated. "Retry Failed"
+  // replaces it with just the failed items, which starts a new run.
+  const [queue, setQueue] = useState<ImageItem[]>(() => images);
   const [index, setIndex] = useState(0);
   const [current, setCurrent] = useState<ImageItem | null>(null);
-  const [counts, setCounts] = useState<Counts>({ downloaded: 0, skipped: 0, failed: 0 });
-  const [lastError, setLastError] = useState<string | null>(null);
+  const [counts, setCounts] = useState<SyncCounts>(NO_COUNTS);
+  const [failures, setFailures] = useState<SyncFailure[]>([]);
+  const [stoppedEarly, setStoppedEarly] = useState<string | null>(null);
   const [running, setRunning] = useState(true);
   // Integer 0–100 for the file in flight; null until the first progress event (or size unknown).
   const [filePercent, setFilePercent] = useState<number | null>(null);
@@ -34,33 +37,52 @@ export default function SyncScreen() {
   useEffect(() => {
     const run = new AbortController();
     runRef.current = run;
-    (async () => {
-      for (let i = 0; i < queue.length; i++) {
-        if (run.signal.aborted) break;
-        const item = queue[i];
+    setIndex(0);
+    setCounts(NO_COUNTS);
+    setFailures([]);
+    setStoppedEarly(null);
+    setRunning(true);
+    // A file already in app storage was saved to Photos by the run that downloaded it, so only
+    // new downloads go to the library; otherwise every re-sync would duplicate them there.
+    const download: Download = async (item, opts) => {
+      const wrote = await downloadToPhotosDir(item.url, item.filename, opts);
+      if (wrote) await saveToLibrary(item.filename, { onPercent: opts.onPercent });
+      return wrote;
+    };
+    runSync(queue, download, run.signal, {
+      onStart: (i, item) => {
         setIndex(i);
         setCurrent(item);
-        try {
-          const wrote = await downloadToPhotosDir(item.url, item.filename, {
-            signal: run.signal,
-            onPercent: setFilePercent,
-          });
-          setCounts((c) => (wrote ? { ...c, downloaded: c.downloaded + 1 } : { ...c, skipped: c.skipped + 1 }));
-        } catch (err) {
-          if (run.signal.aborted) break; // the AbortError from Cancel isn't a failure
-          console.log('[Sync] download error', { url: item.url, error: err });
-          setCounts((c) => ({ ...c, failed: c.failed + 1 }));
-          setLastError(err instanceof Error ? err.message : String(err));
-        }
-        setIndex(i + 1);
         setFilePercent(null);
-      }
-      if (run.signal.aborted) return;
-      setCurrent(null);
-      setRunning(false);
-    })();
+      },
+      onPercent: setFilePercent,
+      onResult: (c, f) => {
+        setCounts(c);
+        setFailures(f);
+      },
+    })
+      .then((result) => {
+        if (run.signal.aborted) return;
+        result.failures.forEach((f) => console.log('[Sync] failed', f.item.filename, f.message));
+        setStoppedEarly(result.stoppedEarly);
+        // A run that stopped early didn't get through the list; leave the bar where it stopped.
+        if (!result.stoppedEarly) setIndex(queue.length);
+      })
+      .catch((err) => {
+        // runSync catches each download's errors; this is a bug, but don't leave the screen stuck.
+        if (!run.signal.aborted) setStoppedEarly(err instanceof Error ? err.message : String(err));
+      })
+      .finally(() => {
+        if (run.signal.aborted) return;
+        setCurrent(null);
+        setFilePercent(null);
+        setRunning(false);
+      });
     return () => run.abort();
   }, [queue]);
+
+  const retryable = failures.filter((f) => f.retryable).map((f) => f.item);
+  const handleRetry = useCallback(() => setQueue(retryable), [retryable]);
 
   const handleCancel = useCallback(() => {
     runRef.current.abort();
@@ -81,7 +103,15 @@ export default function SyncScreen() {
 
       <View style={{ gap: 4 }}>
         <Text style={{ color: colors.label, fontSize: 22, fontWeight: '700' }}>
-          {running ? <Trans>Syncing photos…</Trans> : <Trans>Sync complete</Trans>}
+          {running ? (
+            <Trans>Syncing photos…</Trans>
+          ) : stoppedEarly ? (
+            <Trans>Sync stopped</Trans>
+          ) : counts.failed > 0 ? (
+            <Trans>Sync finished with errors</Trans>
+          ) : (
+            <Trans>Sync complete</Trans>
+          )}
         </Text>
         <Text style={{ color: colors.secondaryLabel, fontSize: 17 }}>
           <Trans>
@@ -123,16 +153,34 @@ export default function SyncScreen() {
         <Stat value={counts.failed} label={t`failed`} divider />
       </Card>
 
-      {lastError && (
+      {stoppedEarly && (
         <Text style={{ color: colors.error }} selectable>
-          {lastError}
+          {stoppedEarly}
         </Text>
       )}
 
+      {failures.length > 0 && (
+        <Card style={{ gap: 8 }}>
+          {failures.map((f, i) => (
+            <View key={`${f.item.filename}-${i}`} style={{ gap: 2 }}>
+              <Text style={{ color: colors.label }} numberOfLines={1}>
+                {f.item.filename}
+              </Text>
+              <Text style={{ color: colors.error, fontSize: 13 }} selectable>
+                {f.message}
+              </Text>
+            </View>
+          ))}
+        </Card>
+      )}
+
       <View style={{ flex: 1 }} />
+      {!running && retryable.length > 0 && (
+        <ActionButton label={t`Retry Failed (${retryable.length})`} onPress={handleRetry} />
+      )}
       <ActionButton
         label={running ? t`Cancel` : t`Done`}
-        variant={running ? 'secondary' : 'primary'}
+        variant={running || retryable.length > 0 ? 'secondary' : 'primary'}
         onPress={handleCancel}
       />
     </ScrollView>

@@ -1,3 +1,4 @@
+import { t } from '@lingui/core/macro';
 import { extractTextFromImage, isSupported } from 'expo-text-extractor';
 
 export function isTextRecognitionSupported(): boolean {
@@ -6,7 +7,7 @@ export function isTextRecognitionSupported(): boolean {
 
 export async function extractTextLines(photoUri: string): Promise<string[]> {
   if (!isSupported) {
-    throw new Error('Text recognition is not supported on this device.');
+    throw new Error(t`Text recognition is not supported on this device.`);
   }
   try {
     const lines = await extractTextFromImage(photoUri);
@@ -14,7 +15,7 @@ export async function extractTextLines(photoUri: string): Promise<string[]> {
   } catch (err) {
     console.warn('OCR extraction failed:', err);
     throw new Error(
-      "Couldn't read text from that photo. Try retaking it with the label in better light and fully in frame.",
+      t`Couldn't read text from that photo. Try retaking it with the label in better light and fully in frame.`,
     );
   }
 }

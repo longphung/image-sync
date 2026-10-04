@@ -23,12 +23,14 @@ export default function ImagesScreen() {
     useCameraConnection();
   const insets = useSafeAreaInsets();
   const [downloaded, setDownloaded] = useState<Set<string>>(() => listDownloadedFilenames());
+  // Only a pull shows the refresh spinner; the first load has its own in the empty state.
+  const [pulling, setPulling] = useState(false);
 
+  // Only for a JS reload landing here with no connection; Disconnect navigates by itself.
   useEffect(() => {
-    if (!api) {
-      router.replace('/');
-    }
-  }, [api]);
+    if (!api) router.replace('/');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // List automatically on first open; the "Retry" button covers failures.
   useEffect(() => {
@@ -54,10 +56,11 @@ export default function ImagesScreen() {
     });
   }, []);
 
+  // Back to the tab the connection came from.
   const handleDisconnect = useCallback(() => {
+    router.dismissTo(api?.kind === 'desktop' ? '/' : '/camera');
     disconnect();
-    router.replace('/');
-  }, [disconnect]);
+  }, [api, disconnect]);
 
   if (!api) {
     return null;
@@ -80,11 +83,27 @@ export default function ImagesScreen() {
         numColumns={COLUMNS}
         keyExtractor={(item) => item.filename}
         recycleItems
+        // renderItem reads `downloaded`; without this the list keeps showing stale badges
+        // until it remounts.
+        extraData={downloaded}
+        refreshing={pulling}
+        onRefresh={async () => {
+          setPulling(true);
+          await refreshImages();
+          setDownloaded(listDownloadedFilenames());
+          setPulling(false);
+        }}
         contentInsetAdjustmentBehavior="automatic"
         ListHeaderComponent={
           <View style={{ padding: 16, gap: 12 }}>
             {subtitle.length > 0 && (
               <Text style={{ color: colors.secondaryLabel, fontSize: 13 }}>{subtitle}</Text>
+            )}
+            {/* A failed refresh keeps the old list; the empty state only covers an empty one. */}
+            {imagesStatus === 'error' && images.length > 0 && (
+              <Text style={{ color: colors.error, fontSize: 13 }} selectable>
+                {imagesError}
+              </Text>
             )}
             {images.length > 0 && (
               <ActionButton
@@ -106,7 +125,11 @@ export default function ImagesScreen() {
               </>
             ) : imagesStatus === 'loaded' ? (
               <Text style={{ color: colors.secondaryLabel }}>
-                <Trans>No photos or videos on the camera.</Trans>
+                {api.kind === 'desktop' ? (
+                  <Trans>No photos or videos on this desktop yet.</Trans>
+                ) : (
+                  <Trans>No photos or videos on the camera.</Trans>
+                )}
               </Text>
             ) : (
               <ActivityIndicator size="large" />

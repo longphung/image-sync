@@ -3,6 +3,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 
+import { desktopBaseUrl, parseDesktopImages, parsePairingQr } from './desktop.ts';
 import { parseDeviceDescription } from './discovery.ts';
 import {
   parseBrowseResponse,
@@ -238,5 +239,43 @@ describe('contentItemToImageItem', () => {
   test('falls back to the title when no filename is available', () => {
     const result = contentItemToImageItem({ title: 'MyPhoto', content: { thumbnailUrl: '' } });
     assert.equal(result.filename, 'MyPhoto');
+  });
+});
+
+describe('desktop', () => {
+  test('parseDesktopImages keeps well-formed items and drops the rest', () => {
+    const item = {
+      title: 'DSC00001.JPG',
+      url: 'http://192.168.1.5:8765/files/2025-06-14/DSC00001.JPG?t=abc',
+      filename: '2025-06-14_DSC00001.JPG',
+      thumbnailUrl: 'http://192.168.1.5:8765/thumbs/2025-06-14/DSC00001.JPG?t=abc',
+    };
+    assert.deepEqual(parseDesktopImages(JSON.stringify([item, { title: 'x' }, null])), [item]);
+  });
+
+  test('parseDesktopImages rejects a non-list body', () => {
+    assert.throws(() => parseDesktopImages('{}'), /did not return a list/);
+  });
+
+  test('parsePairingQr reads the v1 payload', () => {
+    const qr = { v: 1, id: 'u1', name: 'mac', hosts: ['192.168.1.5', 'mac.tailnet.ts.net'], port: 8765, token: 'p' };
+    assert.deepEqual(parsePairingQr(JSON.stringify(qr)), {
+      id: 'u1',
+      name: 'mac',
+      hosts: ['192.168.1.5', 'mac.tailnet.ts.net'],
+      port: 8765,
+      token: 'p',
+    });
+  });
+
+  test('parsePairingQr rejects other QR codes', () => {
+    assert.throws(() => parsePairingQr('https://example.com'), /Not an image-sync pairing code/);
+    assert.throws(() => parsePairingQr('{"v":2,"id":"u","hosts":["h"],"port":1,"token":"t"}'), /Not an/);
+    assert.throws(() => parsePairingQr('{"v":1,"id":"u","hosts":[],"port":1,"token":"t"}'), /Not an/);
+  });
+
+  test('desktopBaseUrl brackets IPv6 hosts', () => {
+    assert.equal(desktopBaseUrl('192.168.1.5', 8765), 'http://192.168.1.5:8765');
+    assert.equal(desktopBaseUrl('fd7a::1', 8765), 'http://[fd7a::1]:8765');
   });
 });

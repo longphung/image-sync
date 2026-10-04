@@ -34,7 +34,8 @@
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "4.25.2",
     "react-native-wifi-reborn": "^4.13.6",
-    "react-native-worklets": "^0.10.1"
+    "react-native-worklets": "^0.10.1",
+    "react-native-zeroconf": "^0.17.3"
   },
   "devDependencies": {
     "@expo/metro-config": "^57.0.3",

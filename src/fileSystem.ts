@@ -1,4 +1,8 @@
 import { Directory, File, Paths } from 'expo-file-system';
+import { Asset, requestPermissionsAsync } from 'expo-media-library';
+import { t } from '@lingui/core/macro';
+import { convertToMp4, needsMp4Conversion } from './convertVideo';
+import { checkFilename } from './sync';
 
 const PHOTOS_DIR_NAME = 'camera-photos';
 
@@ -20,6 +24,7 @@ export async function downloadToPhotosDir(
   filename: string,
   { signal, onPercent }: { signal?: AbortSignal; onPercent?: (percent: number) => void } = {},
 ): Promise<boolean> {
+  checkFilename(filename);
   const dir = getPhotosDirectory();
   const dest = new File(dir, filename);
   if (dest.exists) return false;
@@ -39,11 +44,18 @@ export async function downloadToPhotosDir(
         }
       },
     });
+    // Another download of the same file (the detail screen while Sync All runs) can finish
+    // first; its copy is complete, so this one is a skip rather than a failed move.
+    if (dest.exists) {
+      part.delete();
+      return false;
+    }
     await part.move(dest);
   } catch (err) {
     try {
       if (part.exists) part.delete();
     } catch {}
+    if (dest.exists && !signal?.aborted) return false;
     throw err;
   }
   return true;
@@ -62,4 +74,22 @@ export function listDownloadedFilenames(): Set<string> {
 // move classification into src/camera/dlna.ts if the camera ever serves extensionless URLs.
 export function isVideoFile(filename: string): boolean {
   return /\.(mp4|mts|m2ts|mov)$/i.test(filename);
+}
+
+// Copies an already-downloaded file into the shared Photos library, converting AVCHD to MP4
+// first (Photos rejects .MTS). Asks for add-only access, so there's no full-library prompt.
+export async function saveToLibrary(
+  filename: string,
+  { onConverting, onPercent }: { onConverting?: () => void; onPercent?: (percent: number) => void } = {},
+): Promise<void> {
+  const { status } = await requestPermissionsAsync(true);
+  if (status !== 'granted') {
+    throw new Error(t`Photo library access is needed to save this file.`);
+  }
+  let uri = fileUriFor(filename);
+  if (needsMp4Conversion(filename)) {
+    onConverting?.();
+    uri = (await convertToMp4(new File(uri), onPercent)).uri;
+  }
+  await Asset.create(uri);
 }
