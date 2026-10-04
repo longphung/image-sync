@@ -1,3 +1,4 @@
+import { t } from '@lingui/core/macro';
 import { PermissionsAndroid, Platform } from 'react-native';
 import WifiManager, { LOAD_WIFI_LIST_ERRORS, type WifiEntry } from 'react-native-wifi-reborn';
 
@@ -10,9 +11,9 @@ export async function requestLocationPermission(): Promise<boolean> {
   const granted = await PermissionsAndroid.request(
     PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
     {
-      title: 'Location permission',
-      message: 'Android requires location permission to search for nearby Wi-Fi networks.',
-      buttonPositive: 'OK',
+      title: t`Location permission`,
+      message: t`Android requires location permission to search for nearby Wi-Fi networks.`,
+      buttonPositive: t`OK`,
     },
   );
   return granted === PermissionsAndroid.RESULTS.GRANTED;
@@ -22,9 +23,9 @@ function describeSearchError(err: unknown): string {
   const code = (err as { code?: string })?.code;
   switch (code) {
     case LOAD_WIFI_LIST_ERRORS.locationPermissionMissing:
-      return 'Location permission is required to search for Wi-Fi networks.';
+      return t`Location permission is required to search for Wi-Fi networks.`;
     case LOAD_WIFI_LIST_ERRORS.locationServicesOff:
-      return 'Turn on location services to search for Wi-Fi networks.';
+      return t`Turn on location services to search for Wi-Fi networks.`;
     default:
       return err instanceof Error ? err.message : String(err);
   }

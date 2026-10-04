@@ -13,7 +13,8 @@
         "NSLocalNetworkUsageDescription": "image-sync uses the local network to connect to your Sony camera over Wi-Fi and to find the image-sync desktop app.",
         "NSLocationWhenInUseUsageDescription": "image-sync needs location access to find and join your camera's Wi-Fi network.",
         "UIViewControllerBasedStatusBarAppearance": true,
-        "NSBonjourServices": ["_image-sync._tcp"]
+        "NSBonjourServices": ["_image-sync._tcp"],
+        "CFBundleAllowMixedLocalizations": true
       }
     },
     "android": {
@@ -25,6 +26,9 @@
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.longphung.imagesync"
+    },
+    "locales": {
+      "vi": "./languages/vi.json"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -52,7 +56,15 @@
           "barcodeScannerEnabled": true
         }
       ],
-      "expo-localization",
+      [
+        "expo-localization",
+        {
+          "supportedLocales": {
+            "ios": ["en", "vi"],
+            "android": ["en", "vi"]
+          }
+        }
+      ],
       [
         "expo-media-library",
         {

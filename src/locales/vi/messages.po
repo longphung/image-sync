@@ -1,17 +1,11 @@
 msgid ""
 msgstr ""
-"POT-Creation-Date: 2026-07-06 13:20+1000\n"
+"POT-Creation-Date: 2026-10-05 01:34+1100\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: @lingui/cli\n"
-"Language: en\n"
-"Project-Id-Version: \n"
-"Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: \n"
-"Last-Translator: \n"
-"Language-Team: \n"
-"Plural-Forms: \n"
+"Language: vi\n"
 
 #. placeholder {0}: entry.level
 #: app/join-wifi.tsx:288
@@ -21,283 +15,267 @@ msgstr "{0} dBm"
 #. placeholder {0}: h.count
 #: app/(tabs)/(desktops)/index.tsx:132
 msgid "{0} items"
-msgstr "{0} items"
+msgstr "{0} mục"
 
 #: app/sync.tsx:110
 msgid "{index} of {total}"
-msgstr "{index} of {total}"
+msgstr "{index}/{total}"
 
 #: app/images.tsx:71
 msgid "{photoCount} photos · {videoCount} videos"
-msgstr "{photoCount} photos · {videoCount} videos"
+msgstr "{photoCount} ảnh · {videoCount} video"
 
 #: app/(tabs)/camera/index.tsx:64
 msgid "1. Camera Wi-Fi"
-msgstr "1. Camera Wi-Fi"
+msgstr "1. Wi-Fi máy ảnh"
 
 #: app/(tabs)/camera/index.tsx:100
 msgid "2. Camera"
-msgstr "2. Camera"
+msgstr "2. Máy ảnh"
 
 #: src/labelOcr/CameraCaptureView.tsx:57
 msgid "Align the password on the camera label inside the frame, then tap capture."
-msgstr "Align the password on the camera label inside the frame, then tap capture."
+msgstr "Căn mật khẩu trên nhãn máy ảnh vào trong khung, rồi nhấn chụp."
 
 #: src/labelOcr/CameraCaptureView.tsx:55
 msgid "Align the Wi-Fi name on the camera label inside the frame, then tap capture."
-msgstr "Align the Wi-Fi name on the camera label inside the frame, then tap capture."
+msgstr "Căn tên Wi-Fi trên nhãn máy ảnh vào trong khung, rồi nhấn chụp."
 
 #: app/scan-pairing.tsx:54
 msgid "Allow Camera"
-msgstr "Allow Camera"
+msgstr "Cho phép camera"
 
 #: app/sync.tsx:145
 msgid "already on device"
-msgstr "already on device"
+msgstr "đã có trên máy"
 
 #: src/wifi.ts:15
 msgid "Android requires location permission to search for nearby Wi-Fi networks."
-msgstr "Android requires location permission to search for nearby Wi-Fi networks."
+msgstr "Android yêu cầu quyền vị trí để tìm các mạng Wi-Fi gần đây."
 
 #: app/join-wifi.tsx:263
 msgid "Android will also route this app's traffic over this Wi-Fi network (it has no internet)."
-msgstr "Android will also route this app's traffic over this Wi-Fi network (it has no internet)."
+msgstr "Android cũng sẽ định tuyến lưu lượng của ứng dụng này qua mạng Wi-Fi này (mạng không có internet)."
 
 #: app/(tabs)/(desktops)/index.tsx:86
 msgid "Browse and download photos imported by the image-sync desktop app."
-msgstr "Browse and download photos imported by the image-sync desktop app."
-
-#: app/index.tsx:178
-#~ msgid "Browse photos already imported by the image-sync desktop app."
-#~ msgstr "Browse photos already imported by the image-sync desktop app."
+msgstr "Duyệt và tải ảnh đã được nhập bởi ứng dụng image-sync trên máy tính."
 
 #: app/(tabs)/_layout.tsx:14
 #: app/(tabs)/camera/index.tsx:56
 msgid "Camera"
-msgstr "Camera"
+msgstr "Máy ảnh"
 
 #: src/labelOcr/PermissionGate.tsx:58
 msgid "Camera access is needed to read the Wi-Fi label."
-msgstr "Camera access is needed to read the Wi-Fi label."
+msgstr "Cần quyền truy cập camera để đọc nhãn Wi-Fi."
 
 #: app/scan-pairing.tsx:51
 msgid "Camera access is needed to scan the pairing code shown on your computer."
-msgstr "Camera access is needed to scan the pairing code shown on your computer."
+msgstr "Cần quyền truy cập camera để quét mã ghép nối hiển thị trên máy tính của bạn."
 
 #: app/join-wifi.tsx:147
 msgid "Camera networks"
-msgstr "Camera networks"
+msgstr "Mạng của máy ảnh"
 
 #: app/join-wifi.tsx:183
 msgid "Camera SSID (DIRECT-…)"
-msgstr "Camera SSID (DIRECT-…)"
+msgstr "SSID máy ảnh (DIRECT-…)"
 
 #: src/labelOcr/useWifiOcrCapture.ts:56
 msgid "Camera took too long to respond. Please try again."
-msgstr "Camera took too long to respond. Please try again."
+msgstr "Máy ảnh phản hồi quá lâu. Vui lòng thử lại."
 
 #: app/image/[filename].tsx:209
 msgid "Can't play this video format"
-msgstr "Can't play this video format"
+msgstr "Không phát được định dạng video này"
 
 #: app/(tabs)/(desktops)/index.tsx:71
 #: app/read-label.tsx:19
 #: app/sync.tsx:175
 msgid "Cancel"
-msgstr "Cancel"
+msgstr "Huỷ"
 
 #: app/(tabs)/camera/index.tsx:105
 msgid "Checking camera…"
-msgstr "Checking camera…"
+msgstr "Đang kiểm tra máy ảnh…"
 
 #: src/labelOcr/PermissionGate.tsx:40
 msgid "Close"
-msgstr "Close"
+msgstr "Đóng"
 
 #: app/(tabs)/camera/index.tsx:147
 #: app/images.tsx:78
 msgid "Connect"
-msgstr "Connect"
+msgstr "Kết nối"
 
 #: app/(tabs)/camera/index.tsx:117
 msgid "Connect to the camera at this address."
-msgstr "Connect to the camera at this address."
+msgstr "Kết nối tới máy ảnh tại địa chỉ này."
 
 #: app/(tabs)/camera/index.tsx:103
 msgid "Connected"
-msgstr "Connected"
+msgstr "Đã kết nối"
 
 #: app/(tabs)/camera/index.tsx:45
 msgid "Connecting to your camera"
-msgstr "Connecting to your camera"
+msgstr "Kết nối với máy ảnh của bạn"
 
 #: app/image/[filename].tsx:133
 #: app/image/[filename].tsx:193
 msgid "Converting…"
-msgstr "Converting…"
+msgstr "Đang chuyển đổi…"
 
 #: app/image/[filename].tsx:193
 msgid "Converting… {percent}%"
-msgstr "Converting… {percent}%"
+msgstr "Đang chuyển đổi… {percent}%"
 
 #: app/image/[filename].tsx:133
 msgid "Converting… {savePercent}%"
-msgstr "Converting… {savePercent}%"
+msgstr "Đang chuyển đổi… {savePercent}%"
 
 #: app/image/[filename].tsx:189
 msgid "Couldn't load this video"
-msgstr "Couldn't load this video"
+msgstr "Không tải được video này"
 
 #: src/ocr.ts:18
 msgid "Couldn't read text from that photo. Try retaking it with the label in better light and fully in frame."
-msgstr "Couldn't read text from that photo. Try retaking it with the label in better light and fully in frame."
+msgstr "Không đọc được chữ trong ảnh đó. Hãy chụp lại với nhãn đủ sáng và nằm trọn trong khung."
 
 #: app/(tabs)/_layout.tsx:10
 #: app/(tabs)/(desktops)/index.tsx:84
 msgid "Desktop"
-msgstr "Desktop"
+msgstr "Máy tính"
 
 #: app/images.tsx:172
 msgid "Disconnect"
-msgstr "Disconnect"
+msgstr "Ngắt kết nối"
 
 #: app/sync.tsx:175
 msgid "Done"
-msgstr "Done"
+msgstr "Xong"
 
 #: app/sync.tsx:144
 msgid "downloaded"
-msgstr "downloaded"
+msgstr "đã tải"
 
 #: app/join-wifi.tsx:168
 msgid "Enter Wi-Fi manually"
-msgstr "Enter Wi-Fi manually"
+msgstr "Nhập Wi-Fi thủ công"
 
 #: app/(tabs)/camera/index.tsx:82
 msgid "Enter Wi-Fi Manually"
-msgstr "Enter Wi-Fi Manually"
+msgstr "Nhập Wi-Fi thủ công"
 
 #: app/sync.tsx:146
 msgid "failed"
-msgstr "failed"
+msgstr "thất bại"
 
 #: src/labelOcr/useWifiOcrCapture.ts:58
 msgid "Failed to capture photo."
-msgstr "Failed to capture photo."
+msgstr "Không chụp được ảnh."
 
 #: app/image/[filename].tsx:88
 msgid "Failed to load image"
-msgstr "Failed to load image"
-
-#: app/index.tsx:53
-#~ msgid "Forget"
-#~ msgstr "Forget"
-
-#: app/index.tsx:51
-#~ msgid "Forget {name}?"
-#~ msgstr "Forget {name}?"
+msgstr "Không tải được ảnh"
 
 #: src/labelOcr/PermissionGate.tsx:63
 msgid "Grant Camera Access"
-msgstr "Grant Camera Access"
+msgstr "Cấp quyền camera"
 
 #: app/join-wifi.tsx:227
 msgid "Hide password"
-msgstr "Hide password"
+msgstr "Ẩn mật khẩu"
 
 #: app/(tabs)/camera/index.tsx:122
 msgid "Host IP"
-msgstr "Host IP"
+msgstr "IP máy chủ"
 
 #: app/_layout.tsx:21
 msgid "Images"
-msgstr "Images"
+msgstr "Hình ảnh"
 
 #: app/join-wifi.tsx:250
 msgid "Join {ssid}"
-msgstr "Join {ssid}"
+msgstr "Kết nối {ssid}"
 
 #: app/_layout.tsx:20
 #: app/(tabs)/camera/index.tsx:89
 msgid "Join Camera Wi-Fi"
-msgstr "Join Camera Wi-Fi"
+msgstr "Kết nối Wi-Fi máy ảnh"
 
 #: app/(tabs)/camera/index.tsx:72
 msgid "Join your camera's Wi-Fi network (DIRECT-…)."
-msgstr "Join your camera's Wi-Fi network (DIRECT-…)."
+msgstr "Kết nối vào mạng Wi-Fi của máy ảnh (DIRECT-…)."
 
 #: app/join-wifi.tsx:250
 msgid "Joining…"
-msgstr "Joining…"
+msgstr "Đang kết nối…"
 
 #: app/join-wifi.tsx:216
 msgid "Leave blank for open networks"
-msgstr "Leave blank for open networks"
+msgstr "Để trống nếu là mạng mở"
 
 #: app/image/[filename].tsx:194
 msgid "Loading video…"
-msgstr "Loading video…"
+msgstr "Đang tải video…"
 
 #: app/image/[filename].tsx:194
 msgid "Loading video… {percent}%"
-msgstr "Loading video… {percent}%"
+msgstr "Đang tải video… {percent}%"
 
 #: app/images.tsx:73
 msgid "Loading…"
-msgstr "Loading…"
+msgstr "Đang tải…"
 
 #: src/wifi.ts:14
 msgid "Location permission"
-msgstr "Location permission"
+msgstr "Quyền vị trí"
 
 #: src/wifi.ts:26
 msgid "Location permission is required to search for Wi-Fi networks."
-msgstr "Location permission is required to search for Wi-Fi networks."
+msgstr "Cần quyền vị trí để tìm mạng Wi-Fi."
 
 #: app/join-wifi.tsx:68
 msgid "Location permission was denied."
-msgstr "Location permission was denied."
-
-#: app/index.tsx:195
-#~ msgid "Long press to forget this desktop"
-#~ msgstr "Long press to forget this desktop"
+msgstr "Quyền vị trí đã bị từ chối."
 
 #: app/_layout.tsx:29
 msgid "Media"
-msgstr "Media"
+msgstr "Ảnh & video"
 
 #: app/(tabs)/camera/index.tsx:156
 msgid "Need help?"
-msgstr "Need help?"
+msgstr "Cần trợ giúp?"
 
 #: app/join-wifi.tsx:153
 msgid "No camera networks found. Make sure the camera is in Send to Smartphone mode, then search again."
-msgstr "No camera networks found. Make sure the camera is in Send to Smartphone mode, then search again."
+msgstr "Không tìm thấy mạng máy ảnh nào. Hãy đảm bảo máy ảnh đang ở chế độ Send to Smartphone, rồi tìm lại."
 
 #: app/(tabs)/(desktops)/index.tsx:183
 msgid "No desktops yet. Open the image-sync desktop app on your computer, then scan the pairing code in its Phone & settings tab."
-msgstr "No desktops yet. Open the image-sync desktop app on your computer, then scan the pairing code in its Phone & settings tab."
+msgstr "Chưa có máy tính nào. Mở ứng dụng image-sync trên máy tính, rồi quét mã ghép nối trong thẻ Phone & settings."
 
 #: app/images.tsx:113
 msgid "No photos or videos on the camera."
-msgstr "No photos or videos on the camera."
+msgstr "Không có ảnh hoặc video nào trên máy ảnh."
 
 #: app/images.tsx:111
 msgid "No photos or videos on this desktop yet."
-msgstr "No photos or videos on this desktop yet."
+msgstr "Chưa có ảnh hoặc video nào trên máy tính này."
 
 #: src/labelOcr/ReviewSheet.tsx:141
 msgid "No text detected — you can type it in manually below."
-msgstr "No text detected — you can type it in manually below."
+msgstr "Không nhận diện được chữ — bạn có thể nhập thủ công bên dưới."
 
 #: app/(tabs)/camera/index.tsx:65
 #: app/(tabs)/camera/index.tsx:106
 msgid "Not connected"
-msgstr "Not connected"
+msgstr "Chưa kết nối"
 
 #: app/(tabs)/(desktops)/index.tsx:174
 msgid "Not paired yet. Tap to scan its pairing code."
-msgstr "Not paired yet. Tap to scan its pairing code."
+msgstr "Chưa ghép nối. Nhấn để quét mã ghép nối."
 
 #: src/wifi.ts:16
 msgid "OK"
@@ -305,225 +283,217 @@ msgstr "OK"
 
 #: app/(tabs)/camera/index.tsx:46
 msgid "On the camera, choose \"Send to Smartphone\" so it starts its own Wi-Fi network (named DIRECT-…). The network name and password are shown on the camera screen. Join that network here, then tap Connect."
-msgstr "On the camera, choose \"Send to Smartphone\" so it starts its own Wi-Fi network (named DIRECT-…). The network name and password are shown on the camera screen. Join that network here, then tap Connect."
+msgstr "Trên máy ảnh, chọn \"Send to Smartphone\" để máy ảnh phát mạng Wi-Fi riêng (tên DIRECT-…). Tên mạng và mật khẩu hiển thị trên màn hình máy ảnh. Kết nối vào mạng đó tại đây, rồi nhấn Kết nối."
 
 #: app/(tabs)/(desktops)/index.tsx:132
 #: app/(tabs)/(desktops)/index.tsx:134
 #: app/(tabs)/(desktops)/index.tsx:161
 msgid "On this network"
-msgstr "On this network"
+msgstr "Trong mạng này"
 
 #: app/join-wifi.tsx:287
 msgid "Open"
-msgstr "Open"
+msgstr "Mở"
 
 #: app/(tabs)/camera/index.tsx:144
 msgid "Open Photos"
-msgstr "Open Photos"
+msgstr "Mở Ảnh"
 
 #: app/scan-pairing.tsx:56
 #: src/labelOcr/PermissionGate.tsx:69
 msgid "Open Settings"
-msgstr "Open Settings"
-
-#: app/index.tsx:173
-#~ msgid "Or"
-#~ msgstr "Or"
+msgstr "Mở Cài đặt"
 
 #: app/_layout.tsx:37
 msgid "Pair with Desktop"
-msgstr "Pair with Desktop"
+msgstr "Ghép nối với máy tính"
 
 #: app/(tabs)/(desktops)/index.tsx:92
 msgid "Paired"
-msgstr "Paired"
+msgstr "Đã ghép nối"
 
 #: app/scan-pairing.tsx:79
 msgid "Pairing…"
-msgstr "Pairing…"
+msgstr "Đang ghép nối…"
 
 #: app/image/[filename].tsx:52
 msgid "Photo library access is needed to save this file."
-msgstr "Photo library access is needed to save this file."
+msgstr "Cần quyền truy cập thư viện ảnh để lưu tệp này."
 
 #: app/scan-pairing.tsx:91
 msgid "Point the camera at the pairing code in the image-sync desktop app (Phone & settings tab)."
-msgstr "Point the camera at the pairing code in the image-sync desktop app (Phone & settings tab)."
+msgstr "Hướng camera vào mã ghép nối trong ứng dụng image-sync trên máy tính (thẻ Phone & settings)."
 
 #: src/labelOcr/CameraCaptureView.tsx:66
 msgid "Preparing camera…"
-msgstr "Preparing camera…"
+msgstr "Đang chuẩn bị camera…"
 
 #: app/join-wifi.tsx:170
 msgid "Read from Label"
-msgstr "Read from Label"
+msgstr "Đọc từ nhãn"
 
 #: app/join-wifi.tsx:192
 msgid "Read Name from Label"
-msgstr "Read Name from Label"
+msgstr "Đọc tên từ nhãn"
 
 #: app/join-wifi.tsx:243
 msgid "Read Password from Label"
-msgstr "Read Password from Label"
+msgstr "Đọc mật khẩu từ nhãn"
 
 #: app/_layout.tsx:36
 msgid "Read Wi-Fi Label"
-msgstr "Read Wi-Fi Label"
+msgstr "Đọc nhãn Wi-Fi"
 
 #: app/read-label.tsx:72
 msgid "Read Wi-Fi Name"
-msgstr "Read Wi-Fi Name"
+msgstr "Đọc tên Wi-Fi"
 
 #: app/read-label.tsx:72
 msgid "Read Wi-Fi Password"
-msgstr "Read Wi-Fi Password"
+msgstr "Đọc mật khẩu Wi-Fi"
 
 #: src/labelOcr/ReviewSheet.tsx:122
 msgid "Reading text…"
-msgstr "Reading text…"
+msgstr "Đang đọc chữ…"
 
 #: app/(tabs)/(desktops)/index.tsx:72
 msgid "Remove"
-msgstr "Remove"
+msgstr "Xoá"
 
 #. placeholder {0}: d.name
 #: app/(tabs)/(desktops)/index.tsx:147
 msgid "Remove {0}"
-msgstr "Remove {0}"
+msgstr "Xoá {0}"
 
 #. placeholder {0}: d.name
 #: app/(tabs)/(desktops)/index.tsx:70
 msgid "Remove {0}?"
-msgstr "Remove {0}?"
+msgstr "Xoá {0}?"
 
 #: src/labelOcr/ReviewSheet.tsx:82
 #: src/labelOcr/ReviewSheet.tsx:132
 msgid "Retake"
-msgstr "Retake"
+msgstr "Chụp lại"
 
 #: app/images.tsx:106
 msgid "Retry"
-msgstr "Retry"
+msgstr "Thử lại"
 
 #. placeholder {0}: retryable.length
 #: app/sync.tsx:172
 msgid "Retry Failed ({0})"
-msgstr "Retry Failed ({0})"
+msgstr "Thử lại mục lỗi ({0})"
 
 #: app/image/[filename].tsx:135
 msgid "Retry Save"
-msgstr "Retry Save"
+msgstr "Lưu lại"
 
 #: app/image/[filename].tsx:136
 msgid "Save to Photos"
-msgstr "Save to Photos"
+msgstr "Lưu vào Ảnh"
 
 #: app/image/[filename].tsx:124
 msgid "Saved to Photos"
-msgstr "Saved to Photos"
+msgstr "Đã lưu vào Ảnh"
 
 #: app/image/[filename].tsx:131
 msgid "Saving…"
-msgstr "Saving…"
+msgstr "Đang lưu…"
 
 #: app/image/[filename].tsx:131
 msgid "Saving… {savePercent}%"
-msgstr "Saving… {savePercent}%"
+msgstr "Đang lưu… {savePercent}%"
 
 #: app/(tabs)/(desktops)/index.tsx:191
 msgid "Scan Pairing Code"
-msgstr "Scan Pairing Code"
+msgstr "Quét mã ghép nối"
 
 #: app/(tabs)/camera/index.tsx:78
 #: app/join-wifi.tsx:139
 msgid "Search for Camera"
-msgstr "Search for Camera"
+msgstr "Tìm máy ảnh"
 
 #: app/join-wifi.tsx:139
 msgid "Searching…"
-msgstr "Searching…"
+msgstr "Đang tìm…"
 
 #: app/join-wifi.tsx:287
 msgid "Secured"
-msgstr "Secured"
+msgstr "Có bảo mật"
 
 #: app/join-wifi.tsx:136
 msgid "Select your camera's Wi-Fi network."
-msgstr "Select your camera's Wi-Fi network."
+msgstr "Chọn mạng Wi-Fi của máy ảnh."
 
 #: app/join-wifi.tsx:227
 msgid "Show password"
-msgstr "Show password"
+msgstr "Hiện mật khẩu"
 
 #: app/_layout.tsx:24
 msgid "Sync All"
-msgstr "Sync All"
+msgstr "Đồng bộ tất cả"
 
 #. placeholder {0}: images.length
 #: app/images.tsx:92
 msgid "Sync All ({0})"
-msgstr "Sync All ({0})"
+msgstr "Đồng bộ tất cả ({0})"
 
 #: app/sync.tsx:106
 msgid "Sync complete"
-msgstr "Sync complete"
+msgstr "Đồng bộ hoàn tất"
 
 #: app/sync.tsx:104
 msgid "Sync finished with errors"
-msgstr "Sync finished with errors"
+msgstr "Đồng bộ xong nhưng có lỗi"
 
 #: app/sync.tsx:102
 msgid "Sync stopped"
-msgstr "Sync stopped"
+msgstr "Đã dừng đồng bộ"
 
 #: app/sync.tsx:100
 msgid "Syncing photos…"
-msgstr "Syncing photos…"
+msgstr "Đang đồng bộ ảnh…"
 
 #: src/ocr.ts:10
 msgid "Text recognition is not supported on this device."
-msgstr "Text recognition is not supported on this device."
+msgstr "Thiết bị này không hỗ trợ nhận diện chữ."
 
 #: src/labelOcr/PermissionGate.tsx:32
 msgid "Text recognition isn't available on this device. You can still type the password in manually."
-msgstr "Text recognition isn't available on this device. You can still type the password in manually."
+msgstr "Thiết bị này không hỗ trợ nhận diện chữ. Bạn vẫn có thể nhập mật khẩu thủ công."
 
 #: src/labelOcr/PermissionGate.tsx:27
 msgid "Text recognition isn't available on this device. You can still type the Wi-Fi name in manually."
-msgstr "Text recognition isn't available on this device. You can still type the Wi-Fi name in manually."
+msgstr "Thiết bị này không hỗ trợ nhận diện chữ. Bạn vẫn có thể nhập tên Wi-Fi thủ công."
 
 #: app/(tabs)/camera/index.tsx:58
 msgid "Transfer photos from your Sony camera to your phone."
-msgstr "Transfer photos from your Sony camera to your phone."
+msgstr "Chuyển ảnh từ máy ảnh Sony sang điện thoại."
 
 #: app/scan-pairing.tsx:87
 msgid "Try Again"
-msgstr "Try Again"
+msgstr "Thử lại"
 
 #: src/wifi.ts:28
 msgid "Turn on location services to search for Wi-Fi networks."
-msgstr "Turn on location services to search for Wi-Fi networks."
+msgstr "Bật dịch vụ vị trí để tìm mạng Wi-Fi."
 
 #: src/labelOcr/ReviewSheet.tsx:91
 msgid "Use This Text"
-msgstr "Use This Text"
+msgstr "Dùng chữ này"
 
 #: app/join-wifi.tsx:177
 msgid "Wi-Fi name"
-msgstr "Wi-Fi name"
+msgstr "Tên Wi-Fi"
 
 #: app/join-wifi.tsx:210
 msgid "Wi-Fi password"
-msgstr "Wi-Fi password"
+msgstr "Mật khẩu Wi-Fi"
 
 #: app/(tabs)/(desktops)/index.tsx:70
 msgid "You'll need to pair with it again to see its photos."
-msgstr "You'll need to pair with it again to see its photos."
-
-#: app/index.tsx:51
-#~ msgid "You'll need to scan its pairing code again to reconnect."
-#~ msgstr "You'll need to scan its pairing code again to reconnect."
+msgstr "Bạn sẽ cần ghép nối lại để xem ảnh của máy tính này."
 
 #: app/(tabs)/camera/index.tsx:70
 msgid "Your phone is on this Wi-Fi network."
-msgstr "Your phone is on this Wi-Fi network."
+msgstr "Điện thoại của bạn đang ở mạng Wi-Fi này."
