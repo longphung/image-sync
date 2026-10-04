@@ -10,6 +10,7 @@
     "@legendapp/list": "^3.3.1",
     "@lingui/core": "^6.4.0",
     "@lingui/react": "^6.4.0",
+    "@mtd1410/react-native-ffmpegkit": "^8.1.2",
     "expo": "~57.0.2",
     "expo-build-properties": "~57.0.3",
     "expo-camera": "~57.0.0",
@@ -24,7 +25,7 @@
     "expo-symbols": "~57.0.3",
     "expo-text-extractor": "^2.0.0",
     "expo-video": "~57.0.5",
-    "image-sync-core": "file:./modules/image-sync-core",
+    "fast-xml-parser": "^5.11.2",
     "react": "19.2.3",
     "react-native": "0.86.0",
     "react-native-gesture-handler": "~2.32.0",
@@ -40,6 +41,7 @@
     "@lingui/babel-plugin-lingui-macro": "^6.4.0",
     "@lingui/cli": "^6.4.0",
     "@lingui/metro-transformer": "^6.4.0",
+    "@types/node": "^22.20.5",
     "@types/react": "~19.2.2",
     "babel-preset-expo": "~57.0.1",
     "typescript": "~6.0.3"
@@ -49,7 +51,8 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "i18n:extract": "lingui extract"
+    "i18n:extract": "lingui extract",
+    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test 'src/**/*.test.ts'"
   },
   "private": true,
   "packageManager": "pnpm@10.20.0+sha512.cf9998222162dd85864d0a8102e7892e7ba4ceadebbf5a31f9c2fce48dfce317a9c53b9f6464d1ef9042cba2e02ae02a9f7c143a2b438cd93c91840f0192b9dd"

@@ -58,8 +58,8 @@ export function listDownloadedFilenames(): Set<string> {
   return new Set(getPhotosDirectory().list().map((entry) => entry.name));
 }
 
-// ponytail: extension sniffing — the Rust listing doesn't expose DLNA upnp:class / mime yet;
-// move classification into image-sync-core if the camera ever serves extensionless URLs.
+// ponytail: extension sniffing — the listing doesn't expose DLNA upnp:class / mime yet;
+// move classification into src/camera/dlna.ts if the camera ever serves extensionless URLs.
 export function isVideoFile(filename: string): boolean {
   return /\.(mp4|mts|m2ts|mov)$/i.test(filename);
 }

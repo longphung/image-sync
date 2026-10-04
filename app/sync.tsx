@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, Stack } from 'expo-router';
 import { Image } from 'expo-image';
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { ImageItem } from 'image-sync-core';
+import type { ImageItem } from '../src/camera';
 import { useCameraConnection } from '../src/CameraConnectionContext';
 import { ActionButton } from '../src/components/ActionButton';
 import { Card } from '../src/components/Card';

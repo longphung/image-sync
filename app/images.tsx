@@ -6,7 +6,7 @@ import { router, Stack, useFocusEffect } from 'expo-router';
 import { Image } from 'expo-image';
 import { SymbolView } from 'expo-symbols';
 import { Trans, useLingui } from '@lingui/react/macro';
-import type { ImageItem } from 'image-sync-core';
+import type { ImageItem } from '../src/camera';
 import { useCameraConnection } from '../src/CameraConnectionContext';
 import { ActionButton } from '../src/components/ActionButton';
 import { isVideoFile, listDownloadedFilenames } from '../src/fileSystem';

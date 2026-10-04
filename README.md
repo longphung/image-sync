@@ -2,8 +2,7 @@
 
 An iOS/Android app (Expo) that replaces Sony PlayMemories Mobile for pulling photos off a Sony RX100M3
 over its "Send to Smartphone" Wi-Fi access point. The camera protocol (DLNA ContentDirectory, with a
-Scalar Web API fallback) is implemented in Rust and exposed to React Native via
-[uniffi-bindgen-react-native](https://github.com/jhugman/uniffi-bindgen-react-native).
+Scalar Web API fallback) is plain TypeScript in `src/camera/`.
 
 ## Features
 
@@ -17,8 +16,7 @@ Scalar Web API fallback) is implemented in Rust and exposed to React Native via
 ## Requirements
 
 - Node + [pnpm](https://pnpm.io) (version pinned in `package.json`'s `packageManager`)
-- Rust toolchain with the iOS/Android targets
-- Xcode (iOS) and/or Android Studio + NDK (Android)
+- Xcode (iOS) and/or Android Studio (Android)
 - A development build — the app uses native modules, so Expo Go won't work
 
 ## Getting started
@@ -26,27 +24,15 @@ Scalar Web API fallback) is implemented in Rust and exposed to React Native via
 ```sh
 pnpm install
 
-# Build the Rust core and regenerate the native bindings
-cd modules/image-sync-core
-npm run ubrn:ios        # and/or: npm run ubrn:android
-cd ../..
-
 # Generate native projects and run
 npx expo prebuild --clean
 pnpm ios                # or: pnpm android
 ```
 
-If the Android build can't find the NDK, set
-`export ANDROID_NDK_HOME=~/Library/Android/sdk/ndk/<version>` and retry.
-
-After changing any Rust code, re-run the `ubrn:*` script **and** rebuild the native app. A stale native
-binary paired with fresh JS bindings throws `ApiChecksumMismatch` at runtime.
-
 ## Testing
 
 ```sh
-cargo test              # Rust protocol core (XML/JSON fixtures, no camera needed)
-cargo clippy
+pnpm test               # camera protocol parsing (XML/JSON fixtures, no camera needed)
 npx tsc --noEmit
 ```
 
@@ -63,11 +49,9 @@ in Settings before opening the app. See the "iOS on a free (Personal Team) Apple
 ## Project layout
 
 ```
-rust/image-sync-core/      pure Rust protocol client (discovery, DLNA, Scalar listing)
-rust/image-sync-ffi/       uniffi wrapper exposing the core to JS
-modules/image-sync-core/   generated Expo native module (regenerable)
-app/                       expo-router screens
-src/                       shared TS: camera context, Wi-Fi, file system, OCR, components, theme
+src/camera/   camera protocol client (discovery, DLNA, Scalar listing)
+app/          expo-router screens
+src/          shared TS: camera context, Wi-Fi, file system, OCR, components, theme
 ```
 
-[`AGENTS.md`](AGENTS.md) has the full architecture notes, the FFI surface, and protocol gotchas.
+[`AGENTS.md`](AGENTS.md) has the full architecture notes and protocol gotchas.
