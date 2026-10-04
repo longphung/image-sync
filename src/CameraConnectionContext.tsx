@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
-import { CameraApi, getCameraInfo, listImages, type ImageItem } from 'image-sync-core';
+import { DEFAULT_HOST, getCameraInfo, listImages, type CameraApi, type ImageItem } from './camera';
 import { getCurrentSsid } from './wifi';
 
 export type ConnectionStatus = 'idle' | 'connecting' | 'connected' | 'error';
@@ -27,11 +27,11 @@ type CameraConnectionValue = {
 
 const CameraConnectionContext = createContext<CameraConnectionValue | null>(null);
 
-// This is intentionally memory-only (no AsyncStorage): `CameraApi` is a live uniffi
-// object tied to the current JS process, not something meaningful to persist/restore.
+// This is intentionally memory-only (no AsyncStorage): `CameraApi` comes from discovery
+// against whatever camera is currently joined, so it's not meaningful to persist/restore.
 // It resets on every JS reload, which is why app/images.tsx guards against a null api.
 export function CameraConnectionProvider({ children }: { children: ReactNode }) {
-  const [host, setHost] = useState('192.168.122.1');
+  const [host, setHost] = useState(DEFAULT_HOST);
   const [status, setStatus] = useState<ConnectionStatus>('idle');
   const [api, setApi] = useState<CameraApi | null>(null);
   const [cameraName, setCameraName] = useState<string | null>(null);
@@ -77,7 +77,8 @@ export function CameraConnectionProvider({ children }: { children: ReactNode }) 
     setImagesStatus('loading');
     setImagesError(null);
     try {
-      setImages(await listImages(api));
+      // The camera lists oldest first; show newest first.
+      setImages((await listImages(api)).reverse());
       setImagesStatus('loaded');
     } catch (err) {
       console.log('[Images] listImages error', err);

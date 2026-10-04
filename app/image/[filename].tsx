@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useLocalSearchParams } from 'expo-router';
@@ -7,12 +7,14 @@ import { useEvent } from 'expo';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { SymbolView } from 'expo-symbols';
 import { Asset, requestPermissionsAsync } from 'expo-media-library';
+import { File } from 'expo-file-system';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { useCameraConnection } from '../../src/CameraConnectionContext';
 import { ActionButton } from '../../src/components/ActionButton';
 import { downloadToPhotosDir, fileUriFor, isVideoFile } from '../../src/fileSystem';
+import { convertToMp4, needsMp4Conversion } from '../../src/convertVideo';
 
-type SaveState = 'idle' | 'saving' | 'done' | 'error';
+type SaveState = 'idle' | 'saving' | 'converting' | 'done' | 'error';
 
 export default function ImageDetailScreen() {
   const { t } = useLingui();
@@ -33,6 +35,10 @@ export default function ImageDetailScreen() {
   const [saveErrorMessage, setSaveErrorMessage] = useState<string | null>(null);
   // Integer 0–100 while saving; null until the first progress event (or size unknown).
   const [savePercent, setSavePercent] = useState<number | null>(null);
+  const isVideo = isVideoFile(filename);
+  // The preview downloads (and converts) the video itself; Save waits for it so the two
+  // never write the same .part file at once.
+  const [videoReady, setVideoReady] = useState(false);
 
   const handleSave = useCallback(async () => {
     setSaveState('saving');
@@ -45,7 +51,13 @@ export default function ImageDetailScreen() {
       if (status !== 'granted') {
         throw new Error(t`Photo library access is needed to save this file.`);
       }
-      await Asset.create(fileUriFor(filename));
+      let saveUri = fileUriFor(filename);
+      if (needsMp4Conversion(filename)) {
+        setSaveState('converting');
+        setSavePercent(null);
+        saveUri = (await convertToMp4(new File(saveUri), setSavePercent)).uri;
+      }
+      await Asset.create(saveUri);
       setSaveState('done');
     } catch (err) {
       console.log('[ImageDetail] save error', err);
@@ -59,8 +71,8 @@ export default function ImageDetailScreen() {
       <Stack.Screen options={{ title: '' }} />
 
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        {isVideoFile(filename) ? (
-          <VideoPreview url={url} />
+        {isVideo ? (
+          <VideoPreview url={url} filename={filename} onReady={() => setVideoReady(true)} />
         ) : (
           <>
             <Image
@@ -117,13 +129,15 @@ export default function ImageDetailScreen() {
             label={
               saveState === 'saving'
                 ? savePercent !== null ? t`Saving… ${savePercent}%` : t`Saving…`
+                : saveState === 'converting'
+                  ? savePercent !== null ? t`Converting… ${savePercent}%` : t`Converting…`
                 : saveState === 'error'
                   ? t`Retry Save`
                   : t`Save to Photos`
             }
             systemImage="square.and.arrow.down"
             onPress={handleSave}
-            disabled={saveState === 'saving'}
+            disabled={saveState === 'saving' || saveState === 'converting' || (isVideo && !videoReady)}
           />
         )}
         {saveErrorMessage && (
@@ -136,22 +150,63 @@ export default function ImageDetailScreen() {
   );
 }
 
-function VideoPreview({ url }: { url: string }) {
+// Plays a local copy: streaming from the camera fails for AVCHD (.MTS isn't decodable on iOS)
+// and AVPlayer won't stream from servers without byte-range support. The download and the
+// converted .mp4 both stay in camera-photos, so Save to Photos reuses them.
+function VideoPreview({ url, filename, onReady }: { url: string; filename: string; onReady: () => void }) {
   const { t } = useLingui();
-  // Streams straight from the camera over HTTP; nothing is downloaded until Save.
-  const player = useVideoPlayer(url);
+  const [stage, setStage] = useState<'downloading' | 'converting' | 'error'>('downloading');
+  const [percent, setPercent] = useState<number | null>(null);
+  const [localUri, setLocalUri] = useState<string | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    (async () => {
+      try {
+        await downloadToPhotosDir(url, filename, { signal: controller.signal, onPercent: setPercent });
+        let uri = fileUriFor(filename);
+        if (needsMp4Conversion(filename)) {
+          if (controller.signal.aborted) return;
+          setStage('converting');
+          setPercent(null);
+          uri = (await convertToMp4(new File(uri), setPercent)).uri;
+        }
+        if (controller.signal.aborted) return;
+        setLocalUri(uri);
+        onReady();
+      } catch (err) {
+        if (controller.signal.aborted) return;
+        console.log('[VideoPreview] prepare error', err);
+        setStage('error');
+      }
+    })();
+    return () => controller.abort();
+    // onReady is an inline callback; re-running on it would restart the download.
+  }, [url, filename]);
+
+  if (localUri) return <LocalVideo uri={localUri} />;
+  if (stage === 'error') {
+    return <Text style={{ color: '#ffffffcc', padding: 24, textAlign: 'center' }}>{t`Couldn't load this video`}</Text>;
+  }
+  const label =
+    stage === 'converting'
+      ? percent !== null ? t`Converting… ${percent}%` : t`Converting…`
+      : percent !== null ? t`Loading video… ${percent}%` : t`Loading video…`;
+  return (
+    <View style={{ alignItems: 'center', gap: 12 }}>
+      <ActivityIndicator size="large" color="#fff" />
+      <Text style={{ color: '#ffffffcc' }}>{label}</Text>
+    </View>
+  );
+}
+
+function LocalVideo({ uri }: { uri: string }) {
+  const { t } = useLingui();
+  const player = useVideoPlayer(uri, (p) => p.play());
   const { status } = useEvent(player, 'statusChange', { status: player.status });
 
   if (status === 'error') {
-    // e.g. AVCHD .MTS, which AVPlayer can't decode.
     return <Text style={{ color: '#ffffffcc', padding: 24, textAlign: 'center' }}>{t`Can't play this video format`}</Text>;
   }
-  return (
-    <>
-      <VideoView player={player} nativeControls contentFit="contain" style={{ width: '100%', height: '100%' }} />
-      {status === 'loading' && (
-        <ActivityIndicator style={{ position: 'absolute' }} size="large" color="#fff" />
-      )}
-    </>
-  );
+  return <VideoView player={player} nativeControls contentFit="contain" style={{ width: '100%', height: '100%' }} />;
 }

@@ -66,7 +66,7 @@ msgstr "Camera SSID (DIRECT-…)"
 msgid "Camera took too long to respond. Please try again."
 msgstr "Camera took too long to respond. Please try again."
 
-#: app/image/[filename].tsx:147
+#: app/image/[filename].tsx:209
 msgid "Can't play this video format"
 msgstr "Can't play this video format"
 
@@ -100,6 +100,23 @@ msgstr "Connected"
 msgid "Connecting to your camera"
 msgstr "Connecting to your camera"
 
+#: app/image/[filename].tsx:133
+#: app/image/[filename].tsx:193
+msgid "Converting…"
+msgstr "Converting…"
+
+#: app/image/[filename].tsx:193
+msgid "Converting… {percent}%"
+msgstr "Converting… {percent}%"
+
+#: app/image/[filename].tsx:133
+msgid "Converting… {savePercent}%"
+msgstr "Converting… {savePercent}%"
+
+#: app/image/[filename].tsx:189
+msgid "Couldn't load this video"
+msgstr "Couldn't load this video"
+
 #: app/images.tsx:167
 msgid "Disconnect"
 msgstr "Disconnect"
@@ -128,7 +145,7 @@ msgstr "failed"
 msgid "Failed to capture photo."
 msgstr "Failed to capture photo."
 
-#: app/image/[filename].tsx:76
+#: app/image/[filename].tsx:88
 msgid "Failed to load image"
 msgstr "Failed to load image"
 
@@ -168,6 +185,14 @@ msgstr "Joining…"
 #: app/join-wifi.tsx:216
 msgid "Leave blank for open networks"
 msgstr "Leave blank for open networks"
+
+#: app/image/[filename].tsx:194
+msgid "Loading video…"
+msgstr "Loading video…"
+
+#: app/image/[filename].tsx:194
+msgid "Loading video… {percent}%"
+msgstr "Loading video… {percent}%"
 
 #: app/images.tsx:72
 msgid "Loading…"
@@ -218,7 +243,7 @@ msgstr "Open Photos"
 msgid "Open Settings"
 msgstr "Open Settings"
 
-#: app/image/[filename].tsx:46
+#: app/image/[filename].tsx:52
 msgid "Photo library access is needed to save this file."
 msgstr "Photo library access is needed to save this file."
 
@@ -263,23 +288,23 @@ msgstr "Retake"
 msgid "Retry"
 msgstr "Retry"
 
-#: app/image/[filename].tsx:121
+#: app/image/[filename].tsx:135
 msgid "Retry Save"
 msgstr "Retry Save"
 
-#: app/image/[filename].tsx:122
+#: app/image/[filename].tsx:136
 msgid "Save to Photos"
 msgstr "Save to Photos"
 
-#: app/image/[filename].tsx:112
+#: app/image/[filename].tsx:124
 msgid "Saved to Photos"
 msgstr "Saved to Photos"
 
-#: app/image/[filename].tsx:119
+#: app/image/[filename].tsx:131
 msgid "Saving…"
 msgstr "Saving…"
 
-#: app/image/[filename].tsx:119
+#: app/image/[filename].tsx:131
 msgid "Saving… {savePercent}%"
 msgstr "Saving… {savePercent}%"
 

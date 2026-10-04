@@ -12,17 +12,13 @@ whichever one the camera presents.
 Protocol reference: a working, hardware-validated Python CLI + daemon lives in a **sibling repo**,
 `../HackMySony` (`sony_camera_client.py`, `sony_sync_daemon.py`). That repo's `docs/sonysync-design.md`
 describes an earlier, different, never-built TypeScript/Expo architecture — **ignore it**; this repo
-(`image-sync`) is the real, in-progress rewrite, and it uses Rust, not TypeScript, for the protocol
-logic. Don't go looking in the sibling repo for current plans; everything current lives here.
+(`image-sync`) is the real, in-progress rewrite. Don't go looking in the sibling repo for current plans;
+everything current lives here.
 
 ## Architecture
 
 ```
-rust/
-  image-sync-core/    pure Rust protocol client — zero uniffi dependency, unit-testable in isolation
-  image-sync-ffi/      thin #[uniffi::export] wrapper crate; mirrors core types with From/Into
-modules/image-sync-core/  generated Expo native module (uniffi-bindgen-react-native scaffolding:
-                          iOS/Android/C++/TS glue). Fully regenerable — see below.
+src/camera/           camera protocol client in plain TypeScript (fetch + fast-xml-parser, no native code)
 src/fileSystem.ts     expo-file-system helpers (photos directory, native async downloads with % progress)
 src/theme/colors.ts   native semantic colors (UIKit system colors / Material 3 dynamic colors)
 src/components/       ActionButton + ProgressBar have .ios.tsx (SwiftUI, liquid glass on iOS 26+) and
@@ -32,96 +28,74 @@ app/                  expo-router screens: index (2-step connect) -> join-wifi -
                       (progress modal) / image/[filename] (photo/video detail + Save to Photos); read-label (OCR modal)
 ```
 
-Package manager is **pnpm** with `node-linker=hoisted` (`.npmrc`) — React Native autolinking and the
-local `file:` module expect a flat `node_modules`. Add Expo packages with `npx expo install <pkg>`.
+Package manager is **pnpm** with `node-linker=hoisted` (`.npmrc`) — React Native autolinking expects a
+flat `node_modules`. Add Expo packages with `npx expo install <pkg>`.
 
-**Why two Rust crates instead of one:** `image-sync-core` deliberately has no `uniffi` dependency and
-never calls `uniffi::setup_scaffolding!()`. Putting uniffi derives directly on core types would make it
-a second UniFFI "component," and `ubrn build` would emit a *second* generated bindings module —
-requiring manual edits to `modules/image-sync-core/src/index.tsx` and native registration code. Keeping
-`image-sync-ffi` as the only uniffi-aware crate avoids that; it just defines mirror types
-(`CameraApi`, `ImageItem`, `CameraError`) with `From`/`Into` conversions to/from the core crate's plain
-types.
+The camera protocol used to live in Rust (uniffi + a generated native module). It was ported to
+TypeScript because it's only network I/O plus XML/JSON parsing, and the Rust path required a ubrn
+regeneration and a native rebuild for every change.
 
-## Protocol logic (`rust/image-sync-core/src/`)
+## Protocol logic (`src/camera/`)
 
-- `discovery.rs` — GET `http://<host>:64321/DmsDesc.xml` (default host `192.168.122.1` — camera is
-  always the DHCP gateway once joined to its AP, so no SSDP/UDP discovery is implemented; a manual-IP
-  override is the fallback path). Classifies the response as `CameraApi::Scalar` (if
-  `X_ScalarWebAPI_ActionList_URL` present) or `CameraApi::Dlna` (falls back to the `ContentDirectory`
-  service's `controlURL` + `photoRoot`, default `"0"`).
-- `dlna.rs` — SOAP `Browse(BrowseDirectChildren)` client, recursive container walk, DIDL-Lite parsing,
-  and resource selection (prefers the `<res>` with no `DLNA.ORG_PN=` — the original full-resolution
-  file — falling back to the *first* converted resource in document order if no original exists; that
-  fallback quirk is intentional, ported faithfully from the validated Python reference, not a bug).
-- `scalar.rs` — Scalar Web API JSON-RPC client (`getSchemeList` -> `getSourceList` -> `getContentList`,
-  paginated batch=50).
-- `xml.rs` — namespace-agnostic parsing helpers (match on local name, ignoring `prefix:`) and the
-  DIDL double-unescape (see Gotchas below).
+Public API (`src/camera/index.ts`):
 
-All of this is unit-tested with inline XML/JSON fixtures (no live camera needed) — see `#[cfg(test)]`
-blocks in each file, especially `dlna.rs`'s `parse_browse_response_handles_double_escaped_result`.
-
-## FFI surface (`rust/image-sync-ffi/src/lib.rs`)
-
-```rust
-fn ping() -> String;
-async fn get_camera_info(host: Option<String>) -> Result<CameraInfo, CameraError>; // { api, name }
-async fn list_images(api: CameraApi) -> Result<Vec<ImageItem>, CameraError>;
+```ts
+getCameraInfo(host?: string): Promise<CameraInfo>; // { api, name? }
+listImages(api: CameraApi): Promise<ImageItem[]>;
+type CameraApi = { kind: 'dlna'; controlUrl; photoRoot } | { kind: 'scalar'; baseUrl };
+type ImageItem = { title; url; filename; thumbnailUrl };
 ```
 
-The two network calls are uniffi **async** exports and return Promises in JS. The core crate stays
-synchronous (blocking `ureq`). The ubrn-generated JS polls Rust futures on the JS thread, so a future
-that blocked inside `ureq` would still freeze the app. Each export therefore wraps the core call in
-`blocking::unblock(...)`, which runs it on a background thread pool. Keep that pattern for any new
-network-bound export.
+Failures throw a plain `Error` whose `message` is shown to the user (`HTTP request failed: GET ...`,
+`SOAP Browse error: Browse(<id>) failed: ...`, `Scalar JSON-RPC error: ...`). All requests go through
+`http.ts`'s `fetchText()`, which adds a 30s timeout with a manual `AbortController` timer, because RN's
+`AbortSignal` polyfill has no `AbortSignal.timeout()`. Plain `fetch` never blocks the JS thread.
 
-File downloads don't go through Rust at all. `src/fileSystem.ts`'s `downloadToPhotosDir(url, filename,
+- `discovery.ts`: GET `http://<host>:64321/DmsDesc.xml` (default host `192.168.122.1`). The camera is
+  always the DHCP gateway once joined to its AP, so no SSDP/UDP discovery is implemented, and a
+  manual IP override is the fallback. Classifies the response as `scalar` if
+  `X_ScalarWebAPI_ActionList_URL` is present (it wins if both are), otherwise `dlna`, using the
+  `ContentDirectory` service's `controlURL` joined onto the description's origin, plus `photoRoot`
+  (default `"0"`). `name` is the first non-empty `friendlyName`, falling back to `modelName`.
+- `dlna.ts`: SOAP `Browse(BrowseDirectChildren)` client. It paginates in batches of 50 and stops when
+  `start >= TotalMatches` or a batch comes back empty. It walks containers recursively, depth-first,
+  in document order, and parses DIDL-Lite. Resource selection (`pickOriginalRes`):
+  1. Prefer a `<res>` with no `DLNA.ORG_PN=` (the original full-resolution file), the largest by
+     `size` if there are several.
+  2. Otherwise use the first `video/*` res, so a video whose only real file carries a DLNA profile
+     doesn't resolve to its JPEG thumbnail.
+  3. Otherwise use the *first* converted res in document order. This quirk is intentional, ported
+     faithfully from the validated Python reference, and is not a bug.
+  The thumbnail is the `JPEG_TN` res. The filename is the URL path's basename without the query
+  string, falling back to the title.
+- `scalar.ts`: Scalar Web API JSON-RPC client (`getSchemeList` -> `getSourceList` ->
+  `getContentCount` + `getContentList`, paginated in batches of 50, `type: ["still"]`).
+- `xml.ts`: `fast-xml-parser` configured with `preserveOrder` (keeps containers and items in document
+  order) and `removeNSPrefix` (namespace-agnostic matching on local names), plus small tree helpers and
+  the DIDL double-unescape (below).
+
+**The SOAP `<Result>` is escaped twice on the wire.** This was verified against the Python reference's
+`html.unescape()`-after-`ElementTree`-parse behavior. The XML parser undoes the outer SOAP envelope's
+layer, then `unescapeXmlEntitiesOnce()` undoes the second layer before the text is parsed as DIDL-Lite.
+That function replaces `&amp;` *last*, so `&amp;lt;` peels exactly one level to `&lt;`.
+`fast-xml-parser` decodes entities in one left-to-right scan over the whole text node, so text
+containing `&amp;` etc. is never split or truncated. (The old Rust parser had exactly that bug at first.)
+
+Tests: `pnpm test` runs `src/camera/camera.test.ts` with Node's built-in test runner. Node strips the TS
+types itself, which is why `src/camera/` imports use explicit `.ts` extensions
+(`allowImportingTsExtensions` in `tsconfig.json`; Metro resolves the exact path). They use inline
+XML/JSON fixtures and need no live camera. See especially "parseBrowseResponse handles the
+double-escaped Result" and the `pickOriginalRes` cases. Keep parsing functions pure and exported so
+they stay testable without the network.
+
+File downloads don't go through `src/camera/`. `src/fileSystem.ts`'s `downloadToPhotosDir(url, filename,
 { signal, onPercent })` uses `expo-file-system`'s native `File.downloadFileAsync`, which runs off the JS
 thread, reports integer-percent progress, and is cancellable with an `AbortSignal`. It resolves `false`
 when the file already exists ("skipped"). It downloads to `<filename>.part` and moves the file into
 place only on success, because Android streams straight into the target and a partial file under the
 final name would later be skipped as "already downloaded".
 
-Generated JS shapes (confirmed against actual generated output in
-`modules/image-sync-core/src/generated/image_sync_ffi.ts`, re-exported from `image-sync-core`):
-- `getCameraInfo(host: string | undefined): Promise<CameraInfo>` — **always pass an argument**, `undefined` if no
-  manual override; there's no default param. `CameraInfo` is `{ api: CameraApi, name: string | undefined }`
-  where `name` is the device description's `friendlyName` (falling back to `modelName`).
-- `listImages(api: CameraApi): Promise<Array<ImageItem>>`
-- `CameraApi` is a tagged-union: `CameraApi.Dlna.instanceOf(api)` / `CameraApi.Scalar.instanceOf(api)`
-  as type guards, then `api.inner.controlUrl` / `.photoRoot` / `.baseUrl` (camelCased).
-- `ImageItem` is a plain object: `item.title`, `item.url`, `item.filename`, `item.thumbnailUrl`.
-- `CameraError` (`#[uniffi(flat_error)]`) is a class extending JS `Error`; `err.message` is prefixed
-  like `"CameraError.Http: HTTP request failed: ..."`.
-
-## Rebuilding after Rust changes
-
-```
-cd modules/image-sync-core
-npm run ubrn:ios       # ubrn build ios --and-generate
-npm run ubrn:android   # ubrn build android --and-generate
-```
-Both recompile the Rust crate per-target and regenerate everything under `modules/image-sync-core/{src/generated,ios,android,cpp}` — all gitignored, fully regenerable, safe to blow away. If Android fails on NDK resolution, `export ANDROID_NDK_HOME=~/Library/Android/sdk/ndk/<version>` (multiple versions may be installed side by side) and retry. After regenerating, re-run the native build (`expo run:ios`/`run:android`) — a stale native binary against fresh JS bindings throws `ApiChecksumMismatch` at runtime.
-
 `ios/` and `android/` are gitignored/regenerable via `npx expo prebuild --clean` — safe to wipe.
-
-## quick-xml gotchas hit while writing `dlna.rs`/`discovery.rs` (don't re-derive these from scratch)
-
-The vendored `quick-xml` version (0.41.0) tokenizes entity/character references (`&amp;`, `&lt;`,
-`&#60;`, ...) as **separate `GeneralRef` events**, not folded into `Text` — the common older-quick-xml
-idiom of a single `BytesText::unescape()` call silently truncates any text containing `&`/`<`/`>`/`"`/
-`'`. `xml.rs::read_element_text()` handles this correctly (accumulates `Text` + resolved `GeneralRef`
-until the matching `End` event) — reuse it for any new leaf-text extraction, don't reach for a plain
-`Event::Text` match. Also: `Attribute::unescape_value()` is deprecated in favor of
-`normalized_value(XmlVersion)`; and `reader.config_mut().trim_text(true)` trims whitespace at the edges
-of *each* Text fragment (not just at element boundaries) — this corrupts reconstructed text whenever an
-entity splits a run into multiple fragments, so it's deliberately **not** set anywhere in this crate.
-
-The camera's SOAP `<Result>` element is escaped *twice* on the wire (verified against the working
-Python reference's `html.unescape()`-after-`ElementTree`-parse behavior) — `dlna.rs` does one unescape
-via `read_element_text()` (undoes the outer SOAP envelope's escaping) then a second manual pass via
-`xml.rs::unescape_xml_entities_once()` before parsing the recovered text as DIDL-Lite XML.
 
 ## Native config for a plain-`http://`, local-network-only camera
 
@@ -150,11 +124,11 @@ Workaround for testing without a paid account (not implemented, documented only)
 
 ## Current state / what's left
 
-Done: Rust protocol core (fully unit-tested), FFI wrapper, bindings regenerated for iOS+Android, native
+Done: TypeScript protocol client in `src/camera/` (fully unit-tested), native
 local-network config, `expo-file-system` integration, and the redesigned native UI (2-step connect home
 with auto-connect after Wi-Fi join, join-wifi screen, 3-column photo grid with on-device badges, sync
 progress modal with downloaded/skipped/failed counts + cancel, image detail with Save to Photos).
-`cargo test`/`clippy` and `npx tsc --noEmit` all pass.
+`pnpm test` and `npx tsc --noEmit` both pass.
 
 UI follow-ups not yet done: Diagnostics screen (design screen 10, deferred); `ReviewSheet` still uses
 `@gorhom/bottom-sheet` (only re-themed) rather than `@expo/ui`'s native `BottomSheet`; the iOS-only
@@ -163,7 +137,8 @@ the SSID that was just joined from inside the app.
 
 Not yet done / needs a physical RX100M3 + its Wi-Fi AP to verify (no camera reachable from a dev
 machine alone):
-- Actual `run:ios`/`run:android` simulator/emulator build — was in progress, not confirmed complete.
+- Actual `run:ios`/`run:android` simulator/emulator build since the Rust native module was removed
+  (needs `npx expo prebuild --clean` first) — not confirmed yet.
 - Real `listImages` data, a real thumbnail loading over HTTP, `downloadToPhotosDir` writing a real file,
   and its progress percentage (it stays hidden if the camera sends no `Content-Length`).
 - The camera-based OCR "read Wi-Fi label" feature (`src/ocr.ts`, `app/read-label.tsx`, `src/labelOcr/`,
@@ -184,13 +159,23 @@ machine alone):
   `listImages`. The JS side classifies them by file extension only (`src/fileSystem.ts`'s `isVideoFile()`),
   shows a play badge in the grid, streams them with `expo-video` on the detail screen, and saves them
   with the same `downloadToPhotosDir()` → `Asset.create()` path as photos. Still to do:
-  - Listing: classify in Rust from the DIDL `upnp:class`/`protocolInfo` mime instead of the extension.
-    `pick_original_res()` does pick the real video file. The Python reference, which uses the same logic,
+  - Listing: classify in `src/camera/dlna.ts` from the DIDL `upnp:class`/`protocolInfo` mime instead of the extension.
+    `pickOriginalRes()` does pick the real video file, and when a video's only real file carries a
+    `DLNA.ORG_PN` profile it now prefers the first `video/*` res over the JPEG thumbnail fallback (suspected
+    cause of MP4s showing up as photos, unconfirmed). The list is reversed in `CameraConnectionContext`
+    so newest shows first (the camera returns oldest first). The Python reference, which uses the same logic,
     downloaded full `.MP4` (ISO media) and `.MTS` (M2TS) files from the camera. The Scalar path still requests only `type: ["still"]`.
-  - Display: no real video has been listed, thumbnailed, or played from the camera yet. AVCHD `.MTS`
-    won't play on iOS, so the detail screen shows "Can't play this video format".
-  - Saving: downloads are native and async (see "FFI surface"), so large videos no longer freeze the UI.
-    `.MTS` can't be added to the iOS Photos library.
+  - Display: the detail screen no longer streams from the camera. It downloads the video into
+    `camera-photos`, converts `.MTS` to `.mp4` (`convertToMp4`), then plays the local file, and keeps
+    Save disabled until that finishes. Not yet verified on real camera videos.
+  - Saving: downloads are native and async (see "Protocol logic"), so large videos no longer freeze the UI.
+    Save to Photos converts `.MTS`/`.M2TS` (AVCHD) to MP4 first via `src/convertVideo.ts`
+    (`@mtd1410/react-native-ffmpegkit`, the maintained LGPL fork of the retired ffmpeg-kit). Progressive
+    clips get `-c:v copy` and AC-3 -> AAC. Interlaced 60i clips, which iOS can't play, get `bwdif` plus
+    the hardware encoder (`h264_videotoolbox` / `h264_mediacodec`). The original stays in `camera-photos`
+    and the `.mp4` is written next to it. `plugins/withFfmpegKitMin.js` selects the smaller `min` FFmpeg
+    build (needs `prebuild --clean`). This is unverified on real AVCHD files, and `h264_mediacodec`
+    encoding is the least certain part. Sync All doesn't convert.
   - All of the above needs a physical RX100M3 with videos on the card.
 - Status bar: driven per screen by react-native-screens (`statusBarStyle` in `app/_layout.tsx`) with
   `UIViewControllerBasedStatusBarAppearance: true`. `expo-status-bar` was removed after the bar went
