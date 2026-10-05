@@ -21,12 +21,17 @@
     }
   }
 
-  function unpair() {
-    if (confirm('Every paired phone will need to scan the new code. Continue?')) unpairAll();
-  }
+  // window.confirm() is a no-op returning false in Tauri's webview, so destructive buttons
+  // arm on the first click and act on the second ('all' or a phone id).
+  let armed = $state('');
 
-  function remove(id: string, name: string) {
-    if (confirm(`Unpair ${name}? It will need to scan the code again.`)) removePhone(id);
+  function arm(key: string, action: () => Promise<void>) {
+    if (armed !== key) {
+      armed = key;
+      return;
+    }
+    armed = '';
+    action().catch((err) => (saved = String(err)));
   }
 </script>
 
@@ -35,6 +40,11 @@
     <h2>Pair a phone</h2>
     <div class="qr">{@html status.pairing_qr}</div>
     <p class="muted">Scan with Image Sync on your phone. Each code pairs one phone, then a new one appears.</p>
+    <p class="muted">
+      No camera on the phone? Choose this computer in Image Sync, or open
+      <code>http://{status.lan_ip ?? 'this-computer'}:{status.settings.port}/app</code> in its browser,
+      then type the 6-digit code that pops up here.
+    </p>
   </section>
 
   <section>
@@ -42,12 +52,16 @@
     {#each status.settings.phones as phone (phone.id)}
       <div class="phone">
         <span>{phone.name} <span class="muted">· paired {new Date(phone.paired * 1000).toLocaleDateString()}</span></span>
-        <button onclick={() => remove(phone.id, phone.name)}>Unpair</button>
+        <button onclick={() => arm(phone.id, () => removePhone(phone.id))}>
+          {armed === phone.id ? 'Click again to unpair' : 'Unpair'}
+        </button>
       </div>
     {:else}
       <p class="muted">None yet.</p>
     {/each}
-    {#if status.settings.phones.length}<button onclick={unpair}>Unpair all phones</button>{/if}
+    {#if status.settings.phones.length}<button onclick={() => arm('all', unpairAll)}>
+        {armed === 'all' ? 'Click again: every phone must re-scan' : 'Unpair all phones'}
+      </button>{/if}
   </section>
 
   <section>

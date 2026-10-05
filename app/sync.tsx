@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { Platform, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, Stack } from 'expo-router';
 import { Image } from 'expo-image';
@@ -9,11 +9,14 @@ import { useCameraConnection } from '../src/CameraConnectionContext';
 import { ActionButton } from '../src/components/ActionButton';
 import { Card } from '../src/components/Card';
 import { ProgressBar } from '../src/components/ProgressBar';
-import { downloadToPhotosDir, saveToLibrary } from '../src/fileSystem';
+import { downloadToPhotosDir, saveAllToLibrary, saveToLibrary } from '../src/fileSystem';
 import { runSync, type Download, type SyncCounts, type SyncFailure } from '../src/sync';
 import { colors } from '../src/theme/colors';
 
 const NO_COUNTS: SyncCounts = { downloaded: 0, skipped: 0, failed: 0 };
+// A browser share needs a fresh tap each time, so the web build downloads everything first and
+// saves it all with one "Save All" tap at the end.
+const SAVE_AT_END = Platform.OS === 'web';
 
 export default function SyncScreen() {
   const { t } = useLingui();
@@ -33,6 +36,9 @@ export default function SyncScreen() {
   // One controller per run, so a stale loop (e.g. a re-run effect) can never be revived,
   // and aborting it stops the in-flight download immediately.
   const runRef = useRef(new AbortController());
+  // Web only: files downloaded by this screen, waiting for "Save All".
+  const [toSave, setToSave] = useState<string[]>([]);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   useEffect(() => {
     const run = new AbortController();
@@ -46,7 +52,8 @@ export default function SyncScreen() {
     // new downloads go to the library; otherwise every re-sync would duplicate them there.
     const download: Download = async (item, opts) => {
       const wrote = await downloadToPhotosDir(item.url, item.filename, opts);
-      if (wrote) await saveToLibrary(item.filename, { onPercent: opts.onPercent });
+      if (wrote && SAVE_AT_END) setToSave((prev) => [...prev, item.filename]);
+      else if (wrote) await saveToLibrary(item.filename, { onPercent: opts.onPercent });
       return wrote;
     };
     runSync(queue, download, run.signal, {
@@ -83,6 +90,16 @@ export default function SyncScreen() {
 
   const retryable = failures.filter((f) => f.retryable).map((f) => f.item);
   const handleRetry = useCallback(() => setQueue(retryable), [retryable]);
+
+  const handleSaveAll = useCallback(async () => {
+    setSaveError(null);
+    try {
+      await saveAllToLibrary(toSave);
+      setToSave([]);
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : String(err));
+    }
+  }, [toSave]);
 
   const handleCancel = useCallback(() => {
     runRef.current.abort();
@@ -174,7 +191,16 @@ export default function SyncScreen() {
         </Card>
       )}
 
+      {saveError && (
+        <Text style={{ color: colors.error }} selectable>
+          {saveError}
+        </Text>
+      )}
+
       <View style={{ flex: 1 }} />
+      {!running && toSave.length > 0 && (
+        <ActionButton label={t`Save All (${toSave.length})`} onPress={handleSaveAll} />
+      )}
       {!running && retryable.length > 0 && (
         <ActionButton label={t`Retry Failed (${retryable.length})`} onPress={handleRetry} />
       )}

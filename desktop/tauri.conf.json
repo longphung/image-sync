@@ -7,7 +7,7 @@
     "frontendDist": "dist",
     "devUrl": "http://localhost:5173",
     "beforeDevCommand": "pnpm dev",
-    "beforeBuildCommand": "pnpm build"
+    "beforeBuildCommand": "pnpm build && pnpm --dir .. web:export"
   },
   "app": {
     "windows": [
@@ -35,6 +35,9 @@
       "icons/icon.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "resources": {
+      "../dist/": "web/"
+    }
   }
 }

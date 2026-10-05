@@ -17,6 +17,9 @@ export type Status = {
   settings: { library: string; port: number; remote_host: string; phones: Phone[] };
   ffmpeg: boolean;
   pairing_qr: string;
+  lan_ip: string | null;
+  /** A phone asking to pair by code; the window shows `code` until it's used, denied or expires. */
+  pair_request: { name: string; code: string; expires_in: number } | null;
 };
 
 export type Phone = { id: string; name: string; paired: number };
@@ -30,6 +33,7 @@ export const saveSettings = (library: string, port: number, remoteHost: string) 
   invoke<void>('save_settings', { library, port, remoteHost });
 export const removePhone = (id: string) => invoke<void>('remove_phone', { id });
 export const unpairAll = () => invoke<void>('unpair_all');
+export const denyPairRequest = () => invoke<void>('deny_pair_request');
 
 /** Grid thumbnail, generated and cached by the Rust thumbnail queue. */
 export const thumbUrl = (item: MediaItem) => convertFileSrc(item.path, 'thumb');

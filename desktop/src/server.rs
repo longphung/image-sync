@@ -3,19 +3,68 @@
 //! URLs returned by `/images` already include it, so the phone's image/video/download code needs
 //! no headers.
 
-use crate::{import, new_token, thumbs, App, Phone};
+use crate::{import, new_token, pairing_info, show_window, thumbs, App, Phone};
 use axum::extract::{Path as UrlPath, Request, State};
 use axum::http::{header, StatusCode};
 use axum::middleware::{self, Next};
-use axum::response::{IntoResponse, Response};
+use axum::response::{IntoResponse, Redirect, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
 use serde::Serialize;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
+use std::time::{Duration, Instant};
 use tower::ServiceExt;
-use tower_http::services::ServeFile;
+use tower_http::services::{ServeDir, ServeFile};
+
+/// How long a code shown on the desktop stays valid, and how many wrong guesses it survives.
+const CODE_TTL: Duration = Duration::from_secs(120);
+const CODE_ATTEMPTS: u32 = 5;
+
+/// A pending "pair by code" request: the phone asked, the desktop window shows `code`, and the
+/// phone sends it back to `POST /pair/code`. Only one at a time; a new request replaces it.
+pub struct PairRequest {
+    pub id: String,
+    pub name: String,
+    pub code: String,
+    pub expires: Instant,
+    pub attempts: u32,
+}
+
+impl PairRequest {
+    fn new(name: String) -> Self {
+        let id = uuid::Uuid::new_v4();
+        // ponytail: modulo bias over u32 is ~0.02%, irrelevant for a 2-minute, 5-try code.
+        let n = u32::from_le_bytes(uuid::Uuid::new_v4().as_bytes()[..4].try_into().unwrap()) % 1_000_000;
+        PairRequest { id: id.to_string(), name, code: format!("{n:06}"), expires: Instant::now() + CODE_TTL, attempts: 0 }
+    }
+}
+
+#[derive(Debug, PartialEq)]
+enum CodeCheck {
+    Ok,
+    /// Wrong code; the request stays unless it ran out of attempts.
+    Wrong,
+    /// No such request (never made, replaced, used, expired or out of attempts).
+    Gone,
+}
+
+/// Checks a code against the pending request, consuming it on success or its last failure.
+fn check_code(pending: &mut Option<PairRequest>, id: &str, code: &str, now: Instant) -> CodeCheck {
+    let Some(req) = pending.as_mut().filter(|r| r.id == id && now < r.expires) else {
+        return CodeCheck::Gone;
+    };
+    if constant_time_eq(code, &req.code) {
+        *pending = None;
+        return CodeCheck::Ok;
+    }
+    req.attempts += 1;
+    if req.attempts >= CODE_ATTEMPTS {
+        *pending = None;
+    }
+    CodeCheck::Wrong
+}
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -26,14 +75,22 @@ struct ImageItem {
     thumbnail_url: String,
 }
 
-pub async fn serve(app: Arc<App>, port: u16) -> std::io::Result<()> {
+/// `web_dir` is the phone app's web export, served at `/app` (same origin as the API, so the
+/// browser needs no CORS). If it doesn't exist, `/app` is a 404 and the API is unaffected.
+pub async fn serve(app: Arc<App>, port: u16, web_dir: PathBuf) -> std::io::Result<()> {
+    let web = ServeDir::new(&web_dir).fallback(ServeFile::new(web_dir.join("index.html")));
     let router = Router::new()
         .route("/images", get(images))
         .route("/files/{*path}", get(file))
         .route("/thumbs/{*path}", get(thumb))
         .layer(middleware::from_fn_with_state(app.clone(), auth))
-        // Checks the pairing token itself; added after the layer so `auth` doesn't cover it.
+        // Routes added after the layer aren't covered by `auth`; the pair routes check their own secrets.
         .route("/pair", post(pair))
+        .route("/pair/request", post(pair_request))
+        .route("/pair/code", post(pair_code))
+        .route("/info", get(info))
+        .route("/", get(|| async { Redirect::temporary("/app/") }))
+        .nest_service("/app", web)
         .with_state(app);
     let listener = tokio::net::TcpListener::bind(("0.0.0.0", port)).await?;
     axum::serve(listener, router).await
@@ -56,25 +113,70 @@ async fn auth(State(app): State<Arc<App>>, req: Request, next: Next) -> Response
     }
 }
 
-/// `POST /pair?t=<pairing token from the QR>&name=<phone name>` returns `{ "token": ... }`, the
-/// phone's own token. The pairing token is replaced at once, so a QR is only good for one phone
+/// `POST /pair?t=<pairing token from the QR>&name=<phone name>` returns the phone's own token
+/// (see `add_phone`). The pairing token is replaced at once, so a QR is only good for one phone
 /// and a photo of an old one is useless.
 async fn pair(State(app): State<Arc<App>>, req: Request) -> Response {
-    let phone = {
+    {
         let mut settings = app.settings();
         if !constant_time_eq(&query_param(&req, "t"), &settings.token) {
             return StatusCode::UNAUTHORIZED.into_response();
         }
-        let name: String = query_param(&req, "name").trim().chars().take(64).collect();
-        let phone = Phone::new(if name.is_empty() { "Phone".into() } else { name });
         settings.token = new_token();
+    }
+    add_phone(&app, &query_param(&req, "name"))
+}
+
+/// `POST /pair/request?name=<phone name>` starts pairing by code: the desktop window pops up with
+/// a 6-digit code, and the reply `{ "request": id }` is what the phone sends back with it.
+async fn pair_request(State(app): State<Arc<App>>, req: Request) -> Response {
+    let request = PairRequest::new(phone_name(&query_param(&req, "name")));
+    let id = request.id.clone();
+    *app.pair_request.lock().unwrap() = Some(request);
+    show_window(&app.handle);
+    Json(serde_json::json!({ "request": id })).into_response()
+}
+
+/// `POST /pair/code?request=<id>&code=<6 digits>&name=<phone name>`: same reply as `/pair`.
+/// 401 for a wrong code (5 of them drop the request), 410 once there's nothing left to guess.
+async fn pair_code(State(app): State<Arc<App>>, req: Request) -> Response {
+    let checked =
+        check_code(&mut app.pair_request.lock().unwrap(), &query_param(&req, "request"), &query_param(&req, "code"), Instant::now());
+    match checked {
+        CodeCheck::Ok => add_phone(&app, &query_param(&req, "name")),
+        CodeCheck::Wrong => (StatusCode::UNAUTHORIZED, "Wrong code").into_response(),
+        CodeCheck::Gone => (StatusCode::GONE, "This code has expired. Request a new one.").into_response(),
+    }
+}
+
+fn phone_name(raw: &str) -> String {
+    let name: String = raw.trim().chars().take(64).collect();
+    if name.is_empty() { "Phone".into() } else { name }
+}
+
+/// Stores a new phone and replies `{ token, id, name, hosts, port }`: the phone's own token plus
+/// what the QR would have told it, since pairing by code has no QR.
+fn add_phone(app: &App, name: &str) -> Response {
+    let phone = Phone::new(phone_name(name));
+    let reply = {
+        let mut settings = app.settings();
         settings.phones.push(phone.clone());
-        phone
+        let (hosts, desktop_name) = pairing_info(&settings);
+        serde_json::json!({
+            "token": phone.token, "id": settings.id, "name": desktop_name, "hosts": hosts, "port": settings.port,
+        })
     };
     match app.save_settings() {
-        Ok(()) => Json(serde_json::json!({ "token": phone.token })).into_response(),
+        Ok(()) => Json(reply).into_response(),
         Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, e).into_response(),
     }
+}
+
+/// `GET /info` -> `{ id, name }`, so the web app can tell which desktop served it before pairing.
+async fn info(State(app): State<Arc<App>>) -> Json<serde_json::Value> {
+    let settings = app.settings();
+    let (_, name) = pairing_info(&settings);
+    Json(serde_json::json!({ "id": settings.id, "name": name }))
 }
 
 fn constant_time_eq(a: &str, b: &str) -> bool {
@@ -176,6 +278,34 @@ async fn thumb(State(app): State<Arc<App>>, UrlPath(rel): UrlPath<String>, req: 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn code_pairing() {
+        let now = Instant::now();
+        let fresh = || {
+            let r = PairRequest::new("p".into());
+            assert!(r.code.len() == 6 && r.code.bytes().all(|b| b.is_ascii_digit()));
+            let id = r.id.clone();
+            let code = r.code.clone();
+            (Some(r), id, code)
+        };
+        let wrong = |code: &str| if code == "000000" { "000001" } else { "000000" }.to_string();
+
+        let (mut p, id, code) = fresh();
+        assert_eq!(check_code(&mut p, "other", &code, now), CodeCheck::Gone);
+        assert_eq!(check_code(&mut p, &id, &code, now), CodeCheck::Ok);
+        assert_eq!(check_code(&mut p, &id, &code, now), CodeCheck::Gone, "single use");
+
+        let (mut p, id, code) = fresh();
+        for _ in 0..CODE_ATTEMPTS {
+            assert_eq!(check_code(&mut p, &id, &wrong(&code), now), CodeCheck::Wrong);
+        }
+        assert_eq!(check_code(&mut p, &id, &code, now), CodeCheck::Gone, "out of attempts");
+
+        let (mut p, id, code) = fresh();
+        let expires = p.as_ref().unwrap().expires;
+        assert_eq!(check_code(&mut p, &id, &code, expires), CodeCheck::Gone, "expired");
+    }
 
     #[test]
     fn lists_date_folders_and_rejects_escapes() {

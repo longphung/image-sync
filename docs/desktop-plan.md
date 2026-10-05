@@ -30,8 +30,16 @@ then the Rust app), test with `cargo test`. Deviations from the plan below:
   needs that phone token. Each successful pair replaces the pairing token, so the QR in the window
   changes and an old photo of it is useless.
 - Per-phone tokens: the Phone & settings tab lists paired phones (name, pairing date), each with
-  "Unpair". "Unpair all phones" removes them all and replaces the pairing token. Start-at-login and
-  the short typed pairing code aren't built.
+  "Unpair". "Unpair all phones" removes them all and replaces the pairing token. Start-at-login isn't built.
+- Pairing by code (no camera needed, and the only way from the web app): `POST /pair/request?name=`
+  -> `{ request }` stores one pending request (a new one replaces it) with a random 6-digit code, and
+  shows and focuses the window, which pops up the code (`StatusView.pair_request`, polled every second).
+  `POST /pair/code?request=&code=&name=` succeeds like `/pair`. A wrong code returns 401, and after 5 of
+  them, after 2 minutes, or after "Deny", the request is gone (410). Both pair replies are
+  `{ token, id, name, hosts, port }`, because the code flow has no QR payload.
+- Web app: the hub serves the Expo web export at `/app` (`experiments.baseUrl`, so it doesn't clash
+  with `/images`), plus `GET /info` -> `{ id, name }` so the page can name the hub that served it.
+  Being the same origin means no CORS. See `desktop/README.md`.
 - Library layout is `<library>/<YYYY-MM-DD>/<name>`, dated by the card file's modified time in local
   time, so Sony's wrapping `DSC00001.JPG` counter can't collide. Files synced before this, at the top
   level of the library, still count as imported and are still listed. Card selection and sync go by
@@ -113,7 +121,9 @@ can be changed in settings.
 | Route | Response |
 |---|---|
 | `GET /images` | `ImageItem[]` JSON, the exact shape in `src/camera/types.ts` |
-| `POST /pair?t=&name=` | Trades the one-time pairing token for `{ token }`, this phone's own token |
+| `POST /pair?t=&name=` | Trades the one-time pairing token for `{ token, id, name, hosts, port }`, this phone's own token |
+| `POST /pair/request?name=`, `POST /pair/code?request=&code=&name=` | Pairing by a 6-digit code shown in the window |
+| `GET /info`, `GET /app/...` | Hub id and name, and the phone app's web build (no auth) |
 | `GET /files/:date/:name` | File bytes, with HTTP Range support (`tower-http` `ServeFile`) so large videos resume |
 | `GET /thumbs/:date/:name` | Cached JPEG thumbnail (in `<library>/<date>/.thumbs/`) |
 

@@ -6,10 +6,15 @@ import type { CameraApi, ImageItem } from './types.ts';
 export { DEFAULT_HOST, getCameraInfo } from './discovery.ts';
 export {
   desktopBaseUrl,
+  DESKTOP_PORT,
   firstReachable,
   listImagesDesktop,
   pairDesktop,
+  pairWithCode,
+  PairCodeError,
+  parseHostPort,
   parsePairingQr,
+  requestPairCode,
   type PairedDesktop,
   type PairingQr,
 } from './desktop.ts';

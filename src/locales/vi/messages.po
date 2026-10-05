@@ -13,15 +13,15 @@ msgid "{0} dBm"
 msgstr "{0} dBm"
 
 #. placeholder {0}: h.count
-#: app/(tabs)/(desktops)/index.tsx:132
+#: app/(tabs)/(desktops)/index.tsx:147
 msgid "{0} items"
 msgstr "{0} mục"
 
-#: app/sync.tsx:117
+#: app/sync.tsx:134
 msgid "{index} of {total}"
 msgstr "{index}/{total}"
 
-#: app/images.tsx:71
+#: app/images.tsx:73
 msgid "{photoCount} photos · {videoCount} videos"
 msgstr "{photoCount} ảnh · {videoCount} video"
 
@@ -45,7 +45,7 @@ msgstr "Căn tên Wi-Fi trên nhãn máy ảnh vào trong khung, rồi nhấn ch
 msgid "Allow Camera"
 msgstr "Cho phép camera"
 
-#: app/sync.tsx:152
+#: app/sync.tsx:169
 msgid "already on device"
 msgstr "đã có trên máy"
 
@@ -57,7 +57,11 @@ msgstr "Android yêu cầu quyền vị trí để tìm các mạng Wi-Fi gần 
 msgid "Android will also route this app's traffic over this Wi-Fi network (it has no internet)."
 msgstr "Android cũng sẽ định tuyến lưu lượng của ứng dụng này qua mạng Wi-Fi này (mạng không có internet)."
 
-#: app/(tabs)/(desktops)/index.tsx:86
+#: app/pair-code.tsx:161
+msgid "Asking for a code…"
+msgstr "Đang yêu cầu mã…"
+
+#: app/(tabs)/(desktops)/index.tsx:101
 msgid "Browse and download photos imported by the image-sync desktop app."
 msgstr "Duyệt và tải ảnh đã được nhập bởi ứng dụng image-sync trên máy tính."
 
@@ -86,13 +90,14 @@ msgstr "SSID máy ảnh (DIRECT-…)"
 msgid "Camera took too long to respond. Please try again."
 msgstr "Máy ảnh phản hồi quá lâu. Vui lòng thử lại."
 
-#: app/image/[filename].tsx:204
+#: app/image/[filename].tsx:207
 msgid "Can't play this video format"
 msgstr "Không phát được định dạng video này"
 
-#: app/(tabs)/(desktops)/index.tsx:71
+#: app/(tabs)/(desktops)/index.tsx:75
+#: app/(tabs)/(desktops)/index.tsx:86
 #: app/read-label.tsx:19
-#: app/sync.tsx:182
+#: app/sync.tsx:208
 msgid "Cancel"
 msgstr "Huỷ"
 
@@ -105,7 +110,7 @@ msgid "Close"
 msgstr "Đóng"
 
 #: app/(tabs)/camera/index.tsx:147
-#: app/images.tsx:78
+#: app/images.tsx:80
 msgid "Connect"
 msgstr "Kết nối"
 
@@ -121,20 +126,20 @@ msgstr "Đã kết nối"
 msgid "Connecting to your camera"
 msgstr "Kết nối với máy ảnh của bạn"
 
-#: app/image/[filename].tsx:128
-#: app/image/[filename].tsx:188
+#: app/image/[filename].tsx:131
+#: app/image/[filename].tsx:191
 msgid "Converting…"
 msgstr "Đang chuyển đổi…"
 
-#: app/image/[filename].tsx:188
+#: app/image/[filename].tsx:191
 msgid "Converting… {percent}%"
 msgstr "Đang chuyển đổi… {percent}%"
 
-#: app/image/[filename].tsx:128
+#: app/image/[filename].tsx:131
 msgid "Converting… {savePercent}%"
 msgstr "Đang chuyển đổi… {savePercent}%"
 
-#: app/image/[filename].tsx:184
+#: app/image/[filename].tsx:187
 msgid "Couldn't load this video"
 msgstr "Không tải được video này"
 
@@ -143,21 +148,34 @@ msgid "Couldn't read text from that photo. Try retaking it with the label in bet
 msgstr "Không đọc được chữ trong ảnh đó. Hãy chụp lại với nhãn đủ sáng và nằm trọn trong khung."
 
 #: app/(tabs)/_layout.tsx:10
-#: app/(tabs)/(desktops)/index.tsx:84
+#: app/(tabs)/_layout.web.tsx:11
+#: app/(tabs)/(desktops)/index.tsx:99
 msgid "Desktop"
 msgstr "Máy tính"
 
-#: app/images.tsx:172
+#: app/pair-code.tsx:118
+msgid "Desktop address, as shown in the desktop app's Phone & settings tab."
+msgstr "Địa chỉ máy tính, hiển thị trong thẻ Phone & settings của ứng dụng trên máy tính."
+
+#: app/images.tsx:190
 msgid "Disconnect"
 msgstr "Ngắt kết nối"
 
-#: app/sync.tsx:182
+#: app/sync.tsx:208
 msgid "Done"
 msgstr "Xong"
 
-#: app/sync.tsx:151
+#: app/sync.tsx:168
 msgid "downloaded"
 msgstr "đã tải"
+
+#: app/pair-code.tsx:70
+msgid "Enter an address like 192.168.1.5 or 192.168.1.5:8765."
+msgstr "Nhập địa chỉ dạng 192.168.1.5 hoặc 192.168.1.5:8765."
+
+#: app/pair-code.tsx:140
+msgid "Enter the 6-digit code shown on {name}."
+msgstr "Nhập mã 6 chữ số hiển thị trên {name}."
 
 #: app/join-wifi.tsx:168
 msgid "Enter Wi-Fi manually"
@@ -167,7 +185,7 @@ msgstr "Nhập Wi-Fi thủ công"
 msgid "Enter Wi-Fi Manually"
 msgstr "Nhập Wi-Fi thủ công"
 
-#: app/sync.tsx:153
+#: app/sync.tsx:170
 msgid "failed"
 msgstr "thất bại"
 
@@ -175,7 +193,7 @@ msgstr "thất bại"
 msgid "Failed to capture photo."
 msgstr "Không chụp được ảnh."
 
-#: app/image/[filename].tsx:83
+#: app/image/[filename].tsx:86
 msgid "Failed to load image"
 msgstr "Không tải được ảnh"
 
@@ -216,15 +234,15 @@ msgstr "Đang kết nối…"
 msgid "Leave blank for open networks"
 msgstr "Để trống nếu là mạng mở"
 
-#: app/image/[filename].tsx:189
+#: app/image/[filename].tsx:192
 msgid "Loading video…"
 msgstr "Đang tải video…"
 
-#: app/image/[filename].tsx:189
+#: app/image/[filename].tsx:192
 msgid "Loading video… {percent}%"
 msgstr "Đang tải video… {percent}%"
 
-#: app/images.tsx:73
+#: app/images.tsx:75
 msgid "Loading…"
 msgstr "Đang tải…"
 
@@ -252,15 +270,19 @@ msgstr "Cần trợ giúp?"
 msgid "No camera networks found. Make sure the camera is in Send to Smartphone mode, then search again."
 msgstr "Không tìm thấy mạng máy ảnh nào. Hãy đảm bảo máy ảnh đang ở chế độ Send to Smartphone, rồi tìm lại."
 
-#: app/(tabs)/(desktops)/index.tsx:183
-msgid "No desktops yet. Open the image-sync desktop app on your computer, then scan the pairing code in its Phone & settings tab."
-msgstr "Chưa có máy tính nào. Mở ứng dụng image-sync trên máy tính, rồi quét mã ghép nối trong thẻ Phone & settings."
+#: app/(tabs)/(desktops)/index.tsx:198
+msgid "No desktops yet. Open the image-sync desktop app on your computer, then scan the pairing code in its Phone & settings tab, or enter its address to pair with a code."
+msgstr "Chưa có máy tính nào. Mở ứng dụng image-sync trên máy tính, rồi quét mã ghép nối trong thẻ Phone & settings, hoặc nhập địa chỉ của máy để ghép nối bằng mã."
 
-#: app/images.tsx:113
+#: app/(tabs)/(desktops)/index.tsx:183
+#~ msgid "No desktops yet. Open the image-sync desktop app on your computer, then scan the pairing code in its Phone & settings tab."
+#~ msgstr "Chưa có máy tính nào. Mở ứng dụng image-sync trên máy tính, rồi quét mã ghép nối trong thẻ Phone & settings."
+
+#: app/images.tsx:131
 msgid "No photos or videos on the camera."
 msgstr "Không có ảnh hoặc video nào trên máy ảnh."
 
-#: app/images.tsx:111
+#: app/images.tsx:129
 msgid "No photos or videos on this desktop yet."
 msgstr "Chưa có ảnh hoặc video nào trên máy tính này."
 
@@ -273,9 +295,13 @@ msgstr "Không nhận diện được chữ — bạn có thể nhập thủ cô
 msgid "Not connected"
 msgstr "Chưa kết nối"
 
+#: app/(tabs)/(desktops)/index.tsx:189
+msgid "Not paired yet. Tap to pair."
+msgstr "Chưa ghép nối. Chạm để ghép nối."
+
 #: app/(tabs)/(desktops)/index.tsx:174
-msgid "Not paired yet. Tap to scan its pairing code."
-msgstr "Chưa ghép nối. Nhấn để quét mã ghép nối."
+#~ msgid "Not paired yet. Tap to scan its pairing code."
+#~ msgstr "Chưa ghép nối. Nhấn để quét mã ghép nối."
 
 #: src/wifi.ts:16
 msgid "OK"
@@ -285,9 +311,9 @@ msgstr "OK"
 msgid "On the camera, choose \"Send to Smartphone\" so it starts its own Wi-Fi network (named DIRECT-…). The network name and password are shown on the camera screen. Join that network here, then tap Connect."
 msgstr "Trên máy ảnh, chọn \"Send to Smartphone\" để máy ảnh phát mạng Wi-Fi riêng (tên DIRECT-…). Tên mạng và mật khẩu hiển thị trên màn hình máy ảnh. Kết nối vào mạng đó tại đây, rồi nhấn Kết nối."
 
-#: app/(tabs)/(desktops)/index.tsx:132
-#: app/(tabs)/(desktops)/index.tsx:134
-#: app/(tabs)/(desktops)/index.tsx:161
+#: app/(tabs)/(desktops)/index.tsx:147
+#: app/(tabs)/(desktops)/index.tsx:149
+#: app/(tabs)/(desktops)/index.tsx:176
 msgid "On this network"
 msgstr "Trong mạng này"
 
@@ -304,14 +330,28 @@ msgstr "Mở Ảnh"
 msgid "Open Settings"
 msgstr "Mở Cài đặt"
 
+#: app/(tabs)/(desktops)/index.tsx:214
+msgid "Pair by Address and Code"
+msgstr "Ghép nối bằng địa chỉ và mã"
+
+#. placeholder {0}: f.name
+#: app/(tabs)/(desktops)/index.tsx:74
+msgid "Pair with {0}"
+msgstr "Ghép nối với {0}"
+
+#: app/_layout.tsx:38
+msgid "Pair with Code"
+msgstr "Ghép nối bằng mã"
+
 #: app/_layout.tsx:37
 msgid "Pair with Desktop"
 msgstr "Ghép nối với máy tính"
 
-#: app/(tabs)/(desktops)/index.tsx:92
+#: app/(tabs)/(desktops)/index.tsx:107
 msgid "Paired"
 msgstr "Đã ghép nối"
 
+#: app/pair-code.tsx:161
 #: app/scan-pairing.tsx:79
 msgid "Pairing…"
 msgstr "Đang ghép nối…"
@@ -356,57 +396,78 @@ msgstr "Đọc mật khẩu Wi-Fi"
 msgid "Reading text…"
 msgstr "Đang đọc chữ…"
 
-#: app/(tabs)/(desktops)/index.tsx:72
+#: app/(tabs)/(desktops)/index.tsx:87
 msgid "Remove"
 msgstr "Xoá"
 
 #. placeholder {0}: d.name
-#: app/(tabs)/(desktops)/index.tsx:147
+#: app/(tabs)/(desktops)/index.tsx:162
 msgid "Remove {0}"
 msgstr "Xoá {0}"
 
 #. placeholder {0}: d.name
-#: app/(tabs)/(desktops)/index.tsx:70
+#: app/(tabs)/(desktops)/index.tsx:85
 msgid "Remove {0}?"
 msgstr "Xoá {0}?"
+
+#: app/pair-code.tsx:133
+msgid "Request Code"
+msgstr "Yêu cầu mã"
+
+#: app/pair-code.tsx:172
+msgid "Request New Code"
+msgstr "Yêu cầu mã mới"
 
 #: src/labelOcr/ReviewSheet.tsx:82
 #: src/labelOcr/ReviewSheet.tsx:132
 msgid "Retake"
 msgstr "Chụp lại"
 
-#: app/images.tsx:106
+#: app/images.tsx:124
 msgid "Retry"
 msgstr "Thử lại"
 
 #. placeholder {0}: retryable.length
-#: app/sync.tsx:179
+#: app/sync.tsx:205
 msgid "Retry Failed ({0})"
 msgstr "Thử lại mục lỗi ({0})"
 
-#: app/image/[filename].tsx:130
+#: app/image/[filename].tsx:133
 msgid "Retry Save"
 msgstr "Lưu lại"
 
-#: app/image/[filename].tsx:131
+#. placeholder {0}: toSave.length
+#: app/sync.tsx:202
+msgid "Save All ({0})"
+msgstr "Lưu tất cả ({0})"
+
+#: app/image/[filename].tsx:134
 msgid "Save to Photos"
 msgstr "Lưu vào Ảnh"
 
-#: app/image/[filename].tsx:119
+#: app/image/[filename].tsx:122
 msgid "Saved to Photos"
 msgstr "Đã lưu vào Ảnh"
 
-#: app/image/[filename].tsx:126
+#: app/image/[filename].tsx:129
 msgid "Saving…"
 msgstr "Đang lưu…"
 
-#: app/image/[filename].tsx:126
+#: app/image/[filename].tsx:129
 msgid "Saving… {savePercent}%"
 msgstr "Đang lưu… {savePercent}%"
 
-#: app/(tabs)/(desktops)/index.tsx:191
+#: app/(tabs)/(desktops)/index.tsx:207
 msgid "Scan Pairing Code"
 msgstr "Quét mã ghép nối"
+
+#: app/(tabs)/(desktops)/index.tsx:76
+msgid "Scan QR Code"
+msgstr "Quét mã QR"
+
+#: app/(tabs)/(desktops)/index.tsx:74
+msgid "Scan the QR code on the desktop, or have it show a 6-digit code."
+msgstr "Quét mã QR trên máy tính, hoặc để máy tính hiển thị mã 6 chữ số."
 
 #: app/(tabs)/camera/index.tsx:78
 #: app/join-wifi.tsx:139
@@ -434,23 +495,23 @@ msgid "Sync All"
 msgstr "Đồng bộ tất cả"
 
 #. placeholder {0}: images.length
-#: app/images.tsx:92
+#: app/images.tsx:110
 msgid "Sync All ({0})"
 msgstr "Đồng bộ tất cả ({0})"
 
-#: app/sync.tsx:113
+#: app/sync.tsx:130
 msgid "Sync complete"
 msgstr "Đồng bộ hoàn tất"
 
-#: app/sync.tsx:111
+#: app/sync.tsx:128
 msgid "Sync finished with errors"
 msgstr "Đồng bộ xong nhưng có lỗi"
 
-#: app/sync.tsx:109
+#: app/sync.tsx:126
 msgid "Sync stopped"
 msgstr "Đã dừng đồng bộ"
 
-#: app/sync.tsx:107
+#: app/sync.tsx:124
 msgid "Syncing photos…"
 msgstr "Đang đồng bộ ảnh…"
 
@@ -466,6 +527,10 @@ msgstr "Thiết bị này không hỗ trợ nhận diện chữ. Bạn vẫn có
 msgid "Text recognition isn't available on this device. You can still type the Wi-Fi name in manually."
 msgstr "Thiết bị này không hỗ trợ nhận diện chữ. Bạn vẫn có thể nhập tên Wi-Fi thủ công."
 
+#: app/pair-code.tsx:87
+msgid "This code has expired. Request a new one."
+msgstr "Mã này đã hết hạn. Hãy yêu cầu mã mới."
+
 #: app/(tabs)/camera/index.tsx:58
 msgid "Transfer photos from your Sony camera to your phone."
 msgstr "Chuyển ảnh từ máy ảnh Sony sang điện thoại."
@@ -477,6 +542,10 @@ msgstr "Thử lại"
 #: src/wifi.ts:28
 msgid "Turn on location services to search for Wi-Fi networks."
 msgstr "Bật dịch vụ vị trí để tìm mạng Wi-Fi."
+
+#: app/(tabs)/(desktops)/index.tsx:77
+msgid "Use a Code"
+msgstr "Dùng mã"
 
 #: src/labelOcr/ReviewSheet.tsx:91
 msgid "Use This Text"
@@ -490,7 +559,11 @@ msgstr "Tên Wi-Fi"
 msgid "Wi-Fi password"
 msgstr "Mật khẩu Wi-Fi"
 
-#: app/(tabs)/(desktops)/index.tsx:70
+#: app/pair-code.tsx:90
+msgid "Wrong code. Check the code on the desktop and try again."
+msgstr "Sai mã. Kiểm tra mã trên máy tính rồi thử lại."
+
+#: app/(tabs)/(desktops)/index.tsx:85
 msgid "You'll need to pair with it again to see its photos."
 msgstr "Bạn sẽ cần ghép nối lại để xem ảnh của máy tính này."
 

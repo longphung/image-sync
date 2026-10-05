@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { getCard, getLibrary, getStatus, type MediaItem, type Status } from './api';
+  import { denyPairRequest, getCard, getLibrary, getStatus, type MediaItem, type Status } from './api';
   import CardGrid from './CardGrid.svelte';
   import Library from './Library.svelte';
   import Settings from './Settings.svelte';
@@ -76,6 +76,19 @@
   {/if}
 </div>
 
+{#if status?.pair_request}
+  {@const req = status.pair_request}
+  <div class="overlay">
+    <div class="dialog" role="alertdialog" aria-labelledby="pair-title">
+      <h2 id="pair-title"><strong>{req.name}</strong> wants to pair</h2>
+      <p class="muted">Type this code on the phone.</p>
+      <p class="code">{req.code.slice(0, 3)} {req.code.slice(3)}</p>
+      <p class="muted">Expires in {Math.floor(req.expires_in / 60)}:{String(req.expires_in % 60).padStart(2, '0')}</p>
+      <button onclick={denyPairRequest}>Deny</button>
+    </div>
+  </div>
+{/if}
+
 <style>
   .app { height: 100%; display: flex; flex-direction: column; }
   header { padding: 12px 16px 0; }
@@ -83,4 +96,8 @@
   nav { display: flex; gap: 4px; }
   nav button { border: none; background: none; color: inherit; border-radius: 6px; opacity: .7; }
   nav button.active { background: color-mix(in srgb, CanvasText 12%, Canvas); opacity: 1; }
+  .overlay { position: fixed; inset: 0; display: grid; place-items: center; background: rgb(0 0 0 / .4); }
+  .dialog { background: Canvas; color: CanvasText; border-radius: 12px; padding: 24px 32px; text-align: center; min-width: 280px; }
+  .dialog h2 { font-size: 17px; font-weight: normal; margin: 0 0 4px; }
+  .code { font: 600 44px ui-monospace, monospace; letter-spacing: .08em; margin: 16px 0; user-select: all; }
 </style>

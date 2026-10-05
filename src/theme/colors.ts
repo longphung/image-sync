@@ -15,10 +15,10 @@ export const colors = {
     '#ffffff',
   ),
   label: pick(Color.ios.label, Color.android.dynamic.onSurface, '#000000'),
-  secondaryLabel: pick(Color.ios.secondaryLabel, Color.android.dynamic.onSurfaceVariant, '#3c3c4399'),
+  secondaryLabel: pick(Color.ios.secondaryLabel, Color.android.dynamic.onSurfaceVariant, '#55555e'),
   separator: pick(Color.ios.separator, Color.android.dynamic.outlineVariant, '#c6c6c8'),
   fill: pick(Color.ios.tertiarySystemFill, Color.android.dynamic.surfaceContainerHighest, '#7676801f'),
-  tint: pick(Color.ios.systemBlue, Color.android.dynamic.primary, '#007aff'),
+  tint: pick(Color.ios.systemBlue, Color.android.dynamic.primary, '#0062cc'),
   onTint: pick('#ffffff', Color.android.dynamic.onPrimary, '#ffffff'),
   // Material 3 has no success role; a fixed green reads fine on both surface tones.
   success: pick(Color.ios.systemGreen, '#1e8e3e', '#34c759'),

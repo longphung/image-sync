@@ -30,6 +30,7 @@
       "vi": "./languages/vi.json"
     },
     "web": {
+      "output": "single",
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
@@ -75,6 +76,9 @@
       "expo-image",
       "expo-video",
       "./plugins/withFfmpegKitMin"
-    ]
+    ],
+    "experiments": {
+      "baseUrl": "/app"
+    }
   }
 }

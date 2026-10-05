@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 
-import { desktopBaseUrl, parseDesktopImages, parsePairingQr } from './desktop.ts';
+import { desktopBaseUrl, parseDesktopImages, parseHostPort, parsePairingQr } from './desktop.ts';
 import { parseDeviceDescription } from './discovery.ts';
 import {
   parseBrowseResponse,
@@ -272,6 +272,15 @@ describe('desktop', () => {
     assert.throws(() => parsePairingQr('https://example.com'), /Not an image-sync pairing code/);
     assert.throws(() => parsePairingQr('{"v":2,"id":"u","hosts":["h"],"port":1,"token":"t"}'), /Not an/);
     assert.throws(() => parsePairingQr('{"v":1,"id":"u","hosts":[],"port":1,"token":"t"}'), /Not an/);
+  });
+
+  test('parseHostPort reads typed addresses', () => {
+    assert.deepEqual(parseHostPort(' 192.168.1.5 '), { host: '192.168.1.5', port: 8765 });
+    assert.deepEqual(parseHostPort('pc.tailnet.ts.net:9000'), { host: 'pc.tailnet.ts.net', port: 9000 });
+    assert.deepEqual(parseHostPort('[fd7a::1]:9000'), { host: 'fd7a::1', port: 9000 });
+    assert.equal(parseHostPort(''), null);
+    assert.equal(parseHostPort('http://pc'), null);
+    assert.equal(parseHostPort('pc:99999'), null);
   });
 
   test('desktopBaseUrl brackets IPv6 hosts', () => {

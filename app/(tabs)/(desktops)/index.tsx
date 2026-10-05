@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Platform, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, Stack, useIsFocused } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
@@ -64,6 +64,21 @@ export default function DesktopsScreen() {
     await checkAll();
     setRefreshing(false);
   }, [checkAll]);
+
+  // The web app has no camera to scan with, so it always pairs by code.
+  const pairFound = useCallback(
+    (f: FoundDesktop) => {
+      const byCode = () =>
+        router.push({ pathname: '/pair-code', params: { host: f.host, port: String(f.port), name: f.name } });
+      if (Platform.OS === 'web') return byCode();
+      Alert.alert(t`Pair with ${f.name}`, t`Scan the QR code on the desktop, or have it show a 6-digit code.`, [
+        { text: t`Cancel`, style: 'cancel' },
+        { text: t`Scan QR Code`, onPress: () => router.push('/scan-pairing') },
+        { text: t`Use a Code`, onPress: byCode },
+      ]);
+    },
+    [t],
+  );
 
   const confirmRemove = useCallback(
     (d: PairedDesktop) => {
@@ -163,7 +178,7 @@ export default function DesktopsScreen() {
           {unpaired.map((f) => (
             <Pressable
               key={f.id}
-              onPress={() => router.push('/scan-pairing')}
+              onPress={() => pairFound(f)}
               accessibilityRole="button"
               style={{ backgroundColor: colors.fill, borderRadius: 10, borderCurve: 'continuous', padding: 12, gap: 4 }}
             >
@@ -171,7 +186,7 @@ export default function DesktopsScreen() {
                 {f.name}
               </Text>
               <Text style={{ color: colors.secondaryLabel, fontSize: 13 }}>
-                <Trans>Not paired yet. Tap to scan its pairing code.</Trans>
+                <Trans>Not paired yet. Tap to pair.</Trans>
               </Text>
             </Pressable>
           ))}
@@ -182,16 +197,24 @@ export default function DesktopsScreen() {
         <Text style={{ color: colors.secondaryLabel }}>
           <Trans>
             No desktops yet. Open the image-sync desktop app on your computer, then scan the pairing code in its
-            Phone &amp; settings tab.
+            Phone &amp; settings tab, or enter its address to pair with a code.
           </Trans>
         </Text>
       )}
 
+      {Platform.OS !== 'web' && (
+        <ActionButton
+          label={t`Scan Pairing Code`}
+          systemImage="qrcode.viewfinder"
+          variant={desktops.length > 0 ? 'secondary' : 'primary'}
+          onPress={() => router.push('/scan-pairing')}
+        />
+      )}
       <ActionButton
-        label={t`Scan Pairing Code`}
-        systemImage="qrcode.viewfinder"
-        variant={desktops.length > 0 ? 'secondary' : 'primary'}
-        onPress={() => router.push('/scan-pairing')}
+        label={t`Pair by Address and Code`}
+        systemImage="number"
+        variant="secondary"
+        onPress={() => router.push('/pair-code')}
       />
     </ScrollView>
   );
