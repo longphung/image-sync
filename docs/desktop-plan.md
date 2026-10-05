@@ -300,7 +300,7 @@ RX100M3 in the running app), **checked** (by script / curl / unit test, not by h
 
 - [ ] Background thumbnail prefetch competes with "Sync selected" for USB bandwidth while both run.
 - [ ] Port changes need an app restart.
-- [ ] Placeholder app icon; no tray-specific (monochrome/template) icon.
+- [x] App icon (icons/ from the generated icon pack). No tray-specific (monochrome/template) icon yet.
 - [ ] Start-at-login setting.
 - [ ] Short typed pairing code as an alternative to scanning the QR.
 - [ ] Packaging (`tauri build`) and testing on Windows and Linux.
