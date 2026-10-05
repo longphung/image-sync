@@ -67,6 +67,19 @@ The AVCHD conversion test is skipped when `ffmpeg` isn't installed.
 The QR carries a one-time pairing token. The phone trades it for its own token (`POST /pair`), and the
 QR then changes, so an old photo of it is useless. Each phone can be unpaired on its own.
 
+**Or pair with a 6-digit code**, with no camera needed: in the mobile app, tap this computer under
+"On this network" (or enter its address), or open `http://<this computer's LAN IP>:8765/app` in a phone
+browser. The window pops up with a code. Type it on the phone. A code lasts 2 minutes and 5 wrong
+tries, and only one request is pending at a time. "Deny" in the popup cancels it.
+
+## Web app
+
+The phone app's web build (`pnpm web:export` at the repo root, which writes `../dist`) is bundled as a
+resource and served at `/app`, from the same origin as the API, so the browser needs no CORS. `tauri build`
+exports it first. In `tauri dev`, `/app` serves whatever was in `../dist` when the Rust side was last built.
+The web app only talks to this hub (it can't reach the camera). Saving uses the share sheet where the
+browser allows it, which needs HTTPS, e.g. `tailscale serve`. Over plain LAN http, files download instead.
+
 The token travels in the URL (`?t=`), which is fine on a LAN or inside a VPN. **Don't forward the port to
 the open internet**: there's no TLS.
 
@@ -74,7 +87,11 @@ the open internet**: there's no TLS.
 
 | Route | Response |
 |---|---|
-| `POST /pair?t=<pairing token>&name=<phone name>` | `{ "token": "<phone token>" }` |
+| `POST /pair?t=<pairing token>&name=<phone name>` | `{ token, id, name, hosts, port }`: the phone's own token plus the desktop's details |
+| `POST /pair/request?name=<phone name>` | `{ "request": "<id>" }`, and the window shows a 6-digit code |
+| `POST /pair/code?request=<id>&code=<code>&name=<phone name>` | Same as `/pair`. 401 wrong code, 410 expired/denied/used up |
+| `GET /info` | `{ id, name }`, unauthenticated, for the web app |
+| `GET /app/...` | The phone app's web build |
 | `GET /images?t=` | `ImageItem[]`, oldest first, the same shape the camera client returns |
 | `GET /files/:date/:name?t=` | File bytes, with Range support |
 | `GET /thumbs/:date/:name?t=` | Cached JPEG thumbnail |

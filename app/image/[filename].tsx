@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Text, View } from 'react-native';
+import { ActivityIndicator, Platform, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { Image } from 'expo-image';
@@ -37,7 +37,8 @@ export default function ImageDetailScreen() {
   const isVideo = isVideoFile(filename);
   // The preview downloads (and converts) the video itself; Save waits for it so the two
   // never write the same .part file at once.
-  const [videoReady, setVideoReady] = useState(false);
+  // On web the hub's URL plays directly (it already converted AVCHD, and serves byte ranges).
+  const [videoReady, setVideoReady] = useState(Platform.OS === 'web');
 
   const handleSave = useCallback(async () => {
     setSaveState('saving');
@@ -66,7 +67,9 @@ export default function ImageDetailScreen() {
       <Stack.Screen options={{ title: '' }} />
 
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        {isVideo ? (
+        {isVideo && Platform.OS === 'web' ? (
+          <LocalVideo uri={url} />
+        ) : isVideo ? (
           <VideoPreview url={url} filename={filename} onReady={() => setVideoReady(true)} />
         ) : (
           <>

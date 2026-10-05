@@ -90,6 +90,77 @@ export async function pairDesktop(
   return token;
 }
 
+/** Default hub port, used when a typed address has none. */
+export const DESKTOP_PORT = 8765;
+
+/** Parses a typed `host`, `host:port` or `[ipv6]:port`. Returns null for anything unusable. */
+export function parseHostPort(text: string): { host: string; port: number } | null {
+  const m = text.trim().match(/^(?:\[([^\]]+)\]|([^\s:/]+))(?::(\d{1,5}))?$/);
+  const port = m?.[3] ? Number(m[3]) : DESKTOP_PORT;
+  if (!m || port < 1 || port > 65535) return null;
+  return { host: m[1] ?? m[2], port };
+}
+
+/** Asks the desktop to show a 6-digit code; returns the request id to send back with it. */
+export async function requestPairCode(baseUrl: string, phoneName: string, timeoutMs?: number): Promise<string> {
+  let body: string;
+  try {
+    body = await fetchText(`${baseUrl}/pair/request?name=${encodeURIComponent(phoneName)}`, { method: 'POST' }, timeoutMs);
+  } catch (err) {
+    throw new Error(`HTTP request failed: POST ${baseUrl}/pair/request: ${errorMessage(err)}`);
+  }
+  const request = (JSON.parse(body) as { request?: unknown }).request;
+  if (typeof request !== 'string') throw new Error('Desktop /pair/request returned no request id');
+  return request;
+}
+
+/**
+ * A rejected code. `expired`: the request is gone (expired, denied, used, or too many wrong
+ * codes), so a new code has to be requested; otherwise the user can just retype.
+ */
+export class PairCodeError extends Error {
+  readonly expired: boolean;
+  constructor(expired: boolean, message: string) {
+    super(message);
+    this.expired = expired;
+  }
+}
+
+/** Trades the code shown on the desktop for this phone's own token and the desktop's details. */
+export async function pairWithCode(
+  host: string,
+  port: number,
+  requestId: string,
+  code: string,
+  phoneName: string,
+  timeoutMs?: number,
+): Promise<PairedDesktop> {
+  const baseUrl = desktopBaseUrl(host, port);
+  const q = `request=${encodeURIComponent(requestId)}&code=${encodeURIComponent(code)}&name=${encodeURIComponent(phoneName)}`;
+  let body: string;
+  try {
+    body = await fetchText(`${baseUrl}/pair/code?${q}`, { method: 'POST' }, timeoutMs);
+  } catch (err) {
+    const message = errorMessage(err);
+    if (/^HTTP 401\b/.test(message)) throw new PairCodeError(false, 'Wrong code');
+    if (/^HTTP 410\b/.test(message)) throw new PairCodeError(true, 'Code expired');
+    throw new Error(`HTTP request failed: POST ${baseUrl}/pair/code: ${message}`);
+  }
+  return parsePairReply(body, host, port);
+}
+
+/**
+ * `{ token, id, name, hosts, port }` from `/pair` or `/pair/code` -> the desktop to store. The
+ * address that just worked goes first, so it's what the phone tries next time.
+ */
+export function parsePairReply(text: string, host: string, port: number): PairedDesktop {
+  const r = JSON.parse(text) as Record<string, unknown>;
+  const hosts = Array.isArray(r.hosts) ? r.hosts.filter((h): h is string => typeof h === 'string') : [];
+  return parsePairingQr(
+    JSON.stringify({ ...r, v: 1, hosts: [host, ...hosts.filter((h) => h !== host)], port }),
+  );
+}
+
 /** Calls `fn` with each host's base URL in order and returns the first success. */
 export async function firstReachable<T>(
   hosts: string[],

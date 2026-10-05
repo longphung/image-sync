@@ -18,3 +18,11 @@ export function loadDesktops(): PairedDesktop[] {
 export function saveDesktops(desktops: PairedDesktop[]): void {
   file().write(JSON.stringify(desktops));
 }
+
+// ponytail: only the web build remembers the last pair-by-code address (native has mDNS and QR);
+// persist it next to desktops.json if native ever needs it.
+export function loadLastPairAddress(): string {
+  return '';
+}
+
+export function saveLastPairAddress(_address: string): void {}

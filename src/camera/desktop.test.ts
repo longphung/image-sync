@@ -5,7 +5,15 @@ import { createServer, type Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { after, before, describe, test } from 'node:test';
 
-import { firstReachable, listImagesDesktop, pairDesktop, parseStoredDesktops } from './desktop.ts';
+import {
+  firstReachable,
+  listImagesDesktop,
+  pairDesktop,
+  pairWithCode,
+  PairCodeError,
+  parseStoredDesktops,
+  requestPairCode,
+} from './desktop.ts';
 import { fetchText } from './http.ts';
 
 let server: Server;
@@ -23,6 +31,14 @@ before(async () => {
       case '/pair':
         if (req.method !== 'POST' || t !== 'qr') return void res.writeHead(401).end();
         return void res.end(url.searchParams.get('name') === 'notoken' ? '{}' : '{"token":"phone"}');
+      case '/pair/request':
+        return void res.end('{"request":"r1"}');
+      case '/pair/code': {
+        const p = url.searchParams;
+        if (p.get('request') !== 'r1') return void res.writeHead(410).end();
+        if (p.get('code') !== '123456') return void res.writeHead(401).end();
+        return void res.end('{"token":"phone","id":"u1","name":"mac","hosts":["10.0.0.9","mac.ts.net"],"port":8765}');
+      }
       case '/garbage':
         return void res.end('<html>not json</html>');
       case '/hang':
@@ -79,6 +95,29 @@ describe('desktop client against a server', () => {
 
   test('pairing fails when the reply has no token', async () => {
     await assert.rejects(pairDesktop(base, 'qr', 'notoken'), /no token/);
+  });
+
+  test('pairing by code: request, then trade the code for a desktop entry', async () => {
+    assert.equal(await requestPairCode(base, 'iPhone'), 'r1');
+    assert.deepEqual(await pairWithCode('127.0.0.1', port, 'r1', '123456', 'iPhone'), {
+      id: 'u1',
+      name: 'mac',
+      // The address that worked first, then the desktop's own list.
+      hosts: ['127.0.0.1', '10.0.0.9', 'mac.ts.net'],
+      port,
+      token: 'phone',
+    });
+  });
+
+  test('pairing by code tells a wrong code from an expired request', async () => {
+    await assert.rejects(
+      pairWithCode('127.0.0.1', port, 'r1', '000000', 'iPhone'),
+      (err) => err instanceof PairCodeError && !err.expired,
+    );
+    await assert.rejects(
+      pairWithCode('127.0.0.1', port, 'gone', '123456', 'iPhone'),
+      (err) => err instanceof PairCodeError && err.expired,
+    );
   });
 
   test('a non-JSON body is an error, not a crash later', async () => {

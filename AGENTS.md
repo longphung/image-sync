@@ -30,7 +30,11 @@ src/desktops.ts       paired desktop hubs, persisted as JSON in the documents di
 app/                  expo-router screens: (tabs) = native tabs, (desktops)/index (default: paired desktops,
                       pull to refresh) and camera/index (2-step connect) -> join-wifi; both -> images (grid)
                       -> sync (progress modal) / image/[filename] (photo/video detail + Save to Photos);
-                      read-label (OCR modal); scan-pairing (desktop pairing QR modal)
+                      read-label (OCR modal); scan-pairing (desktop pairing QR modal); pair-code (6-digit
+                      code pairing, from a discovered desktop or a typed host[:port])
+*.web.ts(x)           web build, served by the desktop hub at /app (app.json experiments.baseUrl): Desktop
+                      tab only, localStorage instead of desktops.json, /info instead of mDNS, in-memory
+                      downloads saved via navigator.share (HTTPS only) or <a download>, no MTS conversion
 src/sync.ts           pure Sync All loop (skip / fail / stop-after-3 / duplicate-name rules), tested in Node
 ```
 

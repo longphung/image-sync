@@ -35,6 +35,8 @@ type CameraConnectionValue = {
   connectDesktop: (desktop: PairedDesktop) => Promise<void>;
   /** Trades the QR's one-time token for this phone's own token and stores the desktop. */
   pairWithDesktop: (qr: PairingQr) => Promise<PairedDesktop>;
+  /** Stores a desktop paired by code, replacing an older entry for the same desktop. */
+  addDesktop: (desktop: PairedDesktop) => void;
   forgetDesktop: (id: string) => void;
   disconnect: () => void;
   /** SSID the phone is currently joined to, or null if unknown / not on Wi-Fi. */
@@ -48,6 +50,9 @@ type CameraConnectionValue = {
 };
 
 const CameraConnectionContext = createContext<CameraConnectionValue | null>(null);
+
+/** How this device shows up in the desktop's paired list and pairing dialog. */
+export const PHONE_NAME = Constants.deviceName ?? (Platform.OS === 'web' ? 'Web browser' : Platform.OS);
 
 // Short per-host timeout so an unreachable LAN address doesn't hold up the remote one for 30s.
 export const DESKTOP_TIMEOUT_MS = 5_000;
@@ -113,18 +118,22 @@ export function CameraConnectionProvider({ children }: { children: ReactNode }) 
     });
   }, []);
 
+  // Re-pairing the same desktop replaces its entry (and its now-revoked token).
+  const addDesktop = useCallback(
+    (desktop: PairedDesktop) => updateDesktops((prev) => [...prev.filter((d) => d.id !== desktop.id), desktop]),
+    [updateDesktops],
+  );
+
   const pairWithDesktop = useCallback(
     async (qr: PairingQr) => {
-      const phoneName = Constants.deviceName ?? Platform.OS;
       const { result: token } = await firstReachable(qr.hosts, qr.port, (url) =>
-        pairDesktop(url, qr.token, phoneName, DESKTOP_TIMEOUT_MS),
+        pairDesktop(url, qr.token, PHONE_NAME, DESKTOP_TIMEOUT_MS),
       );
       const desktop: PairedDesktop = { ...qr, token };
-      // Re-pairing the same desktop replaces its entry (and its now-revoked token).
-      updateDesktops((prev) => [...prev.filter((d) => d.id !== desktop.id), desktop]);
+      addDesktop(desktop);
       return desktop;
     },
-    [updateDesktops],
+    [addDesktop],
   );
 
   const forgetDesktop = useCallback(
@@ -175,6 +184,7 @@ export function CameraConnectionProvider({ children }: { children: ReactNode }) 
       desktopId,
       connectDesktop,
       pairWithDesktop,
+      addDesktop,
       forgetDesktop,
       disconnect,
       wifiSsid,
@@ -195,6 +205,7 @@ export function CameraConnectionProvider({ children }: { children: ReactNode }) 
       desktopId,
       connectDesktop,
       pairWithDesktop,
+      addDesktop,
       forgetDesktop,
       disconnect,
       wifiSsid,

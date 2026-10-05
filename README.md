@@ -13,8 +13,10 @@ The camera protocol (DLNA ContentDirectory, with a Scalar Web API fallback) is p
 - **Camera tab:** join the camera's `DIRECT-...` Wi-Fi from inside the app (or read the SSID/password
   off the camera's label with OCR), then auto-connect to the camera at `192.168.122.1`, with a manual IP
   override
-- **Desktops tab:** pair with a desktop hub by scanning its QR code, find paired hubs on the LAN over
-  mDNS, and pull to refresh
+- **Desktops tab:** pair with a desktop hub by scanning its QR code or typing the 6-digit code it pops
+  up, find hubs on the LAN over mDNS (or enter an address), and pull to refresh
+- **Web app:** the desktop hub serves a web build at `http://<hub>:8765/app` (Desktop tab only; a
+  browser can't reach the camera)
 - Browse photos and videos in a grid (newest first), showing which ones are already on the device
 - Photo and video detail. AVCHD `.MTS` clips are converted to `.mp4` on the phone (FFmpegKit) so they
   play and can be saved
@@ -66,7 +68,7 @@ in Settings before opening the app. See the "iOS on a free (Personal Team) Apple
 
 ```
 app/          expo-router screens: (tabs)/camera and (tabs)/(desktops), images grid, image detail,
-              sync modal, join-wifi, read-label (OCR), scan-pairing (desktop QR)
+              sync modal, join-wifi, read-label (OCR), scan-pairing (desktop QR), pair-code
 src/camera/   protocol client: camera discovery, DLNA, Scalar, desktop hub API
 src/          shared TS: connection context, Sync All loop, file system, video conversion,
               Wi-Fi, OCR, desktop pairing/discovery, components, theme, locales

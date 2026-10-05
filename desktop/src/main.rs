@@ -11,7 +11,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, MutexGuard};
-use std::time::SystemTime;
+use std::time::{Instant, SystemTime};
 use tauri::http::{Response, StatusCode};
 use tauri::menu::{Menu, MenuItem};
 use tauri::tray::TrayIconBuilder;
@@ -84,6 +84,9 @@ pub struct App {
     card_root: Mutex<Option<PathBuf>>,
     thumbs: Arc<thumbs::Queue>,
     card_thumbs_dir: PathBuf,
+    /// The pending "pair by code" request, whose code the window shows.
+    pair_request: Mutex<Option<server::PairRequest>>,
+    handle: AppHandle,
 }
 
 impl App {
@@ -140,6 +143,19 @@ fn host_name() -> String {
     name.trim_end_matches(".local").to_string()
 }
 
+/// The addresses a phone should try (LAN IP, then the optional remote one) and this desktop's name.
+pub fn pairing_info(settings: &Settings) -> (Vec<String>, String) {
+    let hosts = lan_ip().into_iter().chain(Some(settings.remote_host.clone()).filter(|h| !h.is_empty())).collect();
+    (hosts, host_name())
+}
+
+#[derive(Serialize)]
+struct PairRequestView {
+    name: String,
+    code: String,
+    expires_in: u64,
+}
+
 #[derive(Serialize)]
 struct StatusView {
     import: ImportStatus,
@@ -147,15 +163,16 @@ struct StatusView {
     settings: Settings,
     ffmpeg: bool,
     pairing_qr: String,
+    lan_ip: Option<String>,
+    pair_request: Option<PairRequestView>,
 }
 
 #[tauri::command]
 fn status(app: State<Arc<App>>) -> StatusView {
     let settings = app.settings().clone();
-    let hosts: Vec<String> =
-        lan_ip().into_iter().chain(Some(settings.remote_host.clone()).filter(|h| !h.is_empty())).collect();
+    let (hosts, name) = pairing_info(&settings);
     let payload = serde_json::json!({
-        "v": 1, "id": settings.id, "name": host_name(), "hosts": hosts, "port": settings.port, "token": settings.token,
+        "v": 1, "id": settings.id, "name": name, "hosts": hosts, "port": settings.port, "token": settings.token,
     });
     let pairing_qr = qrcode::QrCode::new(payload.to_string())
         .map(|qr| qr.render::<qrcode::render::svg::Color>().min_dimensions(240, 240).build())
@@ -166,6 +183,11 @@ fn status(app: State<Arc<App>>) -> StatusView {
         settings,
         ffmpeg: thumbs::ffmpeg().is_some(),
         pairing_qr,
+        lan_ip: lan_ip(),
+        pair_request: app.pair_request.lock().unwrap().as_ref().and_then(|r| {
+            let left = r.expires.checked_duration_since(Instant::now())?;
+            Some(PairRequestView { name: r.name.clone(), code: r.code.clone(), expires_in: left.as_secs() })
+        }),
     }
 }
 
@@ -310,10 +332,16 @@ fn unpair_all(app: State<Arc<App>>) -> Result<(), String> {
         s.phones.clear();
         s.token = new_token();
     }
+    *app.pair_request.lock().unwrap() = None;
     app.save_settings()
 }
 
-fn show_window(handle: &AppHandle) {
+#[tauri::command]
+fn deny_pair_request(app: State<Arc<App>>) {
+    *app.pair_request.lock().unwrap() = None;
+}
+
+pub fn show_window(handle: &AppHandle) {
     if let Some(w) = handle.get_webview_window("main") {
         let _ = w.show();
         let _ = w.set_focus();
@@ -322,7 +350,7 @@ fn show_window(handle: &AppHandle) {
 
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![status, card, library, open_library, sync, save_settings, remove_phone, unpair_all])
+        .invoke_handler(tauri::generate_handler![status, card, library, open_library, sync, save_settings, remove_phone, unpair_all, deny_pair_request])
         .register_asynchronous_uri_scheme_protocol("thumb", |ctx, req, responder| {
             let app = ctx.app_handle().state::<Arc<App>>();
             thumb(&app, req.uri().path(), Box::new(move |jpeg| {
@@ -354,13 +382,17 @@ fn main() {
                 card_root: Mutex::default(),
                 thumbs: thumbs::Queue::start(),
                 card_thumbs_dir: paths.app_cache_dir()?.join("card-thumbs"),
+                pair_request: Mutex::default(),
+                handle: tauri_app.handle().clone(),
             });
             // Persists a freshly generated token / id on first run.
             app.save_settings()?;
 
+            // The phone app's web export, bundled as a resource (see tauri.conf.json).
+            let web_dir = paths.resource_dir()?.join("web");
             let server_app = app.clone();
             tauri::async_runtime::spawn(async move {
-                if let Err(e) = server::serve(server_app.clone(), port).await {
+                if let Err(e) = server::serve(server_app.clone(), port, web_dir).await {
                     server_app.status.lock().unwrap().error = Some(format!("HTTP server on port {port} failed: {e}"));
                 }
             });

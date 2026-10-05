@@ -93,3 +93,9 @@ export async function saveToLibrary(
   }
   await Asset.create(uri);
 }
+
+// The web build shares all of Sync All's files in one sheet (see fileSystem.web.ts); native
+// saves each as it downloads, so this only exists to keep both builds' exports the same.
+export async function saveAllToLibrary(filenames: string[]): Promise<void> {
+  for (const filename of filenames) await saveToLibrary(filename);
+}

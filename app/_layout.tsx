@@ -35,6 +35,7 @@ function AppNavigator() {
       />
       <Stack.Screen name="read-label" options={{ title: t`Read Wi-Fi Label`, presentation: 'modal' }} />
       <Stack.Screen name="scan-pairing" options={{ title: t`Pair with Desktop`, presentation: 'modal' }} />
+      <Stack.Screen name="pair-code" options={{ title: t`Pair with Code`, presentation: 'modal' }} />
     </Stack>
   );
 }
