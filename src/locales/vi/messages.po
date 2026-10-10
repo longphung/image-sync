@@ -17,7 +17,7 @@ msgstr "{0} dBm"
 msgid "{0} items"
 msgstr "{0} mục"
 
-#: app/sync.tsx:134
+#: app/sync.tsx:153
 msgid "{index} of {total}"
 msgstr "{index}/{total}"
 
@@ -45,7 +45,7 @@ msgstr "Căn tên Wi-Fi trên nhãn máy ảnh vào trong khung, rồi nhấn ch
 msgid "Allow Camera"
 msgstr "Cho phép camera"
 
-#: app/sync.tsx:169
+#: app/sync.tsx:188
 msgid "already on device"
 msgstr "đã có trên máy"
 
@@ -57,7 +57,7 @@ msgstr "Android yêu cầu quyền vị trí để tìm các mạng Wi-Fi gần 
 msgid "Android will also route this app's traffic over this Wi-Fi network (it has no internet)."
 msgstr "Android cũng sẽ định tuyến lưu lượng của ứng dụng này qua mạng Wi-Fi này (mạng không có internet)."
 
-#: app/pair-code.tsx:161
+#: app/pair-code.tsx:163
 msgid "Asking for a code…"
 msgstr "Đang yêu cầu mã…"
 
@@ -97,7 +97,7 @@ msgstr "Không phát được định dạng video này"
 #: app/(tabs)/(desktops)/index.tsx:75
 #: app/(tabs)/(desktops)/index.tsx:86
 #: app/read-label.tsx:19
-#: app/sync.tsx:208
+#: app/sync.tsx:262
 msgid "Cancel"
 msgstr "Huỷ"
 
@@ -153,7 +153,7 @@ msgstr "Không đọc được chữ trong ảnh đó. Hãy chụp lại với n
 msgid "Desktop"
 msgstr "Máy tính"
 
-#: app/pair-code.tsx:118
+#: app/pair-code.tsx:120
 msgid "Desktop address, as shown in the desktop app's Phone & settings tab."
 msgstr "Địa chỉ máy tính, hiển thị trong thẻ Phone & settings của ứng dụng trên máy tính."
 
@@ -161,19 +161,28 @@ msgstr "Địa chỉ máy tính, hiển thị trong thẻ Phone & settings của
 msgid "Disconnect"
 msgstr "Ngắt kết nối"
 
-#: app/sync.tsx:208
+#: app/sync.tsx:262
 msgid "Done"
 msgstr "Xong"
 
-#: app/sync.tsx:168
+#. placeholder {0}: toSave.length
+#: app/sync.tsx:254
+msgid "Download All ({0})"
+msgstr "Tải tất cả ({0})"
+
+#: app/sync.tsx:187
 msgid "downloaded"
 msgstr "đã tải"
 
-#: app/pair-code.tsx:70
+#: app/sync.tsx:143
+msgid "Downloaded, not saved yet"
+msgstr "Đã tải, chưa lưu"
+
+#: app/pair-code.tsx:71
 msgid "Enter an address like 192.168.1.5 or 192.168.1.5:8765."
 msgstr "Nhập địa chỉ dạng 192.168.1.5 hoặc 192.168.1.5:8765."
 
-#: app/pair-code.tsx:140
+#: app/pair-code.tsx:142
 msgid "Enter the 6-digit code shown on {name}."
 msgstr "Nhập mã 6 chữ số hiển thị trên {name}."
 
@@ -185,7 +194,7 @@ msgstr "Nhập Wi-Fi thủ công"
 msgid "Enter Wi-Fi Manually"
 msgstr "Nhập Wi-Fi thủ công"
 
-#: app/sync.tsx:170
+#: app/sync.tsx:189
 msgid "failed"
 msgstr "thất bại"
 
@@ -274,10 +283,6 @@ msgstr "Không tìm thấy mạng máy ảnh nào. Hãy đảm bảo máy ảnh 
 msgid "No desktops yet. Open the image-sync desktop app on your computer, then scan the pairing code in its Phone & settings tab, or enter its address to pair with a code."
 msgstr "Chưa có máy tính nào. Mở ứng dụng image-sync trên máy tính, rồi quét mã ghép nối trong thẻ Phone & settings, hoặc nhập địa chỉ của máy để ghép nối bằng mã."
 
-#: app/(tabs)/(desktops)/index.tsx:183
-#~ msgid "No desktops yet. Open the image-sync desktop app on your computer, then scan the pairing code in its Phone & settings tab."
-#~ msgstr "Chưa có máy tính nào. Mở ứng dụng image-sync trên máy tính, rồi quét mã ghép nối trong thẻ Phone & settings."
-
 #: app/images.tsx:131
 msgid "No photos or videos on the camera."
 msgstr "Không có ảnh hoặc video nào trên máy ảnh."
@@ -298,10 +303,6 @@ msgstr "Chưa kết nối"
 #: app/(tabs)/(desktops)/index.tsx:189
 msgid "Not paired yet. Tap to pair."
 msgstr "Chưa ghép nối. Chạm để ghép nối."
-
-#: app/(tabs)/(desktops)/index.tsx:174
-#~ msgid "Not paired yet. Tap to scan its pairing code."
-#~ msgstr "Chưa ghép nối. Nhấn để quét mã ghép nối."
 
 #: src/wifi.ts:16
 msgid "OK"
@@ -351,7 +352,7 @@ msgstr "Ghép nối với máy tính"
 msgid "Paired"
 msgstr "Đã ghép nối"
 
-#: app/pair-code.tsx:161
+#: app/pair-code.tsx:163
 #: app/scan-pairing.tsx:79
 msgid "Pairing…"
 msgstr "Đang ghép nối…"
@@ -410,11 +411,11 @@ msgstr "Xoá {0}"
 msgid "Remove {0}?"
 msgstr "Xoá {0}?"
 
-#: app/pair-code.tsx:133
+#: app/pair-code.tsx:135
 msgid "Request Code"
 msgstr "Yêu cầu mã"
 
-#: app/pair-code.tsx:172
+#: app/pair-code.tsx:174
 msgid "Request New Code"
 msgstr "Yêu cầu mã mới"
 
@@ -428,7 +429,7 @@ msgid "Retry"
 msgstr "Thử lại"
 
 #. placeholder {0}: retryable.length
-#: app/sync.tsx:205
+#: app/sync.tsx:259
 msgid "Retry Failed ({0})"
 msgstr "Thử lại mục lỗi ({0})"
 
@@ -437,13 +438,17 @@ msgid "Retry Save"
 msgstr "Lưu lại"
 
 #. placeholder {0}: toSave.length
-#: app/sync.tsx:202
+#: app/sync.tsx:254
 msgid "Save All ({0})"
 msgstr "Lưu tất cả ({0})"
 
 #: app/image/[filename].tsx:134
 msgid "Save to Photos"
 msgstr "Lưu vào Ảnh"
+
+#: app/sync.tsx:218
+msgid "Saved as one zip in Downloads (the Files app on iPhone). Open it there, then save the photos to Photos. Nothing downloaded? Tap Download All."
+msgstr "Đã lưu thành một tệp zip trong Tải về (ứng dụng Tệp trên iPhone). Mở tệp ở đó, rồi lưu ảnh vào Ảnh. Không thấy tải về? Nhấn Tải tất cả."
 
 #: app/image/[filename].tsx:122
 msgid "Saved to Photos"
@@ -499,21 +504,29 @@ msgstr "Đồng bộ tất cả"
 msgid "Sync All ({0})"
 msgstr "Đồng bộ tất cả ({0})"
 
-#: app/sync.tsx:130
+#: app/sync.tsx:149
 msgid "Sync complete"
 msgstr "Đồng bộ hoàn tất"
 
-#: app/sync.tsx:128
+#: app/sync.tsx:147
 msgid "Sync finished with errors"
 msgstr "Đồng bộ xong nhưng có lỗi"
 
-#: app/sync.tsx:126
+#: app/sync.tsx:145
 msgid "Sync stopped"
 msgstr "Đã dừng đồng bộ"
 
-#: app/sync.tsx:124
+#: app/sync.tsx:141
 msgid "Syncing photos…"
 msgstr "Đang đồng bộ ảnh…"
+
+#: app/sync.tsx:223
+msgid "Tap Download All to save them as one zip. Leaving this screen discards them."
+msgstr "Nhấn Tải tất cả để lưu thành một tệp zip. Rời màn hình này sẽ huỷ các tệp đã tải."
+
+#: app/sync.tsx:216
+msgid "Tap Save All, then choose Save to Photos. Leaving this screen discards them."
+msgstr "Nhấn Lưu tất cả, rồi chọn Lưu vào Ảnh. Rời màn hình này sẽ huỷ các tệp đã tải."
 
 #: src/ocr.ts:10
 msgid "Text recognition is not supported on this device."
@@ -527,9 +540,13 @@ msgstr "Thiết bị này không hỗ trợ nhận diện chữ. Bạn vẫn có
 msgid "Text recognition isn't available on this device. You can still type the Wi-Fi name in manually."
 msgstr "Thiết bị này không hỗ trợ nhận diện chữ. Bạn vẫn có thể nhập tên Wi-Fi thủ công."
 
-#: app/pair-code.tsx:87
+#: app/pair-code.tsx:89
 msgid "This code has expired. Request a new one."
 msgstr "Mã này đã hết hạn. Hãy yêu cầu mã mới."
+
+#: app/sync.tsx:230
+msgid "To save straight to Photos instead, <0>install this desktop's certificate</0>, then <1>open the secure page</1> and pair again. On iPhone, install it in Settings › Profile Downloaded, then turn it on in General › About › Certificate Trust Settings."
+msgstr "Để lưu thẳng vào Ảnh, <0>cài chứng chỉ của máy tính này</0>, rồi <1>mở trang bảo mật</1> và ghép nối lại. Trên iPhone, cài trong Cài đặt › Đã tải về hồ sơ, rồi bật trong Cài đặt chung › Giới thiệu › Cài đặt tin cậy chứng nhận."
 
 #: app/(tabs)/camera/index.tsx:58
 msgid "Transfer photos from your Sony camera to your phone."
@@ -559,7 +576,7 @@ msgstr "Tên Wi-Fi"
 msgid "Wi-Fi password"
 msgstr "Mật khẩu Wi-Fi"
 
-#: app/pair-code.tsx:90
+#: app/pair-code.tsx:92
 msgid "Wrong code. Check the code on the desktop and try again."
 msgstr "Sai mã. Kiểm tra mã trên máy tính rồi thử lại."
 

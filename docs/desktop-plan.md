@@ -39,7 +39,9 @@ then the Rust app), test with `cargo test`. Deviations from the plan below:
   `{ token, id, name, hosts, port }`, because the code flow has no QR payload.
 - Web app: the hub serves the Expo web export at `/app` (`experiments.baseUrl`, so it doesn't clash
   with `/images`), plus `GET /info` -> `{ id, name }` so the page can name the hub that served it.
-  Being the same origin means no CORS. See `desktop/README.md`.
+  Being the same origin means no CORS. The port also speaks HTTPS with a certificate from a local,
+  name-constrained CA the phone installs from `GET /ca.crt`, so the page can be a secure context (share
+  sheet -> Photos). `/images` hands out `https` links to TLS clients. See `desktop/README.md`.
 - Library layout is `<library>/<YYYY-MM-DD>/<name>`, dated by the card file's modified time in local
   time, so Sony's wrapping `DSC00001.JPG` counter can't collide. Files synced before this, at the top
   level of the library, still count as imported and are still listed. Card selection and sync go by
@@ -124,6 +126,7 @@ can be changed in settings.
 | `POST /pair?t=&name=` | Trades the one-time pairing token for `{ token, id, name, hosts, port }`, this phone's own token |
 | `POST /pair/request?name=`, `POST /pair/code?request=&code=&name=` | Pairing by a 6-digit code shown in the window |
 | `GET /info`, `GET /app/...` | Hub id and name, and the phone app's web build (no auth) |
+| `GET /ca.crt` | The hub's local CA certificate, for HTTPS (no auth) |
 | `GET /files/:date/:name` | File bytes, with HTTP Range support (`tower-http` `ServeFile`) so large videos resume |
 | `GET /thumbs/:date/:name` | Cached JPEG thumbnail (in `<library>/<date>/.thumbs/`) |
 

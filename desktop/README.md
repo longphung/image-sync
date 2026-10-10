@@ -26,7 +26,7 @@ The desktop is a hub. Phones pull from it. It never writes to the camera and nev
 - Advertises itself over mDNS as `_image-sync._tcp`, so paired phones find it after a LAN IP change
 - Closing the window hides it to the tray (Open / Quit)
 
-Defaults: port `8765`, library `~/Pictures/image-sync`. Settings are stored as `settings.json` in the
+Defaults: port `8765` (`8000` in `tauri dev`), library `~/Pictures/image-sync`. Settings are stored as `settings.json` (`settings.dev.json` in dev, so dev and an installed release don't share pairings) in the
 Tauri app config dir.
 
 ## Requirements
@@ -78,10 +78,28 @@ The phone app's web build (`pnpm web:export` at the repo root, which writes `../
 resource and served at `/app`, from the same origin as the API, so the browser needs no CORS. `tauri build`
 exports it first. In `tauri dev`, `/app` serves whatever was in `../dist` when the Rust side was last built.
 The web app only talks to this hub (it can't reach the camera). Saving uses the share sheet where the
-browser allows it, which needs HTTPS, e.g. `tailscale serve`. Over plain LAN http, files download instead.
+browser allows it, which needs HTTPS. Over plain http, Sync All downloads everything as one zip instead.
+
+### HTTPS
+
+The same port also speaks HTTPS (`src/tls.rs` tells the two apart by each connection's first byte), so
+`https://<LAN IP>:8765/app` gives the web app the share sheet, i.e. "Save to Photos". A LAN IP can't get a
+public certificate, so on first run the hub creates its own CA (`ca-key.pem` + `ca.crt` next to
+`settings.json`) and signs a certificate for this machine's current addresses, `<hostname>.local`,
+`localhost` and the remote address, re-signing it when they change. Install the CA on the phone once:
+
+- **iPhone:** open `http://<LAN IP>:8765/ca.crt` in Safari and allow the download, then Settings ›
+  Profile Downloaded › Install, then General › About › Certificate Trust Settings › turn it on.
+- **Android:** download the same link, then Settings › Security › Encryption & credentials › Install a
+  certificate › CA certificate. Chrome trusts user-installed CAs.
+
+The CA is name-constrained to private IPv4/IPv6 ranges, CGNAT (`100.64.0.0/10`, Tailscale), `.local`,
+`localhost` and `.ts.net`, so even a leaked `ca-key.pem` can't impersonate any other site to the phone.
+A remote address outside those (a public domain or IP) won't validate. The `https` page is a different
+origin from the `http` one, so the browser has to pair again there. The native app keeps using plain HTTP.
 
 The token travels in the URL (`?t=`), which is fine on a LAN or inside a VPN. **Don't forward the port to
-the open internet**: there's no TLS.
+the open internet.**
 
 ## HTTP API
 
@@ -91,6 +109,7 @@ the open internet**: there's no TLS.
 | `POST /pair/request?name=<phone name>` | `{ "request": "<id>" }`, and the window shows a 6-digit code |
 | `POST /pair/code?request=<id>&code=<code>&name=<phone name>` | Same as `/pair`. 401 wrong code, 410 expired/denied/used up |
 | `GET /info` | `{ id, name }`, unauthenticated, for the web app |
+| `GET /ca.crt` | This hub's CA certificate (DER), unauthenticated, for the phone to install |
 | `GET /app/...` | The phone app's web build |
 | `GET /images?t=` | `ImageItem[]`, oldest first, the same shape the camera client returns |
 | `GET /files/:date/:name?t=` | File bytes, with Range support |
@@ -102,6 +121,7 @@ the open internet**: there's no TLS.
 src/main.rs      Tauri app: tray, settings, card detection, Tauri commands
 src/import.rs    card scanning, copy-with-.part, skip rules, AVCHD conversion
 src/server.rs    axum HTTP API for phones, token auth, pairing
+src/tls.rs       local CA, per-address server certificate, HTTP + HTTPS on one port
 src/thumbs.rs    thumbnail queue (Sony MPF preview, EXIF thumbnail, ffmpeg frame grab)
 ui/              Svelte 5 + Vite window (Camera, Library, Phone & settings tabs)
 ```

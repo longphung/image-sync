@@ -25,7 +25,8 @@ src/components/       ActionButton + ProgressBar have .ios.tsx (SwiftUI, liquid 
                       .android.tsx (Jetpack Compose, Material 3) variants via @expo/ui; the plain .tsx is
                       the web fallback and the shared props type
 desktop/              Tauri v2 desktop hub (Rust + Svelte 5/Vite UI in desktop/ui, own package.json): USB card picker
-                      + import, HTTP API for phones, see docs/desktop-plan.md. Excluded from the root tsconfig
+                      + import, HTTP API for phones (also HTTPS on the same port via a local CA, src/tls.rs),
+                      see docs/desktop-plan.md. Excluded from the root tsconfig
 src/desktops.ts       paired desktop hubs, persisted as JSON in the documents directory
 app/                  expo-router screens: (tabs) = native tabs, (desktops)/index (default: paired desktops,
                       pull to refresh) and camera/index (2-step connect) -> join-wifi; both -> images (grid)
@@ -34,7 +35,8 @@ app/                  expo-router screens: (tabs) = native tabs, (desktops)/inde
                       code pairing, from a discovered desktop or a typed host[:port])
 *.web.ts(x)           web build, served by the desktop hub at /app (app.json experiments.baseUrl): Desktop
                       tab only, localStorage instead of desktops.json, /info instead of mDNS, in-memory
-                      downloads saved via navigator.share (HTTPS only) or <a download>, no MTS conversion
+                      downloads saved via navigator.share (HTTPS only) or one zip download (src/zip.ts),
+                      no MTS conversion
 src/sync.ts           pure Sync All loop (skip / fail / stop-after-3 / duplicate-name rules), tested in Node
 ```
 

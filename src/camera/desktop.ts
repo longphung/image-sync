@@ -16,8 +16,11 @@ export type PairingQr = {
 export type PairedDesktop = PairingQr;
 
 export function desktopBaseUrl(host: string, port: number): string {
+  // A page served over HTTPS may only call HTTPS (no mixed content). The hub serves both on the
+  // same port; the native app has no `location` and always uses plain HTTP.
+  const scheme = globalThis.location?.protocol === 'https:' ? 'https' : 'http';
   // A bare IPv6 address needs brackets in a URL.
-  return `http://${host.includes(':') ? `[${host}]` : host}:${port}`;
+  return `${scheme}://${host.includes(':') ? `[${host}]` : host}:${port}`;
 }
 
 /** Parses the QR text, throwing a user-facing message if it isn't an image-sync pairing code. */

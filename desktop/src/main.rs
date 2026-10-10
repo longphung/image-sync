@@ -4,6 +4,7 @@
 mod import;
 mod server;
 mod thumbs;
+mod tls;
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
@@ -16,6 +17,10 @@ use tauri::http::{Response, StatusCode};
 use tauri::menu::{Menu, MenuItem};
 use tauri::tray::TrayIconBuilder;
 use tauri::{AppHandle, Manager, RunEvent, State, WindowEvent};
+
+/// Dev builds (`tauri dev`) keep their own settings, port and pairings, so they can run next to an
+/// installed release. They share its CA, so a phone that trusts one trusts both.
+const DEV: bool = cfg!(debug_assertions);
 
 const NO_CAMERA: &str = "No camera found. Set the camera's USB Connection to Mass Storage and plug it in.";
 
@@ -37,7 +42,7 @@ impl Default for Settings {
     fn default() -> Self {
         Settings {
             library: PathBuf::new(),
-            port: 8765,
+            port: if DEV { 8000 } else { 8765 },
             token: new_token(),
             phones: Vec::new(),
             id: uuid::Uuid::new_v4().to_string(),
@@ -143,10 +148,15 @@ fn host_name() -> String {
     name.trim_end_matches(".local").to_string()
 }
 
+/// The name phones show for this desktop.
+fn display_name() -> String {
+    if DEV { format!("{} (dev)", host_name()) } else { host_name() }
+}
+
 /// The addresses a phone should try (LAN IP, then the optional remote one) and this desktop's name.
 pub fn pairing_info(settings: &Settings) -> (Vec<String>, String) {
     let hosts = lan_ip().into_iter().chain(Some(settings.remote_host.clone()).filter(|h| !h.is_empty())).collect();
-    (hosts, host_name())
+    (hosts, display_name())
 }
 
 #[derive(Serialize)]
@@ -367,7 +377,7 @@ fn main() {
         })
         .setup(|tauri_app| {
             let paths = tauri_app.path();
-            let settings_path = paths.app_config_dir()?.join("settings.json");
+            let settings_path = paths.app_config_dir()?.join(if DEV { "settings.dev.json" } else { "settings.json" });
             let mut settings: Settings =
                 fs::read(&settings_path).ok().and_then(|b| serde_json::from_slice(&b).ok()).unwrap_or_default();
             if settings.library.as_os_str().is_empty() {
@@ -390,20 +400,21 @@ fn main() {
 
             // The phone app's web export, bundled as a resource (see tauri.conf.json).
             let web_dir = paths.resource_dir()?.join("web");
+            let ca = tls::Ca::load_or_create(&paths.app_config_dir()?)?;
             let server_app = app.clone();
             tauri::async_runtime::spawn(async move {
-                if let Err(e) = server::serve(server_app.clone(), port, web_dir).await {
+                if let Err(e) = server::serve(server_app.clone(), port, web_dir, ca).await {
                     server_app.status.lock().unwrap().error = Some(format!("HTTP server on port {port} failed: {e}"));
                 }
             });
 
             // mDNS advert; the daemon is kept alive in managed state.
             let mdns = mdns_sd::ServiceDaemon::new()?;
-            let name = host_name();
+            let name = display_name();
             let id = app.settings().id.clone();
             let txt = [("id", id.as_str()), ("v", "1"), ("name", name.as_str())];
-            let service =
-                mdns_sd::ServiceInfo::new("_image-sync._tcp.local.", &name, &format!("{name}.local."), "", port, &txt[..])?
+            let host = format!("{}.local.", host_name());
+            let service = mdns_sd::ServiceInfo::new("_image-sync._tcp.local.", &name, &host, "", port, &txt[..])?
                     .enable_addr_auto();
             mdns.register(service)?;
             tauri_app.manage(mdns);
