@@ -62,6 +62,11 @@ impl Ca {
         Ok(Ca { issuer: Issuer::new(ca_params(), key), cert })
     }
 
+    /// Writes the CA certificate as PEM to `path`, for tools that want that (cloudflared).
+    pub fn write_pem(&self, path: &Path) -> Result<(), String> {
+        fs::write(path, pem::encode(&pem::Pem::new("CERTIFICATE", self.cert.clone()))).map_err(|e| e.to_string())
+    }
+
     /// A fresh server certificate + key for `names` (IPs and DNS names).
     fn leaf(&self, names: &[String]) -> Result<CertifiedKey, String> {
         let mut params = CertificateParams::new(names.to_vec()).map_err(|e| e.to_string())?;

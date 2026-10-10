@@ -36,6 +36,9 @@ pub struct Settings {
     pub id: String,
     /// Optional extra address put in the pairing QR for remote access, e.g. a Tailscale name.
     pub remote_host: String,
+    /// Name of a Cloudflare tunnel (`cloudflared tunnel create`) the app runs while it's open;
+    /// empty = no tunnel. Applies on restart.
+    pub tunnel: String,
 }
 
 impl Default for Settings {
@@ -47,8 +50,29 @@ impl Default for Settings {
             phones: Vec::new(),
             id: uuid::Uuid::new_v4().to_string(),
             remote_host: String::new(),
+            tunnel: String::new(),
         }
     }
+}
+
+/// Runs `cloudflared tunnel run <name>` against our own HTTPS port, so the tunnel's domain only
+/// works while the app is open. HTTPS so `/images` builds `https://` URLs; the origin cert is
+/// checked against our local CA (`ca_pem`).
+fn start_tunnel(name: &str, port: u16, ca_pem: &Path) -> Option<std::process::Child> {
+    if name.is_empty() {
+        return None;
+    }
+    let url = format!("https://localhost:{port}");
+    let ca_pem = ca_pem.to_string_lossy();
+    let args = ["tunnel", "--no-autoupdate", "run", "--url", &url, "--origin-ca-pool", &ca_pem, "--origin-server-name", "localhost", name];
+    // A Finder-launched app has no Homebrew PATH.
+    let child = ["cloudflared", "/opt/homebrew/bin/cloudflared", "/usr/local/bin/cloudflared"]
+        .into_iter()
+        .find_map(|bin| std::process::Command::new(bin).args(args).spawn().ok());
+    if child.is_none() {
+        eprintln!("Tunnel {name}: cloudflared not found");
+    }
+    child
 }
 
 fn new_token() -> String {
@@ -315,6 +339,7 @@ fn save_settings(
     library: String,
     port: u16,
     remote_host: String,
+    tunnel: String,
 ) -> Result<(), String> {
     if library.trim().is_empty() {
         return Err("Library folder can't be empty.".into());
@@ -324,6 +349,7 @@ fn save_settings(
         s.library = PathBuf::from(library.trim());
         s.port = port;
         s.remote_host = remote_host.trim().to_string();
+        s.tunnel = tunnel.trim().to_string();
     }
     app.save_settings()
 }
@@ -401,6 +427,9 @@ fn main() {
             // The phone app's web export, bundled as a resource (see tauri.conf.json).
             let web_dir = paths.resource_dir()?.join("web");
             let ca = tls::Ca::load_or_create(&paths.app_config_dir()?)?;
+            let ca_pem = paths.app_config_dir()?.join("ca.pem");
+            ca.write_pem(&ca_pem)?;
+            tauri_app.manage(Mutex::new(start_tunnel(&app.settings().tunnel, port, &ca_pem)));
             let server_app = app.clone();
             tauri::async_runtime::spawn(async move {
                 if let Err(e) = server::serve(server_app.clone(), port, web_dir, ca).await {
@@ -445,12 +474,15 @@ fn main() {
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
         .run(|handle, event| {
+            if let RunEvent::Exit = event {
+                if let Some(mut tunnel) = handle.state::<Mutex<Option<std::process::Child>>>().lock().unwrap().take() {
+                    let _ = tunnel.kill();
+                }
+            }
             // macOS: clicking the Dock icon reopens the hidden window.
             #[cfg(target_os = "macos")]
             if let RunEvent::Reopen { .. } = event {
                 show_window(handle);
             }
-            #[cfg(not(target_os = "macos"))]
-            let _ = (handle, event);
         });
 }

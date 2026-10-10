@@ -22,7 +22,8 @@ The desktop is a hub. Phones pull from it. It never writes to the camera and nev
   the camera can be unplugged while conversion runs. Without `ffmpeg`, the `.MTS` is served as-is and
   the phone converts it
 - **Phone & settings tab:** pairing QR code, paired phones with "Unpair", library folder, port, and an
-  optional remote address (e.g. a Tailscale name) for access over a VPN
+  optional remote address (e.g. a Tailscale name) for access over a VPN, and an optional Cloudflare
+  tunnel name (see [Public domain](#public-domain-cloudflare-tunnel))
 - Advertises itself over mDNS as `_image-sync._tcp`, so paired phones find it after a LAN IP change
 - Closing the window hides it to the tray (Open / Quit)
 
@@ -99,14 +100,37 @@ A remote address outside those (a public domain or IP) won't validate. The `http
 origin from the `http` one, so the browser has to pair again there. The native app keeps using plain HTTP.
 
 The token travels in the URL (`?t=`), which is fine on a LAN or inside a VPN. **Don't forward the port to
-the open internet.**
+the open internet.** For access from anywhere, use a tunnel (below), which keeps it inside HTTPS.
+
+### Public domain (Cloudflare Tunnel)
+
+With a tunnel name set in Settings, the app runs `cloudflared tunnel run <name>` while it's open and
+kills it on quit, so the domain only answers while the app runs (Cloudflare shows a 502 otherwise).
+`cloudflared` connects to `https://localhost:<port>` and checks the hub's certificate against the local
+CA (`ca.pem`, written next to `ca.crt`), so `/images` returns `https` links. Cloudflare serves a public
+certificate, so phones need no CA install. One-time setup, with the domain's zone on Cloudflare:
+
+```sh
+brew install cloudflared
+cloudflared tunnel login                                     # pick the zone in the browser
+cloudflared tunnel create imagesync                          # credentials in ~/.cloudflared/<id>.json, keep secret
+cloudflared tunnel route dns imagesync sony.example.com      # adds the CNAME
+```
+
+Then put `imagesync` in Settings › Cloudflare tunnel name and restart the app. Open
+`https://sony.example.com/app/` and pair by code. Only the web app works this way: the native app still
+uses plain HTTP on the hub port.
+
+The hub is then reachable from the internet, so pairing by code is the lock: each code allows 5 guesses
+and a new code can be requested only every 30 seconds. For a login in front of it, add a Cloudflare
+Access application for the hostname.
 
 ## HTTP API
 
 | Route | Response |
 |---|---|
 | `POST /pair?t=<pairing token>&name=<phone name>` | `{ token, id, name, hosts, port }`: the phone's own token plus the desktop's details |
-| `POST /pair/request?name=<phone name>` | `{ "request": "<id>" }`, and the window shows a 6-digit code |
+| `POST /pair/request?name=<phone name>` | `{ "request": "<id>" }`, and the window shows a 6-digit code. 429 within 30 s of the last request |
 | `POST /pair/code?request=<id>&code=<code>&name=<phone name>` | Same as `/pair`. 401 wrong code, 410 expired/denied/used up |
 | `GET /info` | `{ id, name }`, unauthenticated, for the web app |
 | `GET /ca.crt` | This hub's CA certificate (DER), unauthenticated, for the phone to install |

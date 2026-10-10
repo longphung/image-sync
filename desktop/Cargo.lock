@@ -1640,6 +1640,7 @@ dependencies = [
  "if-addrs",
  "image",
  "mdns-sd",
+ "pem",
  "percent-encoding",
  "qrcode",
  "rcgen",

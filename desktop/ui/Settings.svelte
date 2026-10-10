@@ -8,12 +8,13 @@
   let library = $state(untrack(() => status.settings.library));
   let port = $state(untrack(() => status.settings.port));
   let remoteHost = $state(untrack(() => status.settings.remote_host));
+  let tunnel = $state(untrack(() => status.settings.tunnel));
   let saved = $state('');
 
   async function save(e: SubmitEvent) {
     e.preventDefault();
     try {
-      await saveSettings(library, port, remoteHost);
+      await saveSettings(library, port, remoteHost, tunnel);
       saved = 'Saved';
       onsaved(); // "In library" depends on the library folder
     } catch (err) {
@@ -76,6 +77,7 @@
       <label>Library folder <input type="text" bind:value={library} required /></label>
       <label>Port (applies on restart) <input type="number" bind:value={port} min="1024" max="65535" required /></label>
       <label>Remote address (optional, e.g. Tailscale name) <input type="text" bind:value={remoteHost} /></label>
+      <label>Cloudflare tunnel name (optional, applies on restart) <input type="text" bind:value={tunnel} /></label>
       <button type="submit">Save</button> <span class="muted">{saved}</span>
     </form>
     <p class="muted">

@@ -25,7 +25,8 @@ src/components/       ActionButton + ProgressBar have .ios.tsx (SwiftUI, liquid 
                       .android.tsx (Jetpack Compose, Material 3) variants via @expo/ui; the plain .tsx is
                       the web fallback and the shared props type
 desktop/              Tauri v2 desktop hub (Rust + Svelte 5/Vite UI in desktop/ui, own package.json): USB card picker
-                      + import, HTTP API for phones (also HTTPS on the same port via a local CA, src/tls.rs),
+                      + import, HTTP API for phones (also HTTPS on the same port via a local CA, src/tls.rs; optional Cloudflare tunnel
+                      run while the app is open),
                       see docs/desktop-plan.md. Excluded from the root tsconfig
 src/desktops.ts       paired desktop hubs, persisted as JSON in the documents directory
 app/                  expo-router screens: (tabs) = native tabs, (desktops)/index (default: paired desktops,

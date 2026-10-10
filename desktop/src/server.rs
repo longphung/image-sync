@@ -14,7 +14,7 @@ use axum::{Json, Router};
 use serde::Serialize;
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 use tower::ServiceExt;
 use tower_http::services::{ServeDir, ServeFile};
@@ -22,6 +22,9 @@ use tower_http::services::{ServeDir, ServeFile};
 /// How long a code shown on the desktop stays valid, and how many wrong guesses it survives.
 const CODE_TTL: Duration = Duration::from_secs(120);
 const CODE_ATTEMPTS: u32 = 5;
+/// Minimum gap between new code requests. Each request gets 5 guesses at a 1-in-a-million code,
+/// so this caps guessing at 600/hour, which matters once the hub is reachable from the internet.
+const REQUEST_GAP: Duration = Duration::from_secs(30);
 
 /// A pending "pair by code" request: the phone asked, the desktop window shows `code`, and the
 /// phone sends it back to `POST /pair/code`. Only one at a time; a new request replaces it.
@@ -138,6 +141,14 @@ async fn pair(State(app): State<Arc<App>>, req: Request) -> Response {
 /// `POST /pair/request?name=<phone name>` starts pairing by code: the desktop window pops up with
 /// a 6-digit code, and the reply `{ "request": id }` is what the phone sends back with it.
 async fn pair_request(State(app): State<Arc<App>>, req: Request) -> Response {
+    static LAST: Mutex<Option<Instant>> = Mutex::new(None);
+    {
+        let mut last = LAST.lock().unwrap();
+        if last.is_some_and(|t| t.elapsed() < REQUEST_GAP) {
+            return (StatusCode::TOO_MANY_REQUESTS, "Wait 30 seconds before asking for another code.").into_response();
+        }
+        *last = Some(Instant::now());
+    }
     let request = PairRequest::new(phone_name(&query_param(&req, "name")));
     let id = request.id.clone();
     *app.pair_request.lock().unwrap() = Some(request);

@@ -26,6 +26,7 @@ tokio-rustls = { version = "0.26.6", default-features = false, features = ["ring
 rcgen = "0.14.10"
 if-addrs = "0.15"
 time = "0.3"
+pem = "4"
 
 # Image decoding is many times slower unoptimized, so dependencies are optimized even in dev builds.
 [profile.dev.package."*"]
