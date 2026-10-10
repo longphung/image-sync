@@ -14,7 +14,7 @@ export type Status = {
     error: string | null;
   };
   camera: string | null;
-  settings: { library: string; port: number; remote_host: string; phones: Phone[] };
+  settings: { library: string; port: number; remote_host: string; tunnel: string; phones: Phone[] };
   ffmpeg: boolean;
   pairing_qr: string;
   lan_ip: string | null;
@@ -29,8 +29,8 @@ export const getCard = () => invoke<MediaItem[]>('card');
 export const getLibrary = () => invoke<MediaItem[]>('library');
 export const openLibrary = () => invoke<void>('open_library');
 export const sync = (paths: string[]) => invoke<void>('sync', { paths });
-export const saveSettings = (library: string, port: number, remoteHost: string) =>
-  invoke<void>('save_settings', { library, port, remoteHost });
+export const saveSettings = (library: string, port: number, remoteHost: string, tunnel: string) =>
+  invoke<void>('save_settings', { library, port, remoteHost, tunnel });
 export const removePhone = (id: string) => invoke<void>('remove_phone', { id });
 export const unpairAll = () => invoke<void>('unpair_all');
 export const denyPairRequest = () => invoke<void>('deny_pair_request');

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Platform, ScrollView, Text, View } from 'react-native';
+import { Linking, Platform, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, Stack } from 'expo-router';
 import { Image } from 'expo-image';
@@ -17,6 +17,10 @@ const NO_COUNTS: SyncCounts = { downloaded: 0, skipped: 0, failed: 0 };
 // A browser share needs a fresh tap each time, so the web build downloads everything first and
 // saves it all with one "Save All" tap at the end.
 const SAVE_AT_END = Platform.OS === 'web';
+// Browsers only offer the share sheet (-> Save to Photos) over HTTPS; the hub serves plain http,
+// where saveAllToLibrary falls back to one browser download (a zip), which lands in Downloads.
+// That needs no tap, so it starts on its own when the sync finishes.
+const CAN_SHARE = SAVE_AT_END && window.isSecureContext && 'share' in navigator;
 
 export default function SyncScreen() {
   const { t } = useLingui();
@@ -39,6 +43,8 @@ export default function SyncScreen() {
   // Web only: files downloaded by this screen, waiting for "Save All".
   const [toSave, setToSave] = useState<string[]>([]);
   const [saveError, setSaveError] = useState<string | null>(null);
+  // Web over http: the zip download has been started at least once (it can be started again).
+  const [downloadedOnce, setDownloadedOnce] = useState(false);
 
   useEffect(() => {
     const run = new AbortController();
@@ -50,9 +56,13 @@ export default function SyncScreen() {
     setRunning(true);
     // A file already in app storage was saved to Photos by the run that downloaded it, so only
     // new downloads go to the library; otherwise every re-sync would duplicate them there.
+    const fresh: string[] = [];
     const download: Download = async (item, opts) => {
       const wrote = await downloadToPhotosDir(item.url, item.filename, opts);
-      if (wrote && SAVE_AT_END) setToSave((prev) => [...prev, item.filename]);
+      if (wrote && SAVE_AT_END) {
+        fresh.push(item.filename);
+        setToSave((prev) => [...prev, item.filename]);
+      }
       else if (wrote) await saveToLibrary(item.filename, { onPercent: opts.onPercent });
       return wrote;
     };
@@ -74,6 +84,11 @@ export default function SyncScreen() {
         setStoppedEarly(result.stoppedEarly);
         // A run that stopped early didn't get through the list; leave the bar where it stopped.
         if (!result.stoppedEarly) setIndex(queue.length);
+        if (SAVE_AT_END && !CAN_SHARE && fresh.length > 0) {
+          saveAllToLibrary(fresh)
+            .then(() => setDownloadedOnce(true))
+            .catch((err) => setSaveError(err instanceof Error ? err.message : String(err)));
+        }
       })
       .catch((err) => {
         // runSync catches each download's errors; this is a bug, but don't leave the screen stuck.
@@ -95,7 +110,9 @@ export default function SyncScreen() {
     setSaveError(null);
     try {
       await saveAllToLibrary(toSave);
-      setToSave([]);
+      // A browser download can't report whether it landed, so keep the button to start it again.
+      if (CAN_SHARE) setToSave([]);
+      else setDownloadedOnce(true);
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : String(err));
     }
@@ -122,6 +139,8 @@ export default function SyncScreen() {
         <Text style={{ color: colors.label, fontSize: 22, fontWeight: '700' }}>
           {running ? (
             <Trans>Syncing photos…</Trans>
+          ) : toSave.length > 0 && !downloadedOnce ? (
+            <Trans>Downloaded, not saved yet</Trans>
           ) : stoppedEarly ? (
             <Trans>Sync stopped</Trans>
           ) : counts.failed > 0 ? (
@@ -191,6 +210,38 @@ export default function SyncScreen() {
         </Card>
       )}
 
+      {!running && toSave.length > 0 && (
+        <Text style={{ color: colors.secondaryLabel, fontSize: 15 }}>
+          {CAN_SHARE ? (
+            <Trans>Tap Save All, then choose Save to Photos. Leaving this screen discards them.</Trans>
+          ) : downloadedOnce ? (
+            <Trans>
+              Saved as one zip in Downloads (the Files app on iPhone). Open it there, then save the
+              photos to Photos. Nothing downloaded? Tap Download All.
+            </Trans>
+          ) : (
+            <Trans>Tap Download All to save them as one zip. Leaving this screen discards them.</Trans>
+          )}
+        </Text>
+      )}
+
+      {SAVE_AT_END && !CAN_SHARE && !running && toSave.length > 0 && (
+        <Text style={{ color: colors.secondaryLabel, fontSize: 15 }}>
+          <Trans>
+            To save straight to Photos instead,{' '}
+            <Text style={{ color: colors.tint }} onPress={() => Linking.openURL('/ca.crt')}>
+              install this desktop's certificate
+            </Text>
+            , then{' '}
+            <Text style={{ color: colors.tint }} onPress={() => Linking.openURL(`https://${location.host}/app/`)}>
+              open the secure page
+            </Text>{' '}
+            and pair again. On iPhone, install it in Settings › Profile Downloaded, then turn it on in
+            General › About › Certificate Trust Settings.
+          </Trans>
+        </Text>
+      )}
+
       {saveError && (
         <Text style={{ color: colors.error }} selectable>
           {saveError}
@@ -199,14 +250,17 @@ export default function SyncScreen() {
 
       <View style={{ flex: 1 }} />
       {!running && toSave.length > 0 && (
-        <ActionButton label={t`Save All (${toSave.length})`} onPress={handleSaveAll} />
+        <ActionButton
+          label={CAN_SHARE ? t`Save All (${toSave.length})` : t`Download All (${toSave.length})`}
+          onPress={handleSaveAll}
+        />
       )}
       {!running && retryable.length > 0 && (
         <ActionButton label={t`Retry Failed (${retryable.length})`} onPress={handleRetry} />
       )}
       <ActionButton
         label={running ? t`Cancel` : t`Done`}
-        variant={running || retryable.length > 0 ? 'secondary' : 'primary'}
+        variant={running || retryable.length > 0 || (toSave.length > 0 && !downloadedOnce) ? 'secondary' : 'primary'}
         onPress={handleCancel}
       />
     </ScrollView>

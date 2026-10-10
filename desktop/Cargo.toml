@@ -10,7 +10,7 @@ tauri-build = { version = "2", features = [] }
 tauri = { version = "2", features = ["tray-icon", "protocol-asset"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-tokio = { version = "1", features = ["rt-multi-thread", "net", "time"] }
+tokio = { version = "1", features = ["rt-multi-thread", "net", "time", "sync"] }
 axum = "0.8"
 tower = { version = "0.5", features = ["util"] }
 tower-http = { version = "0.7", features = ["fs"] }
@@ -22,7 +22,15 @@ image = { version = "0.25", default-features = false, features = ["jpeg", "png"]
 mdns-sd = "0.21"
 qrcode = { version = "0.14", default-features = false, features = ["svg"] }
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
+tokio-rustls = { version = "0.26.6", default-features = false, features = ["ring", "tls12", "logging"] }
+rcgen = "0.14.10"
+if-addrs = "0.15"
+time = "0.3"
+pem = "4"
 
 # Image decoding is many times slower unoptimized, so dependencies are optimized even in dev builds.
 [profile.dev.package."*"]
 opt-level = 3
+
+[dev-dependencies]
+tokio = { version = "1", features = ["io-util"] }

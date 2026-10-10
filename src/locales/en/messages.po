@@ -23,7 +23,7 @@ msgstr "{0} dBm"
 msgid "{0} items"
 msgstr "{0} items"
 
-#: app/sync.tsx:134
+#: app/sync.tsx:153
 msgid "{index} of {total}"
 msgstr "{index} of {total}"
 
@@ -51,7 +51,7 @@ msgstr "Align the Wi-Fi name on the camera label inside the frame, then tap capt
 msgid "Allow Camera"
 msgstr "Allow Camera"
 
-#: app/sync.tsx:169
+#: app/sync.tsx:188
 msgid "already on device"
 msgstr "already on device"
 
@@ -63,17 +63,13 @@ msgstr "Android requires location permission to search for nearby Wi-Fi networks
 msgid "Android will also route this app's traffic over this Wi-Fi network (it has no internet)."
 msgstr "Android will also route this app's traffic over this Wi-Fi network (it has no internet)."
 
-#: app/pair-code.tsx:161
+#: app/pair-code.tsx:163
 msgid "Asking for a code…"
 msgstr "Asking for a code…"
 
 #: app/(tabs)/(desktops)/index.tsx:101
 msgid "Browse and download photos imported by the image-sync desktop app."
 msgstr "Browse and download photos imported by the image-sync desktop app."
-
-#: app/index.tsx:178
-#~ msgid "Browse photos already imported by the image-sync desktop app."
-#~ msgstr "Browse photos already imported by the image-sync desktop app."
 
 #: app/(tabs)/_layout.tsx:14
 #: app/(tabs)/camera/index.tsx:56
@@ -107,7 +103,7 @@ msgstr "Can't play this video format"
 #: app/(tabs)/(desktops)/index.tsx:75
 #: app/(tabs)/(desktops)/index.tsx:86
 #: app/read-label.tsx:19
-#: app/sync.tsx:208
+#: app/sync.tsx:262
 msgid "Cancel"
 msgstr "Cancel"
 
@@ -163,7 +159,7 @@ msgstr "Couldn't read text from that photo. Try retaking it with the label in be
 msgid "Desktop"
 msgstr "Desktop"
 
-#: app/pair-code.tsx:118
+#: app/pair-code.tsx:120
 msgid "Desktop address, as shown in the desktop app's Phone & settings tab."
 msgstr "Desktop address, as shown in the desktop app's Phone & settings tab."
 
@@ -171,19 +167,28 @@ msgstr "Desktop address, as shown in the desktop app's Phone & settings tab."
 msgid "Disconnect"
 msgstr "Disconnect"
 
-#: app/sync.tsx:208
+#: app/sync.tsx:262
 msgid "Done"
 msgstr "Done"
 
-#: app/sync.tsx:168
+#. placeholder {0}: toSave.length
+#: app/sync.tsx:254
+msgid "Download All ({0})"
+msgstr "Download All ({0})"
+
+#: app/sync.tsx:187
 msgid "downloaded"
 msgstr "downloaded"
 
-#: app/pair-code.tsx:70
+#: app/sync.tsx:143
+msgid "Downloaded, not saved yet"
+msgstr "Downloaded, not saved yet"
+
+#: app/pair-code.tsx:71
 msgid "Enter an address like 192.168.1.5 or 192.168.1.5:8765."
 msgstr "Enter an address like 192.168.1.5 or 192.168.1.5:8765."
 
-#: app/pair-code.tsx:140
+#: app/pair-code.tsx:142
 msgid "Enter the 6-digit code shown on {name}."
 msgstr "Enter the 6-digit code shown on {name}."
 
@@ -195,7 +200,7 @@ msgstr "Enter Wi-Fi manually"
 msgid "Enter Wi-Fi Manually"
 msgstr "Enter Wi-Fi Manually"
 
-#: app/sync.tsx:170
+#: app/sync.tsx:189
 msgid "failed"
 msgstr "failed"
 
@@ -206,14 +211,6 @@ msgstr "Failed to capture photo."
 #: app/image/[filename].tsx:86
 msgid "Failed to load image"
 msgstr "Failed to load image"
-
-#: app/index.tsx:53
-#~ msgid "Forget"
-#~ msgstr "Forget"
-
-#: app/index.tsx:51
-#~ msgid "Forget {name}?"
-#~ msgstr "Forget {name}?"
 
 #: src/labelOcr/PermissionGate.tsx:63
 msgid "Grant Camera Access"
@@ -276,10 +273,6 @@ msgstr "Location permission is required to search for Wi-Fi networks."
 msgid "Location permission was denied."
 msgstr "Location permission was denied."
 
-#: app/index.tsx:195
-#~ msgid "Long press to forget this desktop"
-#~ msgstr "Long press to forget this desktop"
-
 #: app/_layout.tsx:29
 msgid "Media"
 msgstr "Media"
@@ -295,10 +288,6 @@ msgstr "No camera networks found. Make sure the camera is in Send to Smartphone 
 #: app/(tabs)/(desktops)/index.tsx:198
 msgid "No desktops yet. Open the image-sync desktop app on your computer, then scan the pairing code in its Phone & settings tab, or enter its address to pair with a code."
 msgstr "No desktops yet. Open the image-sync desktop app on your computer, then scan the pairing code in its Phone & settings tab, or enter its address to pair with a code."
-
-#: app/(tabs)/(desktops)/index.tsx:183
-#~ msgid "No desktops yet. Open the image-sync desktop app on your computer, then scan the pairing code in its Phone & settings tab."
-#~ msgstr "No desktops yet. Open the image-sync desktop app on your computer, then scan the pairing code in its Phone & settings tab."
 
 #: app/images.tsx:131
 msgid "No photos or videos on the camera."
@@ -320,10 +309,6 @@ msgstr "Not connected"
 #: app/(tabs)/(desktops)/index.tsx:189
 msgid "Not paired yet. Tap to pair."
 msgstr "Not paired yet. Tap to pair."
-
-#: app/(tabs)/(desktops)/index.tsx:174
-#~ msgid "Not paired yet. Tap to scan its pairing code."
-#~ msgstr "Not paired yet. Tap to scan its pairing code."
 
 #: src/wifi.ts:16
 msgid "OK"
@@ -352,10 +337,6 @@ msgstr "Open Photos"
 msgid "Open Settings"
 msgstr "Open Settings"
 
-#: app/index.tsx:173
-#~ msgid "Or"
-#~ msgstr "Or"
-
 #: app/(tabs)/(desktops)/index.tsx:214
 msgid "Pair by Address and Code"
 msgstr "Pair by Address and Code"
@@ -377,7 +358,7 @@ msgstr "Pair with Desktop"
 msgid "Paired"
 msgstr "Paired"
 
-#: app/pair-code.tsx:161
+#: app/pair-code.tsx:163
 #: app/scan-pairing.tsx:79
 msgid "Pairing…"
 msgstr "Pairing…"
@@ -436,11 +417,11 @@ msgstr "Remove {0}"
 msgid "Remove {0}?"
 msgstr "Remove {0}?"
 
-#: app/pair-code.tsx:133
+#: app/pair-code.tsx:135
 msgid "Request Code"
 msgstr "Request Code"
 
-#: app/pair-code.tsx:172
+#: app/pair-code.tsx:174
 msgid "Request New Code"
 msgstr "Request New Code"
 
@@ -454,7 +435,7 @@ msgid "Retry"
 msgstr "Retry"
 
 #. placeholder {0}: retryable.length
-#: app/sync.tsx:205
+#: app/sync.tsx:259
 msgid "Retry Failed ({0})"
 msgstr "Retry Failed ({0})"
 
@@ -463,13 +444,17 @@ msgid "Retry Save"
 msgstr "Retry Save"
 
 #. placeholder {0}: toSave.length
-#: app/sync.tsx:202
+#: app/sync.tsx:254
 msgid "Save All ({0})"
 msgstr "Save All ({0})"
 
 #: app/image/[filename].tsx:134
 msgid "Save to Photos"
 msgstr "Save to Photos"
+
+#: app/sync.tsx:218
+msgid "Saved as one zip in Downloads (the Files app on iPhone). Open it there, then save the photos to Photos. Nothing downloaded? Tap Download All."
+msgstr "Saved as one zip in Downloads (the Files app on iPhone). Open it there, then save the photos to Photos. Nothing downloaded? Tap Download All."
 
 #: app/image/[filename].tsx:122
 msgid "Saved to Photos"
@@ -525,21 +510,29 @@ msgstr "Sync All"
 msgid "Sync All ({0})"
 msgstr "Sync All ({0})"
 
-#: app/sync.tsx:130
+#: app/sync.tsx:149
 msgid "Sync complete"
 msgstr "Sync complete"
 
-#: app/sync.tsx:128
+#: app/sync.tsx:147
 msgid "Sync finished with errors"
 msgstr "Sync finished with errors"
 
-#: app/sync.tsx:126
+#: app/sync.tsx:145
 msgid "Sync stopped"
 msgstr "Sync stopped"
 
-#: app/sync.tsx:124
+#: app/sync.tsx:141
 msgid "Syncing photos…"
 msgstr "Syncing photos…"
+
+#: app/sync.tsx:223
+msgid "Tap Download All to save them as one zip. Leaving this screen discards them."
+msgstr "Tap Download All to save them as one zip. Leaving this screen discards them."
+
+#: app/sync.tsx:216
+msgid "Tap Save All, then choose Save to Photos. Leaving this screen discards them."
+msgstr "Tap Save All, then choose Save to Photos. Leaving this screen discards them."
 
 #: src/ocr.ts:10
 msgid "Text recognition is not supported on this device."
@@ -553,9 +546,13 @@ msgstr "Text recognition isn't available on this device. You can still type the 
 msgid "Text recognition isn't available on this device. You can still type the Wi-Fi name in manually."
 msgstr "Text recognition isn't available on this device. You can still type the Wi-Fi name in manually."
 
-#: app/pair-code.tsx:87
+#: app/pair-code.tsx:89
 msgid "This code has expired. Request a new one."
 msgstr "This code has expired. Request a new one."
+
+#: app/sync.tsx:230
+msgid "To save straight to Photos instead, <0>install this desktop's certificate</0>, then <1>open the secure page</1> and pair again. On iPhone, install it in Settings › Profile Downloaded, then turn it on in General › About › Certificate Trust Settings."
+msgstr "To save straight to Photos instead, <0>install this desktop's certificate</0>, then <1>open the secure page</1> and pair again. On iPhone, install it in Settings › Profile Downloaded, then turn it on in General › About › Certificate Trust Settings."
 
 #: app/(tabs)/camera/index.tsx:58
 msgid "Transfer photos from your Sony camera to your phone."
@@ -585,17 +582,13 @@ msgstr "Wi-Fi name"
 msgid "Wi-Fi password"
 msgstr "Wi-Fi password"
 
-#: app/pair-code.tsx:90
+#: app/pair-code.tsx:92
 msgid "Wrong code. Check the code on the desktop and try again."
 msgstr "Wrong code. Check the code on the desktop and try again."
 
 #: app/(tabs)/(desktops)/index.tsx:85
 msgid "You'll need to pair with it again to see its photos."
 msgstr "You'll need to pair with it again to see its photos."
-
-#: app/index.tsx:51
-#~ msgid "You'll need to scan its pairing code again to reconnect."
-#~ msgstr "You'll need to scan its pairing code again to reconnect."
 
 #: app/(tabs)/camera/index.tsx:70
 msgid "Your phone is on this Wi-Fi network."

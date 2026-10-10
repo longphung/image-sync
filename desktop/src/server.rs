@@ -3,8 +3,9 @@
 //! URLs returned by `/images` already include it, so the phone's image/video/download code needs
 //! no headers.
 
+use crate::tls::{self, DualListener, Peer};
 use crate::{import, new_token, pairing_info, show_window, thumbs, App, Phone};
-use axum::extract::{Path as UrlPath, Request, State};
+use axum::extract::{ConnectInfo, Path as UrlPath, Request, State};
 use axum::http::{header, StatusCode};
 use axum::middleware::{self, Next};
 use axum::response::{IntoResponse, Redirect, Response};
@@ -13,7 +14,7 @@ use axum::{Json, Router};
 use serde::Serialize;
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 use tower::ServiceExt;
 use tower_http::services::{ServeDir, ServeFile};
@@ -21,6 +22,9 @@ use tower_http::services::{ServeDir, ServeFile};
 /// How long a code shown on the desktop stays valid, and how many wrong guesses it survives.
 const CODE_TTL: Duration = Duration::from_secs(120);
 const CODE_ATTEMPTS: u32 = 5;
+/// Minimum gap between new code requests. Each request gets 5 guesses at a 1-in-a-million code,
+/// so this caps guessing at 600/hour, which matters once the hub is reachable from the internet.
+const REQUEST_GAP: Duration = Duration::from_secs(30);
 
 /// A pending "pair by code" request: the phone asked, the desktop window shows `code`, and the
 /// phone sends it back to `POST /pair/code`. Only one at a time; a new request replaces it.
@@ -77,7 +81,11 @@ struct ImageItem {
 
 /// `web_dir` is the phone app's web export, served at `/app` (same origin as the API, so the
 /// browser needs no CORS). If it doesn't exist, `/app` is a 404 and the API is unaffected.
-pub async fn serve(app: Arc<App>, port: u16, web_dir: PathBuf) -> std::io::Result<()> {
+/// Plain HTTP and HTTPS share the port, see `tls.rs`.
+pub async fn serve(app: Arc<App>, port: u16, web_dir: PathBuf, ca: tls::Ca) -> Result<(), String> {
+    let ca_cert = ca.cert.clone();
+    let names_app = app.clone();
+    let acceptor = tls::acceptor(ca, move || tls::current_names(&names_app))?;
     let web = ServeDir::new(&web_dir).fallback(ServeFile::new(web_dir.join("index.html")));
     let router = Router::new()
         .route("/images", get(images))
@@ -89,11 +97,14 @@ pub async fn serve(app: Arc<App>, port: u16, web_dir: PathBuf) -> std::io::Resul
         .route("/pair/request", post(pair_request))
         .route("/pair/code", post(pair_code))
         .route("/info", get(info))
+        // The phone installs this once to trust the hub's HTTPS (iOS opens it as a profile).
+        .route("/ca.crt", get(|| async move { ([(header::CONTENT_TYPE, "application/x-x509-ca-cert")], ca_cert) }))
         .route("/", get(|| async { Redirect::temporary("/app/") }))
         .nest_service("/app", web)
         .with_state(app);
-    let listener = tokio::net::TcpListener::bind(("0.0.0.0", port)).await?;
-    axum::serve(listener, router).await
+    let tcp = tokio::net::TcpListener::bind(("0.0.0.0", port)).await.map_err(|e| e.to_string())?;
+    let listener = DualListener::new(tcp, acceptor);
+    axum::serve(listener, router.into_make_service_with_connect_info::<Peer>()).await.map_err(|e| e.to_string())
 }
 
 fn query_param(req: &Request, key: &str) -> String {
@@ -130,6 +141,14 @@ async fn pair(State(app): State<Arc<App>>, req: Request) -> Response {
 /// `POST /pair/request?name=<phone name>` starts pairing by code: the desktop window pops up with
 /// a 6-digit code, and the reply `{ "request": id }` is what the phone sends back with it.
 async fn pair_request(State(app): State<Arc<App>>, req: Request) -> Response {
+    static LAST: Mutex<Option<Instant>> = Mutex::new(None);
+    {
+        let mut last = LAST.lock().unwrap();
+        if last.is_some_and(|t| t.elapsed() < REQUEST_GAP) {
+            return (StatusCode::TOO_MANY_REQUESTS, "Wait 30 seconds before asking for another code.").into_response();
+        }
+        *last = Some(Instant::now());
+    }
     let request = PairRequest::new(phone_name(&query_param(&req, "name")));
     let id = request.id.clone();
     *app.pair_request.lock().unwrap() = Some(request);
@@ -189,7 +208,9 @@ async fn images(State(app): State<Arc<App>>, req: Request) -> Json<Vec<ImageItem
     let library = app.settings().library.clone();
     // Build URLs against whatever address the phone reached us on (LAN IP, VPN name, ...).
     let host = req.headers().get(header::HOST).and_then(|h| h.to_str().ok()).unwrap_or("localhost");
-    let base = url::Url::parse(&format!("http://{host}/")).unwrap_or_else(|_| "http://localhost/".parse().unwrap());
+    let tls = req.extensions().get::<ConnectInfo<Peer>>().is_some_and(|c| c.0.tls);
+    let scheme = if tls { "https" } else { "http" };
+    let base = url::Url::parse(&format!("{scheme}://{host}/")).unwrap_or_else(|_| "http://localhost/".parse().unwrap());
     let items = library_files(&library)
         .into_iter()
         .filter_map(|path| {

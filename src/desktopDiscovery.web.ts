@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { DESKTOP_PORT } from './camera';
 import type { FoundDesktop } from './desktopDiscovery';
 
 export type { FoundDesktop };
@@ -24,7 +23,7 @@ export function useDesktopDiscovery(active: boolean, scanKey = 0): Record<string
         if (cancelled || typeof info.id !== 'string') return;
         const id = info.id;
         const name = typeof info.name === 'string' ? info.name : location.hostname;
-        setFound({ [id]: { id, name, host: location.hostname, port: Number(location.port) || DESKTOP_PORT } });
+        setFound({ [id]: { id, name, host: location.hostname, port: Number(location.port) || (location.protocol === 'https:' ? 443 : 80) } });
       })
       .catch((err) => console.log('[Discovery] /info failed', err));
     return () => {
